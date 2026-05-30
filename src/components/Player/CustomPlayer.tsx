@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings, RefreshCw } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings } from 'lucide-react'
 
 interface CustomPlayerProps {
   src: string
