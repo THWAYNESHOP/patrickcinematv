@@ -9,8 +9,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <Tv className="w-8 h-8 text-neonPink" />
-              <span className="text-xl font-bold neon-text">PATRICK CINEMA TV</span>
+              <Tv className="w-8 h-8 text-primary" />
+              <span className="text-xl font-bold text-white tracking-tight">PATRICK CINEMA TV</span>
             </Link>
             <p className="text-gray-400 text-sm">
               Premium streaming experience with live sports, movies, TV series, and more.
@@ -22,22 +22,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/movies" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/movies" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   Movies
                 </Link>
               </li>
               <li>
-                <Link to="/tv" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/tv" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   TV Series
                 </Link>
               </li>
               <li>
-                <Link to="/sports" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/sports" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   Live Sports
                 </Link>
               </li>
               <li>
-                <Link to="/anime" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/anime" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   Anime
                 </Link>
               </li>
@@ -49,22 +49,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/sports/football" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/sports/football" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   Football
                 </Link>
               </li>
               <li>
-                <Link to="/sports/nba" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/sports/nba" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   NBA
                 </Link>
               </li>
               <li>
-                <Link to="/sports/ufc" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/sports/ufc" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   UFC
                 </Link>
               </li>
               <li>
-                <Link to="/sports/f1" className="text-gray-400 hover:text-neonPink transition-colors text-sm">
+                <Link to="/sports/f1" className="text-gray-400 hover:text-primary transition-colors text-sm">
                   Formula 1
                 </Link>
               </li>
@@ -79,27 +79,27 @@ export default function Footer() {
                 href="https://www.facebook.com/share/1GhEignMLA/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 glass rounded-full hover:bg-primary/20 transition-colors"
+                className="p-2 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-5 h-5 text-gray-400 hover:text-primary" />
               </a>
               <a
                 href="#"
-                className="p-2 glass rounded-full hover:bg-neonPink/20 transition-colors"
+                className="p-2 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300"
               >
-                <Twitter className="w-5 h-5" />
+                <Twitter className="w-5 h-5 text-gray-400 hover:text-primary" />
               </a>
               <a
                 href="#"
-                className="p-2 glass rounded-full hover:bg-neonPink/20 transition-colors"
+                className="p-2 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-5 h-5 text-gray-400 hover:text-primary" />
               </a>
               <a
                 href="#"
-                className="p-2 glass rounded-full hover:bg-neonPink/20 transition-colors"
+                className="p-2 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300"
               >
-                <Youtube className="w-5 h-5" />
+                <Youtube className="w-5 h-5 text-gray-400 hover:text-primary" />
               </a>
             </div>
           </div>
