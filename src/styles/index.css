@@ -18,19 +18,19 @@
   }
   
   .neon-border {
-    @apply border border-neonPink/50 shadow-[0_0_10px_rgba(255,0,140,0.3)];
+    @apply border border-primary/30 shadow-glow;
   }
   
   .neon-glow {
-    @apply shadow-[0_0_20px_rgba(255,0,140,0.5)];
+    @apply shadow-glow;
   }
   
   .neon-text {
-    @apply text-neonPink drop-shadow-[0_0_10px_rgba(255,0,140,0.8)];
+    @apply text-primary drop-shadow-[0_0_8px_rgba(229,9,20,0.5)];
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,0,140,0.4)];
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-card-hover;
   }
   
   .scrollbar-hide::-webkit-scrollbar {
@@ -54,11 +54,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-neonPink/50 rounded-full;
+  @apply bg-primary/40 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-neonPink/70;
+  @apply bg-primary/60;
 }
 
 /* Loading animation */

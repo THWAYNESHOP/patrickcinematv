@@ -17,7 +17,7 @@ export default function MyList() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -25,7 +25,7 @@ export default function MyList() {
   return (
     <div className="min-h-screen py-8 px-4 md:px-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 neon-text">My List</h1>
+        <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">My List</h1>
         {myList.length > 0 ? (
           <ContentCarousel title="Your List" items={myList} type="movie" />
         ) : (

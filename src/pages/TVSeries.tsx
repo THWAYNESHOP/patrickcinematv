@@ -70,7 +70,7 @@ export default function TVSeries() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -78,7 +78,7 @@ export default function TVSeries() {
   return (
     <div className="min-h-screen py-8 px-4 md:px-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 neon-text">TV Series</h1>
+        <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">TV Series</h1>
         <ContentCarousel title="Trending Today" items={series.slice(0, 6)} type="tv" />
         <ContentCarousel title="All TV Series" items={series} type="tv" />
       </div>

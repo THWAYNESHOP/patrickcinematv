@@ -46,7 +46,7 @@ export default function Anime() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -54,7 +54,7 @@ export default function Anime() {
   return (
     <div className="min-h-screen py-8 px-4 md:px-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 neon-text">Anime</h1>
+        <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">Anime</h1>
         <ContentCarousel title="All Anime" items={anime} type="anime" />
       </div>
     </div>

@@ -84,7 +84,7 @@ export default function MovieDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -139,13 +139,13 @@ export default function MovieDetails() {
               <img
                 src={movie.poster}
                 alt={movie.title}
-                className="w-48 md:w-64 rounded-lg shadow-2xl neon-border"
+                className="w-48 md:w-64 rounded-lg shadow-2xl border border-white/10"
               />
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-text">{movie.title}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">{movie.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                   <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-neonPink fill-neonPink" />
+                    <Star className="w-5 h-5 text-primary fill-primary" />
                     <span className="font-semibold">{movie.rating}</span>
                   </div>
                   <span className="text-gray-400">{movie.year}</span>
@@ -165,19 +165,19 @@ export default function MovieDetails() {
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="#player"
-                    className="flex items-center gap-2 bg-neonPink hover:bg-neonPinkLight text-white px-8 py-3 rounded-lg font-semibold transition-colors neon-glow"
+                    className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <Play className="w-5 h-5" />
                     Watch Now
                   </a>
                   <button
                     onClick={handleMyList}
-                    className="flex items-center gap-2 glass hover:bg-white/10 px-6 py-3 rounded-lg transition-colors"
+                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
                   >
                     <Heart className="w-5 h-5" />
                     {inMyList ? 'Remove from List' : 'Add to List'}
                   </button>
-                  <button className="flex items-center gap-2 glass hover:bg-white/10 px-6 py-3 rounded-lg transition-colors">
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
                     <Share2 className="w-5 h-5" />
                     Share
                   </button>
@@ -192,14 +192,14 @@ export default function MovieDetails() {
       <div className="container mx-auto px-4 md:px-8 py-12">
         {/* Video Player */}
         <section id="player" className="mb-12 scroll-mt-24">
-          <div className="glass rounded-lg overflow-hidden neon-border">
+          <div className="bg-darkSurface rounded-lg overflow-hidden border border-white/5">
             <VidkingPlayer
               src={embedUrl}
               onProgress={handleProgress}
               className="rounded-lg"
             />
           </div>
-          <div className="glass rounded-lg p-5 mt-4 border border-white/10">
+          <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
             <h3 className="font-semibold mb-2">If this title has no sources</h3>
             <p className="text-sm text-gray-400">
               Some brand-new or rare titles are not mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.
@@ -209,10 +209,10 @@ export default function MovieDetails() {
 
         {/* Cast */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 neon-text">Cast</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Cast</h2>
           <div className="flex flex-wrap gap-4">
             {movie.cast.map((actor, index) => (
-              <div key={actor.id || actor.name || index} className="glass rounded-lg p-4 text-center w-36">
+              <div key={actor.id || actor.name || index} className="bg-darkSurface rounded-lg p-4 text-center w-36 border border-white/5">
                 {actor.profile ? (
                   <img
                     src={actor.profile}
@@ -232,7 +232,7 @@ export default function MovieDetails() {
 
         {/* Recommendations */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 neon-text">You May Also Like</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">You May Also Like</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {recommendations.map((item) => (
               <Link
@@ -240,7 +240,7 @@ export default function MovieDetails() {
                 to={`/movie/${item.id}`}
                 className="group"
               >
-                <div className="glass rounded-lg overflow-hidden card-hover">
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
                   <img
                     src={item.poster}
                     alt={item.title}

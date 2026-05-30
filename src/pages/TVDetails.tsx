@@ -93,7 +93,7 @@ export default function TVDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -150,13 +150,13 @@ export default function TVDetails() {
               <img
                 src={tv.poster}
                 alt={tv.title}
-                className="w-48 md:w-64 rounded-lg shadow-2xl neon-border"
+                className="w-48 md:w-64 rounded-lg shadow-2xl border border-white/10"
               />
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 neon-text">{tv.title}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">{tv.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                   <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-neonPink fill-neonPink" />
+                    <Star className="w-5 h-5 text-primary fill-primary" />
                     <span className="font-semibold">{tv.rating}</span>
                   </div>
                   <span className="text-gray-400">{tv.year}</span>
@@ -176,19 +176,19 @@ export default function TVDetails() {
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="#player"
-                    className="flex items-center gap-2 bg-neonPink hover:bg-neonPinkLight text-white px-8 py-3 rounded-lg font-semibold transition-colors neon-glow"
+                    className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <Play className="w-5 h-5" />
                     Watch S{selectedSeason} E{selectedEpisode}
                   </a>
                   <button
                     onClick={handleMyList}
-                    className="flex items-center gap-2 glass hover:bg-white/10 px-6 py-3 rounded-lg transition-colors"
+                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
                   >
                     <Heart className="w-5 h-5" />
                     {inMyList ? 'Remove from List' : 'Add to List'}
                   </button>
-                  <button className="flex items-center gap-2 glass hover:bg-white/10 px-6 py-3 rounded-lg transition-colors">
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
                     <Share2 className="w-5 h-5" />
                     Share
                   </button>
@@ -203,14 +203,14 @@ export default function TVDetails() {
       <div className="container mx-auto px-4 md:px-8 py-12">
         {/* Video Player */}
         <section id="player" className="mb-12 scroll-mt-24">
-          <div className="glass rounded-lg overflow-hidden neon-border">
+          <div className="bg-darkSurface rounded-lg overflow-hidden border border-white/5">
             <VidkingPlayer
               src={embedUrl}
               onProgress={handleProgress}
               className="rounded-lg"
             />
           </div>
-          <div className="glass rounded-lg p-5 mt-4 border border-white/10">
+          <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
             <h3 className="font-semibold mb-2">If this episode has no sources</h3>
             <p className="text-sm text-gray-400">
               Try a different episode or save it to My List and come back later. Newer and niche episodes sometimes need a little time before alternate mirrors appear.
@@ -219,10 +219,10 @@ export default function TVDetails() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 neon-text">Cast</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Cast</h2>
           <div className="flex flex-wrap gap-4">
             {tv.cast.map((actor, index) => (
-              <div key={actor.id || actor.name || index} className="glass rounded-lg p-4 text-center w-36">
+              <div key={actor.id || actor.name || index} className="bg-darkSurface rounded-lg p-4 text-center w-36 border border-white/5">
                 {actor.profile ? (
                   <img
                     src={actor.profile}
@@ -241,7 +241,7 @@ export default function TVDetails() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 neon-text">You May Also Like</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">You May Also Like</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {recommendations.map((item) => (
               <Link
@@ -249,7 +249,7 @@ export default function TVDetails() {
                 to={`/tv/${item.id}`}
                 className="group"
               >
-                <div className="glass rounded-lg overflow-hidden card-hover">
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
                   <img
                     src={item.poster}
                     alt={item.title}
@@ -266,7 +266,7 @@ export default function TVDetails() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 neon-text">Episodes</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Episodes</h2>
           
           {/* Season Selector */}
           <div className="flex flex-wrap gap-2 mb-6">
@@ -274,10 +274,10 @@ export default function TVDetails() {
               <button
                 key={i}
                 onClick={() => setSelectedSeason(i + 1)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                   selectedSeason === i + 1
-                    ? 'bg-neonPink text-white'
-                    : 'glass hover:bg-white/10'
+                    ? 'bg-primary text-white'
+                    : 'bg-darkSurface hover:bg-darkHover text-gray-300 border border-white/5'
                 }`}
               >
                 Season {i + 1}
@@ -291,7 +291,7 @@ export default function TVDetails() {
               <button
                 key={i}
                 onClick={() => setSelectedEpisode(i + 1)}
-                className="glass rounded-lg p-4 flex gap-4 hover:bg-white/10 transition-colors w-full text-left"
+                className="bg-darkSurface rounded-lg p-4 flex gap-4 hover:bg-darkHover transition-all duration-200 w-full text-left border border-white/5 hover:border-white/10"
               >
                 <div className="w-32 aspect-video bg-gray-700 rounded flex-shrink-0" />
                 <div className="flex-1">
@@ -299,7 +299,7 @@ export default function TVDetails() {
                   <p className="text-gray-400 text-sm mb-2">Episode description here...</p>
                   <span className="text-gray-500 text-sm">45 min</span>
                 </div>
-                <Play className="w-10 h-10 text-neonPink flex-shrink-0" />
+                <Play className="w-10 h-10 text-primary flex-shrink-0" />
               </button>
             ))}
           </div>

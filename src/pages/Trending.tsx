@@ -34,7 +34,7 @@ export default function Trending() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
       </div>
     )
   }
@@ -42,7 +42,7 @@ export default function Trending() {
   return (
     <div className="min-h-screen py-8 px-4 md:px-8">
       <div className="container mx-auto">
-        <h1 className="text-4xl font-bold mb-8 neon-text">Trending</h1>
+        <h1 className="text-4xl font-bold mb-8 text-white tracking-tight">Trending</h1>
         <ContentCarousel title="Trending Movies Today" items={trending} type="movie" />
       </div>
     </div>
