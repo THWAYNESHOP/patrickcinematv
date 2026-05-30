@@ -65,14 +65,14 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
             <div className="flex flex-wrap gap-4">
               <Link
                 to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 <Play className="w-5 h-5" />
                 Watch Now
               </Link>
               <Link
                 to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
               >
                 <Info className="w-5 h-5" />
                 More Info
@@ -85,13 +85,13 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
       {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full transition-all duration-200 z-10 border border-white/10 hover:border-white/20"
+        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/10 hover:border-white/20"
       >
         <ChevronLeft className="w-6 h-6 text-white" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full transition-all duration-200 z-10 border border-white/10 hover:border-white/20"
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/10 hover:border-white/20"
       >
         <ChevronRight className="w-6 h-6 text-white" />
       </button>
