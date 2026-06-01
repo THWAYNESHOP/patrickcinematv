@@ -9,6 +9,7 @@ export interface Stream {
   hd: boolean
   embedUrl: string
   source: string
+  thumbnail?: string
 }
 
 export interface MatchSource {
@@ -62,6 +63,22 @@ function getPosterUrl(poster?: string): string | undefined {
   return poster.startsWith('http') ? poster : `${SPORTS_API_BASE.replace('/api', '')}${poster}`
 }
 
+// Generate fallback sports image based on sport category
+function getFallbackSportImage(sport: string): string {
+  const sportImages: Record<string, string> = {
+    football: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop',
+    basketball: 'https://images.unsplash.com/photo-1546519638-68711109880c?w=400&h=300&fit=crop',
+    rugby: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
+    tennis: 'https://images.unsplash.com/photo-1554224311-beee415c15cb?w=400&h=300&fit=crop',
+    cricket: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop',
+    afl: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86e81?w=400&h=300&fit=crop',
+    ufc: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
+    motorsports: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=300&fit=crop',
+  }
+
+  return sportImages[sport.toLowerCase()] || 'https://images.unsplash.com/photo-1552346154-5425766f2df2?w=400&h=300&fit=crop'
+}
+
 function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIVE'): Match {
   const [fallbackHome, fallbackAway] = match.title.split(/\s+vs\s+/i)
   const homeTeam = match.teams?.home?.name || fallbackHome || match.title
@@ -78,7 +95,7 @@ function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIV
     time: getMatchTime(match.date, status === 'UPCOMING'),
     score: 'vs',
     sport,
-    poster: getPosterUrl(match.poster),
+    poster: getPosterUrl(match.poster) || getFallbackSportImage(sport),
     date: match.date,
     sources: match.sources || [],
   }
@@ -175,6 +192,7 @@ export const sportsApi = {
         time: '67\'',
         score: '2 - 1',
         sport: 'football',
+        poster: getFallbackSportImage('football'),
         sources: [{ source: 'alpha', id: 'match1' }],
       },
       {
@@ -187,6 +205,7 @@ export const sportsApi = {
         time: '34\'',
         score: '1 - 0',
         sport: 'football',
+        poster: getFallbackSportImage('football'),
         sources: [{ source: 'bravo', id: 'match2' }],
       },
       {
@@ -199,6 +218,7 @@ export const sportsApi = {
         time: 'Q3',
         score: '98 - 95',
         sport: 'basketball',
+        poster: getFallbackSportImage('basketball'),
         sources: [{ source: 'charlie', id: 'match3' }],
       },
     ]
@@ -213,6 +233,7 @@ export const sportsApi = {
         hd: true,
         embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         source: 'alpha',
+        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
       },
       {
         id: 'stream2',
@@ -221,7 +242,10 @@ export const sportsApi = {
         hd: true,
         embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         source: 'alpha',
+        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
       },
     ]
   },
+
+  getFallbackSportImage,
 }
