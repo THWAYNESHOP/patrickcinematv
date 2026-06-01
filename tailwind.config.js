@@ -13,7 +13,7 @@ export default {
         darkElevated: '#1A1A1A',
         darkHover: '#262626',
         
-        // Primary accent (Netflix-inspired red) - use sparingly
+        // Primary accent (Netflix-inspired red) - use sparingly for LIVE indicators and active states
         primary: '#E50914',
         primaryHover: '#F40612',
         primaryLight: '#B20710',
@@ -35,6 +35,7 @@ export default {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 3s ease-in-out infinite',
         'fade-in': 'fadeIn 0.3s ease-out',
+        'skeleton-pulse': 'skeletonPulse 2s ease-in-out infinite',
       },
       keyframes: {
         glow: {
@@ -48,6 +49,10 @@ export default {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        skeletonPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
         },
       },
       backgroundImage: {
