@@ -1,12 +1,56 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, Radio, Clock } from 'lucide-react'
+import { Play, Clock, Calendar } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { sportsApi, Match } from '../../api/sports'
 
 interface LiveMatchesProps {
   limit?: number
   sport?: string
   variant?: 'live' | 'upcoming'
+}
+
+// Flag emoji mapping for common teams/countries
+const getTeamFlag = (teamName: string): string => {
+  const name = teamName.toLowerCase()
+  const flagMap: Record<string, string> = {
+    'manchester united': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'liverpool': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'real madrid': '🇪🇸',
+    'barcelona': '🇪🇸',
+    'lakers': '🇺🇸',
+    'warriors': '🇺🇸',
+    'chelsea': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'arsenal': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'bayern': '🇩🇪',
+    'psg': '🇫🇷',
+    'juventus': '🇮🇹',
+    'milan': '🇮🇹',
+    'inter': '🇮🇹',
+    'celtics': '🇺🇸',
+    'heat': '🇺🇸',
+    'nets': '🇺🇸',
+    'bulls': '🇺🇸',
+  }
+  
+  for (const [key, flag] of Object.entries(flagMap)) {
+    if (name.includes(key)) return flag
+  }
+  return '⚽'
+}
+
+const cardVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  hover: { 
+    y: -4,
+    transition: { duration: 0.2 }
+  }
+}
+
+const skeletonVariants = {
+  initial: { opacity: 0.5 },
+  animate: { opacity: 1 },
 }
 
 export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatchesProps) {
@@ -42,78 +86,114 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="glass rounded-lg p-4 skeleton h-32" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <motion.div
+            key={i}
+            variants={skeletonVariants}
+            initial="initial"
+            animate="animate"
+            transition={{ delay: i * 0.05 }}
+            className="bg-white/5 rounded-xl overflow-hidden"
+          >
+            <div className="h-20 bg-white/10 skeleton" />
+            <div className="p-3 space-y-2">
+              <div className="h-3 bg-white/10 rounded skeleton w-3/4" />
+              <div className="flex justify-between">
+                <div className="h-3 bg-white/10 rounded skeleton w-1/3" />
+                <div className="h-3 bg-white/10 rounded skeleton w-1/4" />
+              </div>
+              <div className="h-8 bg-white/10 rounded-lg skeleton mt-2" />
+            </div>
+          </motion.div>
         ))}
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
       {matches.length === 0 && (
-        <div className="glass rounded-lg p-6 text-gray-400 md:col-span-2 lg:col-span-3">
+        <div className="col-span-full bg-white/5 rounded-xl p-6 text-gray-400 text-center">
           No {variant === 'upcoming' ? 'upcoming' : 'live'} matches found for this sport right now.
         </div>
       )}
 
-      {matches.map((match) => {
-        // Use the first available source if available
+      {matches.map((match, index) => {
         const firstSource = match.sources && match.sources.length > 0 ? match.sources[0] : null
+        const homeFlag = getTeamFlag(match.homeTeam)
+        const awayFlag = getTeamFlag(match.awayTeam)
         
         return (
-          <Link
+          <motion.div
             key={match.id}
-            to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
-            className="glass rounded-lg overflow-hidden hover:bg-white/10 transition-colors neon-border"
+            variants={cardVariants}
+            initial="initial"
+            animate="animate"
+            whileHover="hover"
+            transition={{ duration: 0.2, delay: index * 0.03 }}
           >
-            {match.poster && (
-              <img
-                src={match.poster}
-                alt={match.title}
-                className="w-full h-32 object-cover"
-                loading="lazy"
-              />
-            )}
+            <Link
+              to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
+              className="block h-full"
+            >
+              <div className="bg-white/5 rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-200 h-full flex flex-col">
+                {/* Compact header with flags */}
+                <div className="p-3 pb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                      {match.league}
+                    </span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                      variant === 'upcoming'
+                        ? 'bg-blue-500/15 text-blue-400'
+                        : 'bg-red-500/15 text-red-400'
+                    }`}>
+                      {variant === 'upcoming' ? 'UPCOMING' : 'LIVE'}
+                    </span>
+                  </div>
+                  
+                  {/* Team names with flags */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{homeFlag}</span>
+                      <span className="text-xs font-semibold text-white truncate flex-1">
+                        {match.homeTeam}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{awayFlag}</span>
+                      <span className="text-xs font-semibold text-white truncate flex-1">
+                        {match.awayTeam}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-            <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-400">{match.league}</span>
-              <div className="flex items-center gap-2">
-                <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
-                  variant === 'upcoming'
-                    ? 'bg-blue-500/20 text-blue-300'
-                    : 'bg-red-500/20 text-red-400 animate-pulse'
-                }`}>
-                  <Radio className="w-3 h-3" />
-                  {variant === 'upcoming' ? 'UPCOMING' : 'LIVE'}
-                </span>
-                <span className="text-xs text-gray-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {match.time}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-center flex-1">
-                <p className="font-semibold text-sm">{match.homeTeam}</p>
-              </div>
-              <div className="text-center px-4">
-                <p className="text-2xl font-bold neon-text">{match.score}</p>
-              </div>
-              <div className="text-center flex-1">
-                <p className="font-semibold text-sm">{match.awayTeam}</p>
-              </div>
-            </div>
+                {/* Score/Time section */}
+                <div className="px-3 pb-2">
+                  <div className="flex items-center justify-center py-1.5 bg-white/5 rounded-lg">
+                    {variant === 'live' ? (
+                      <span className="text-sm font-bold text-white">{match.score}</span>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                        <Calendar className="w-3 h-3" />
+                        <span>{match.time}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            <button className="w-full flex items-center justify-center gap-2 bg-neonPink/20 hover:bg-neonPink/30 text-neonPink py-2 rounded-lg transition-colors">
-              <Play className="w-4 h-4" />
-              {variant === 'upcoming' ? 'Match Details' : 'Watch Stream'}
-            </button>
-            </div>
-          </Link>
+                {/* Action button */}
+                <div className="p-3 pt-2 mt-auto">
+                  <button className="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-white/10 text-white text-xs font-medium py-2 rounded-lg transition-colors duration-200">
+                    <Play className="w-3 h-3" fill="currentColor" />
+                    {variant === 'upcoming' ? 'View Details' : 'Watch'}
+                  </button>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
         )
       })}
     </div>

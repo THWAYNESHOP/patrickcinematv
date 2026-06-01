@@ -26,13 +26,13 @@ export default function SportsFilters({ selectedSport, onSportChange }: SportsFi
           <button
             key={sport.id}
             onClick={() => onSportChange(sport.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               selectedSport === sport.id
-                ? 'bg-neonPink text-white neon-glow'
-                : 'glass hover:bg-white/10 text-gray-300'
+                ? 'bg-white text-black'
+                : 'bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10'
             }`}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className="w-3.5 h-3.5" />
             {sport.name}
           </button>
         )
