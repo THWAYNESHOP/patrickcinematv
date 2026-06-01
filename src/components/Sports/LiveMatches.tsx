@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, Radio, Clock } from 'lucide-react'
+import { Play, Radio, Clock, Zap } from 'lucide-react'
 import { sportsApi, Match } from '../../api/sports'
 
 interface LiveMatchesProps {
@@ -92,6 +92,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
       {matches.map((match) => {
         // Use the first available source if available
         const firstSource = match.sources && match.sources.length > 0 ? match.sources[0] : null
+        const isLive = variant === 'live'
         
         return (
           <Link
@@ -99,7 +100,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
             to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
             className="group glass rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg active:scale-95"
           >
-            {/* Image Container */}
+            {/* Image Container with Thumbnail */}
             {match.poster && (
               <div className="relative w-full h-24 overflow-hidden bg-gray-900">
                 <img
@@ -107,26 +108,43 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
                   alt={match.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   loading="lazy"
+                  decoding="async"
                 />
                 
-                {/* Status Badge */}
-                <div className="absolute top-1 right-1">
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-semibold backdrop-blur-sm ${
-                    variant === 'upcoming'
-                      ? 'bg-blue-500/80 text-blue-50'
-                      : 'bg-red-500/80 text-red-50'
+                {/* Status Badge with Pulsing Indicator */}
+                <div className="absolute top-1 right-1 z-10">
+                  <div className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-semibold backdrop-blur-sm ${
+                    isLive
+                      ? 'bg-primary/90 text-white'
+                      : 'bg-blue-500/80 text-blue-50'
                   }`}>
-                    <Radio className="w-2.5 h-2.5" />
-                    {variant === 'upcoming' ? 'UPCOMING' : 'LIVE'}
-                  </span>
+                    {isLive ? (
+                      <>
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                        <span>LIVE</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-2.5 h-2.5" />
+                        <span>UPCOMING</span>
+                      </>
+                    )}
+                  </div>
                 </div>
+
+                {/* Overlay on Hover - Play Indicator for Live */}
+                {isLive && (
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
+                    <Play className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" fill="white" />
+                  </div>
+                )}
               </div>
             )}
 
             {/* Content Container */}
             <div className="p-3">
               {/* League */}
-              <p className="text-xs text-gray-400 mb-2 truncate">{match.league}</p>
+              <p className="text-xs text-gray-400 mb-2 truncate font-medium">{match.league}</p>
               
               {/* Teams vs Score */}
               <div className="flex items-center justify-between gap-1.5 mb-2">
@@ -152,7 +170,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
               {/* CTA Button */}
               <button className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 text-primary py-2 rounded-lg transition-colors duration-150 font-semibold text-xs">
                 <Play className="w-3.5 h-3.5 flex-shrink-0" />
-                {variant === 'upcoming' ? 'Details' : 'Watch'}
+                {isLive ? 'Watch' : 'Details'}
               </button>
             </div>
           </Link>
