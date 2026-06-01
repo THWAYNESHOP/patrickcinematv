@@ -1,4 +1,4 @@
-import { Trophy, Zap, Flag, Circle } from 'lucide-react'
+import { Trophy, Zap, Flag, Circle, Flame } from 'lucide-react'
 
 interface SportsFiltersProps {
   selectedSport: string
@@ -12,28 +12,31 @@ export default function SportsFilters({ selectedSport, onSportChange }: SportsFi
     { id: 'afl', name: 'AFL', icon: Trophy },
     { id: 'rugby', name: 'Rugby', icon: Trophy },
     { id: 'basketball', name: 'NBA', icon: Circle },
-    { id: 'ufc', name: 'UFC', icon: Zap },
+    { id: 'ufc', name: 'UFC', icon: Flame },
     { id: 'tennis', name: 'Tennis', icon: Circle },
-    { id: 'motorsports', name: 'Formula 1', icon: Flag },
+    { id: 'motorsports', name: 'F1', icon: Flag },
     { id: 'cricket', name: 'Cricket', icon: Trophy },
   ]
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 sm:gap-3">
       {sports.map((sport) => {
         const Icon = sport.icon
+        const isActive = selectedSport === sport.id
+        
         return (
           <button
             key={sport.id}
             onClick={() => onSportChange(sport.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-              selectedSport === sport.id
-                ? 'bg-neonPink text-white neon-glow'
-                : 'glass hover:bg-white/10 text-gray-300'
+            className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-sm transition-all duration-150 active:scale-95 ${
+              isActive
+                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                : 'glass hover:bg-white/15 text-gray-300 hover:text-gray-100'
             }`}
           >
-            <Icon className="w-4 h-4" />
-            {sport.name}
+            <Icon className="w-4 h-4 flex-shrink-0" />
+            <span className="hidden sm:inline">{sport.name}</span>
+            <span className="sm:hidden">{sport.name.split(' ')[0]}</span>
           </button>
         )
       })}
