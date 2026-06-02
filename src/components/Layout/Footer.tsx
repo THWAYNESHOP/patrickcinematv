@@ -1,11 +1,11 @@
-import { Facebook, Twitter, Instagram, Youtube, Tv } from 'lucide-react'
+import { Facebook, Twitter, Instagram, Youtube, Tv, Film, Tv2, Trophy, Shield, Footprints } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Footer() {
   return (
     <footer className="bg-black/50 border-t border-white/10 mt-20">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
@@ -19,56 +19,72 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/movies" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  Movies
-                </Link>
-              </li>
-              <li>
-                <Link to="/tv" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  TV Series
-                </Link>
-              </li>
-              <li>
-                <Link to="/sports" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  Live Sports
-                </Link>
-              </li>
-              <li>
-                <Link to="/anime" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  Anime
-                </Link>
-              </li>
-            </ul>
+            <h3 className="text-white font-semibold mb-4 text-base sm:text-lg">Quick Links</h3>
+            <div className="grid grid-cols-1 gap-3">
+              <Link
+                to="/movies"
+                className="flex items-center gap-3 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Film className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>Movies</span>
+              </Link>
+              <Link
+                to="/tv"
+                className="flex items-center gap-3 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Tv2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>TV Series</span>
+              </Link>
+              <Link
+                to="/sports"
+                className="flex items-center gap-3 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>Live Sports</span>
+              </Link>
+              <Link
+                to="/anime"
+                className="flex items-center gap-3 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>Anime</span>
+              </Link>
+            </div>
           </div>
 
           {/* Categories */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/sports/football" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  Football
-                </Link>
-              </li>
-              <li>
-                <Link to="/sports/nba" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  NBA
-                </Link>
-              </li>
-              <li>
-                <Link to="/sports/ufc" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  UFC
-                </Link>
-              </li>
-              <li>
-                <Link to="/sports/f1" className="text-gray-400 hover:text-primary transition-colors text-sm">
-                  Formula 1
-                </Link>
-              </li>
-            </ul>
+            <h3 className="text-white font-semibold mb-4 text-base sm:text-lg">Categories</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                to="/sports/football"
+                className="flex items-center gap-2 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Footprints className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>Football</span>
+              </Link>
+              <Link
+                to="/sports/nba"
+                className="flex items-center gap-2 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>NBA</span>
+              </Link>
+              <Link
+                to="/sports/ufc"
+                className="flex items-center gap-2 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>UFC</span>
+              </Link>
+              <Link
+                to="/sports/f1"
+                className="flex items-center gap-2 min-h-12 rounded-lg border border-white/10 bg-darkSurface px-4 py-3 text-sm sm:text-base text-gray-300 transition-all duration-200 hover:border-primary/30 hover:bg-white/5 hover:text-white active:scale-[0.99]"
+              >
+                <Tv className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                <span>Formula 1</span>
+              </Link>
+            </div>
           </div>
 
           {/* Social */}

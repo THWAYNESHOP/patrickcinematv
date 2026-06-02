@@ -4,6 +4,7 @@ import HeroSlider from '../components/Home/HeroSlider'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import LiveMatches from '../components/Sports/LiveMatches'
 import { tmdbApi } from '../api/tmdb'
+import { PlayCircle, Tv2, Sparkles } from 'lucide-react'
 
 const fallbackMovies = [
   { id: 1078605, title: 'Vidking Test Movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', backdrop: 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', overview: 'A known working Vidking movie embed used for local player testing.', rating: '8.0', year: 2024 },
@@ -14,6 +15,16 @@ const fallbackMovies = [
 const fallbackTV = [
   { id: 119051, title: 'Vidking Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021 },
   { id: 100088, title: 'The Last of Us', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.6', year: 2023 },
+]
+
+const streamingServices = [
+  { name: 'Netflix', tag: 'Only on Netflix', accent: 'from-[#E50914] to-[#B20710]' },
+  { name: 'Prime Video', tag: 'Only on Prime Video', accent: 'from-[#00A8E1] to-[#0F5B78]' },
+  { name: 'HDO Box', tag: 'Only on HDO Box', accent: 'from-[#7C3AED] to-[#4C1D95]' },
+  { name: 'Paramount+', tag: 'Only on Paramount', accent: 'from-[#0056B8] to-[#003B82]' },
+  { name: 'Apple TV+', tag: 'Only on Apple TV+', accent: 'from-[#7C7C80] to-[#2C2C2E]' },
+  { name: 'Hulu', tag: 'Only on Hulu', accent: 'from-[#1CE783] to-[#0E8A4F]' },
+  { name: 'Disney+', tag: 'Only on Disney Plus', accent: 'from-[#113CCF] to-[#0B1A4A]' },
 ]
 
 export default function Home() {
@@ -71,6 +82,45 @@ export default function Home() {
             </Link>
           </div>
           <LiveMatches limit={4} />
+        </div>
+      </section>
+
+      <section className="py-8 px-4 md:px-8">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>Streaming picks</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Only on these platforms</h2>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Tv2 className="w-4 h-4" />
+              <span>Exclusive collections</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {streamingServices.map((service) => (
+              <div
+                key={service.name}
+                className="group relative overflow-hidden rounded-lg border border-white/10 bg-darkSurface p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-card-hover"
+              >
+                <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${service.accent}`} />
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-2">{service.tag}</p>
+                    <h3 className="text-lg font-semibold text-white">{service.name}</h3>
+                  </div>
+                  <PlayCircle className="w-6 h-6 text-primary/80 group-hover:text-primary transition-colors" />
+                </div>
+                <p className="mt-4 text-sm text-gray-400 leading-relaxed">
+                  Browse titles highlighted for this platform and jump straight into the content you want.
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
