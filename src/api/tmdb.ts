@@ -15,6 +15,11 @@ export interface MovieSummary {
   type?: 'movie' | 'tv'
 }
 
+export interface PlatformCatalog {
+  movies: MovieSummary[]
+  tv: MovieSummary[]
+}
+
 export interface MediaDetails extends MovieSummary {
   backdrop: string
   overview: string
@@ -55,6 +60,10 @@ interface TmdbMovie {
   }
 }
 
+interface TmdbDiscoverResponse {
+  results?: TmdbMovie[]
+}
+
 function toMovieSummary(movie: TmdbMovie): MovieSummary {
   const date = movie.release_date || movie.first_air_date || ''
   const type = movie.media_type === 'tv' ? 'tv' : 'movie'
@@ -93,6 +102,15 @@ function toMediaDetails(media: TmdbMovie, type: 'movie' | 'tv'): MediaDetails {
       profile: person.profile_path ? `${TMDB_IMAGE_BASE}/w185${person.profile_path}` : undefined,
     })) || [],
   }
+}
+
+const PROVIDER_IDS: Record<string, number> = {
+  Netflix: 8,
+  'Prime Video': 9,
+  'Paramount+': 531,
+  'Apple TV+': 350,
+  Hulu: 15,
+  'Disney+': 337,
 }
 
 export const tmdbApi = {
@@ -266,5 +284,81 @@ export const tmdbApi = {
           .filter((item: TmdbMovie) => item.media_type === 'movie' || item.media_type === 'tv')
           .map((item: TmdbMovie) => toMovieSummary(item))
       : []
+  },
+
+  async getPlatformCatalog(platform: string): Promise<PlatformCatalog> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const providerId = PROVIDER_IDS[platform]
+
+    if (!providerId) {
+      const [moviesResponse, tvResponse] = await Promise.all([
+        axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
+          params: {
+            api_key: TMDB_API_KEY,
+            language: 'en-US',
+            sort_by: 'popularity.desc',
+            page: 1,
+            region: 'US',
+          },
+          timeout: 10000,
+        }),
+        axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
+          params: {
+            api_key: TMDB_API_KEY,
+            language: 'en-US',
+            sort_by: 'popularity.desc',
+            page: 1,
+            with_origin_country: 'US',
+          },
+          timeout: 10000,
+        }),
+      ])
+
+      return {
+        movies: Array.isArray(moviesResponse.data?.results)
+          ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+          : [],
+        tv: Array.isArray(tvResponse.data?.results)
+          ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
+          : [],
+      }
+    }
+
+    const [moviesResponse, tvResponse] = await Promise.all([
+      axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: 'en-US',
+          sort_by: 'popularity.desc',
+          page: 1,
+          with_watch_providers: providerId,
+          watch_region: 'US',
+        },
+        timeout: 10000,
+      }),
+      axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: 'en-US',
+          sort_by: 'popularity.desc',
+          page: 1,
+          with_watch_providers: providerId,
+          watch_region: 'US',
+        },
+        timeout: 10000,
+      }),
+    ])
+
+    return {
+      movies: Array.isArray(moviesResponse.data?.results)
+        ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+        : [],
+      tv: Array.isArray(tvResponse.data?.results)
+        ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
+        : [],
+    }
   },
 }
