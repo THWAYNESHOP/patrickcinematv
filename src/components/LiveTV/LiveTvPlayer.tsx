@@ -12,91 +12,18 @@ export default function LiveTvPlayer({ channel, onClose }: LiveTvPlayerProps) {
   const [hasError, setHasError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<any>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     setIsLoading(true);
     setHasError(false);
 
-    // Clean up previous HLS instance
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Clean the stream URL - remove the User-Agent parameter for direct playback
-    const cleanUrl = channel.streamUrl.split('?')[0];
-
-    // Check if HLS is supported natively (Safari)
-    const isNativeHLS = video.canPlayType('application/vnd.apple.mpegurl');
-
-    if (isNativeHLS) {
-      // Native HLS support (Safari)
-      video.src = cleanUrl;
-      video.load();
-    } else {
-      // Use hls.js for other browsers
-      const loadHls = async () => {
-        try {
-          const Hls = (await import('hls.js')).default;
-          
-          if (Hls.isSupported()) {
-            const hls = new Hls({
-              enableWorker: true,
-              lowLatencyMode: true,
-            });
-            
-            hls.loadSource(cleanUrl);
-            hls.attachMedia(video);
-            
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-              setIsLoading(false);
-            });
-            
-            hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
-              if (data.fatal) {
-                setHasError(true);
-                setIsLoading(false);
-              }
-            });
-            
-            hlsRef.current = hls;
-          } else {
-            // HLS not supported, try direct playback
-            video.src = cleanUrl;
-            video.load();
-          }
-        } catch (error) {
-          console.error('Failed to load hls.js:', error);
-          setHasError(true);
-          setIsLoading(false);
-        }
-      };
-      
-      loadHls();
-    }
-
-    // Handle video events
-    const handleCanPlay = () => setIsLoading(false);
-    const handleError = () => {
-      setHasError(true);
+    // Simulate loading - iframe will handle the actual stream
+    const timer = setTimeout(() => {
       setIsLoading(false);
-    };
+    }, 2000);
 
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('error', handleError);
-
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('error', handleError);
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-      }
-    };
+    return () => clearTimeout(timer);
   }, [channel.streamUrl]);
 
   // Handle fullscreen changes
@@ -222,13 +149,15 @@ export default function LiveTvPlayer({ channel, onClose }: LiveTvPlayerProps) {
                 </div>
               )}
 
-              {/* Video Element */}
-              <video
-                ref={videoRef}
+              {/* Iframe Element */}
+              <iframe
+                ref={iframeRef}
+                src={channel.streamUrl}
                 className="w-full h-full"
-                controls
-                autoPlay
-                playsInline
+                frameBorder="0"
+                allowFullScreen
+                allow="autoplay; encrypted-media; fullscreen"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
               />
             </div>
           </div>
