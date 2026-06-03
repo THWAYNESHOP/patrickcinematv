@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, Maximize2, Minimize, X } from 'lucide-react'
 import { LiveTvChannel } from '../../data/liveTvChannels'
-import { inferPlaybackMode, upgradeHttpIfNeeded } from './m3u'
+import { getProxyUrl, inferPlaybackMode } from './m3u'
 
 interface LiveTvPlayerProps {
   channel: LiveTvChannel
@@ -16,8 +16,9 @@ export default function LiveTvPlayer({ channel, onClose, embedded = false }: Liv
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const streamUrl = useMemo(() => upgradeHttpIfNeeded(channel.streamUrl), [channel.streamUrl])
-  const playbackMode = useMemo(() => inferPlaybackMode(streamUrl), [streamUrl])
+  const originalStreamUrl = channel.streamUrl
+  const streamUrl = useMemo(() => getProxyUrl(originalStreamUrl), [originalStreamUrl])
+  const playbackMode = useMemo(() => inferPlaybackMode(originalStreamUrl), [originalStreamUrl])
 
   useEffect(() => {
     setIsLoading(true)

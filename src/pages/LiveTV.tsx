@@ -3,7 +3,7 @@ import { Link2, Loader2, Upload } from 'lucide-react'
 import { liveTvChannels, channelCategories, LiveTvChannel, ChannelCategory } from '../data/liveTvChannels'
 import LiveTvPlayer from '../components/LiveTV/LiveTvPlayer'
 import LiveTvBrowser from '../components/LiveTV/LiveTvBrowser'
-import { parseM3UPlaylist } from '../components/LiveTV/m3u'
+import { getProxyUrl, parseM3UPlaylist } from '../components/LiveTV/m3u'
 
 type ImportState = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -83,7 +83,7 @@ export default function LiveTV() {
     setImportMessage('')
 
     try {
-      const response = await fetch(playlistUrl.trim())
+      const response = await fetch(getProxyUrl(playlistUrl.trim()))
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)

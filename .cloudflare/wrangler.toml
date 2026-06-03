@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 bucket = "./dist"
 
 [[routes]]
-pattern = "api/stream*"
+pattern = "patrickcinematv.com/api/stream*"
 zone_name = "patrickcinematv.com"
 
 [vars]

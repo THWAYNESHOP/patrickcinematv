@@ -84,9 +84,10 @@ export function inferIsHD(name: string, streamUrl?: string): boolean {
 }
 
 export function inferPlaybackMode(streamUrl: string): 'iframe' | 'video' {
-  const lower = streamUrl.toLowerCase()
+  const cleanUrl = cleanStreamUrl(streamUrl)
+  const lower = cleanUrl.toLowerCase()
 
-  if (lower.includes('|user-agent=') || lower.includes('embed') || lower.includes('player')) {
+  if (lower.includes('embed') || lower.includes('player')) {
     return 'iframe'
   }
 
@@ -94,21 +95,21 @@ export function inferPlaybackMode(streamUrl: string): 'iframe' | 'video' {
     return 'video'
   }
 
-  return 'iframe'
+  return 'video'
 }
 
-export function upgradeHttpIfNeeded(streamUrl: string): string {
-  // Remove pipe and everything after it (User-Agent parameter)
-  let cleanUrl = streamUrl.split('|')[0]
-  
-  // Remove trailing ? if present
-  cleanUrl = cleanUrl.replace(/\?$/, '')
-  
-  // Use Cloudflare Worker proxy to add User-Agent header
-  // This works on both GitHub Pages and Cloudflare Pages
-  const proxyUrl = `https://patrick-cinema-tv.patrickcinematv.workers.dev/api/stream?url=${encodeURIComponent(cleanUrl)}`
-  
-  return proxyUrl
+export function cleanStreamUrl(streamUrl: string): string {
+  // Remove pipe metadata such as User-Agent hints before playback/proxying.
+  return streamUrl.split('|')[0].replace(/\?$/, '')
+}
+
+export function getProxyUrl(streamUrl: string): string {
+  const cleanUrl = cleanStreamUrl(streamUrl)
+  const proxyBase = import.meta.env.VITE_STREAM_PROXY_URL?.trim() || '/api/stream'
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+  const proxyUrl = new URL(proxyBase, origin)
+  proxyUrl.searchParams.set('url', cleanUrl)
+  return proxyUrl.toString()
 }
 
 function extractAttribute(source: string, attribute: string): string {
