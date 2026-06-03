@@ -104,8 +104,9 @@ export function upgradeHttpIfNeeded(streamUrl: string): string {
   // Remove trailing ? if present
   cleanUrl = cleanUrl.replace(/\?$/, '')
   
-  // Use proxy server to add User-Agent header
-  const proxyUrl = `http://localhost:3001/api/stream?url=${encodeURIComponent(cleanUrl)}`
+  // Use Cloudflare Worker proxy to add User-Agent header
+  // This works on both GitHub Pages and Cloudflare Pages
+  const proxyUrl = `https://patrick-cinema-tv.patrickcinematv.workers.dev/api/stream?url=${encodeURIComponent(cleanUrl)}`
   
   return proxyUrl
 }
