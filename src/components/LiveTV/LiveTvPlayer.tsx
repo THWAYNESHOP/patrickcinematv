@@ -6,9 +6,10 @@ import { inferPlaybackMode, upgradeHttpIfNeeded } from './m3u'
 interface LiveTvPlayerProps {
   channel: LiveTvChannel
   onClose: () => void
+  embedded?: boolean
 }
 
-export default function LiveTvPlayer({ channel, onClose }: LiveTvPlayerProps) {
+export default function LiveTvPlayer({ channel, onClose, embedded = false }: LiveTvPlayerProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -92,10 +93,16 @@ export default function LiveTvPlayer({ channel, onClose }: LiveTvPlayerProps) {
   return (
     <div className={`${isFullscreen ? 'fixed inset-0 z-50' : ''} bg-deepBlack`}>
       <div
-        className={isFullscreen ? 'w-full h-full flex flex-col' : 'min-h-screen py-6 sm:py-8 px-3 sm:px-4 md:px-8'}
+        className={
+          embedded
+            ? 'w-full h-full flex flex-col'
+            : isFullscreen
+              ? 'w-full h-full flex flex-col'
+              : 'min-h-screen py-6 sm:py-8 px-3 sm:px-4 md:px-8'
+        }
       >
-        <div className={isFullscreen ? 'w-full h-full flex flex-col' : 'container mx-auto max-w-7xl'}>
-          {!isFullscreen && (
+        <div className={embedded ? 'w-full h-full flex flex-col' : isFullscreen ? 'w-full h-full flex flex-col' : 'container mx-auto max-w-7xl'}>
+          {!embedded && !isFullscreen && (
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Live TV</h1>
@@ -208,7 +215,7 @@ export default function LiveTvPlayer({ channel, onClose }: LiveTvPlayerProps) {
             </div>
           </div>
 
-          {!isFullscreen && (
+          {!embedded && !isFullscreen && (
             <div className="glass rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4 text-white">Channel Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

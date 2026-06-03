@@ -104,8 +104,10 @@ export function upgradeHttpIfNeeded(streamUrl: string): string {
   // Remove trailing ? if present
   cleanUrl = cleanUrl.replace(/\?$/, '')
   
-  // Don't upgrade to https - keep original protocol
-  return cleanUrl
+  // Use proxy server to add User-Agent header
+  const proxyUrl = `http://localhost:3001/api/stream?url=${encodeURIComponent(cleanUrl)}`
+  
+  return proxyUrl
 }
 
 function extractAttribute(source: string, attribute: string): string {
