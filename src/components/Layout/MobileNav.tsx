@@ -9,7 +9,7 @@ export default function MobileNav() {
     { name: 'Movies', path: '/movies', icon: Film },
     { name: 'TV', path: '/tv', icon: Tv },
     { name: 'Sports', path: '/sports', icon: Trophy },
-    { name: 'Live', path: '/live-tv', icon: Radio },
+    { name: 'IPTV', path: '/live-tv', icon: Radio },
   ]
 
   return (

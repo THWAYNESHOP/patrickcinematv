@@ -17,7 +17,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
     { name: 'Movies', path: '/movies' },
     { name: 'TV Series', path: '/tv' },
     { name: 'Sports', path: '/sports' },
-    { name: 'Live TV', path: '/live-tv' },
+    { name: 'IPTV Player', path: '/live-tv' },
     { name: 'Anime', path: '/anime' },
     { name: 'Trending', path: '/trending' },
     { name: 'My List', path: '/my-list' },
