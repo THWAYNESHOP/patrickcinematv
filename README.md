@@ -52,6 +52,10 @@ npm run build
 
 1. Build the project: `npm run build`
 2. Deploy the `dist` folder to Cloudflare Pages
+3. **Important**: Set the following environment variable in Cloudflare Pages settings:
+   - `VITE_STREAM_PROXY_URL=https://patrick-cinema-tv.patrickcinematv.workers.dev/api/stream`
+
+This is required for the Live TV streams to work, as they need a proxy server to add the User-Agent header.
 
 ## API Integration
 
