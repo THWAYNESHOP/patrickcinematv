@@ -27,7 +27,7 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
   const currentMovie = movies[currentIndex]
 
   return (
-    <div className="relative h-[70vh] md:h-[85vh] overflow-hidden">
+    <div className="relative h-[75vh] md:h-[85vh] overflow-hidden">
       {movies.map((movie, index) => (
         <div
           key={movie.id}

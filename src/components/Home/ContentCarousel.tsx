@@ -61,7 +61,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
               to={`/${(item.type || type) === 'tv' ? 'tv' : (item.type || type) === 'anime' ? 'anime' : 'movie'}/${item.id}`}
               className="flex-shrink-0 w-40 md:w-48 group/card"
             >
-              <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
+              <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
                 <div className="relative aspect-[2/3]">
                   <img
                     src={item.poster}

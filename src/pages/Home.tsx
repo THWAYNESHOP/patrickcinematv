@@ -108,7 +108,7 @@ export default function Home() {
       <HeroSlider movies={featuredMovies} />
 
       {/* Live Sports Section */}
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold neon-text">Live Sports</h2>
@@ -120,7 +120,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Streaming Platforms</h2>
@@ -169,7 +169,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold neon-text">Upcoming Matches</h2>
@@ -182,7 +182,7 @@ export default function Home() {
       </section>
 
       {/* Trending Now */}
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Trending Movies Today"
@@ -193,7 +193,7 @@ export default function Home() {
       </section>
 
       {/* Popular Movies */}
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Latest Movies"
@@ -204,7 +204,7 @@ export default function Home() {
       </section>
 
       {/* Top TV Series */}
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Top TV Series"
@@ -215,7 +215,7 @@ export default function Home() {
       </section>
 
       {/* Continue Watching */}
-      <section className="py-8 px-4 md:px-8">
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Continue Watching"

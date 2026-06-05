@@ -121,6 +121,24 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Legal Links */}
+        <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <Link to="/contact" className="text-gray-400 hover:text-white transition-colors duration-300">
+              Contact Us
+            </Link>
+            <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors duration-300">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="text-gray-400 hover:text-white transition-colors duration-300">
+              Terms of Service
+            </Link>
+            <Link to="/dmca" className="text-gray-400 hover:text-white transition-colors duration-300">
+              DMCA
+            </Link>
+          </div>
+        </div>
+
         <div className="border-t border-white/10 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
             © 2024 PATRICK CINEMA TV. All rights reserved.

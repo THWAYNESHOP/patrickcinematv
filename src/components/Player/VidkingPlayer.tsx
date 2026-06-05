@@ -11,14 +11,31 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
+    console.log('[VidkingPlayer] Mounting with src:', src)
+
     if (!onProgress) return
 
     const cleanup = vidkingApi.setupProgressTracking((data) => {
       onProgress(data)
     })
 
-    return cleanup
-  }, [onProgress])
+    return () => {
+      console.log('[VidkingPlayer] Unmounting, cleaning up event listeners')
+      cleanup()
+    }
+  }, [onProgress, src])
+
+  useEffect(() => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+
+    console.log('[VidkingPlayer] Setting iframe src:', src)
+
+    return () => {
+      console.log('[VidkingPlayer] Cleaning up iframe, clearing src')
+      iframe.src = ''
+    }
+  }, [src])
 
   return (
     <iframe

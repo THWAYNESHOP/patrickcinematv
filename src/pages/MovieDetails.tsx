@@ -194,6 +194,7 @@ export default function MovieDetails() {
         <section id="player" className="mb-12 scroll-mt-24">
           <div className="bg-darkSurface rounded-lg overflow-hidden border border-white/5">
             <VidkingPlayer
+              key={id}
               src={embedUrl}
               onProgress={handleProgress}
               className="rounded-lg"

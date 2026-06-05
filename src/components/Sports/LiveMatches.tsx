@@ -98,7 +98,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
           <Link
             key={match.id}
             to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
-            className="group glass rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg active:scale-95"
+            className="group glass rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-glow backdrop-blur-md active:scale-95"
           >
             {/* Image Container with Thumbnail */}
             {match.poster && (

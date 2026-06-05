@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Search, X, Film, Tv, Trophy, Zap } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
 
 interface SearchBarProps {
@@ -11,6 +11,8 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
+  const navigate = useNavigate()
 
   const fallbackData = [
     { id: '1078605', title: 'Vidking Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
@@ -26,10 +28,12 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   useEffect(() => {
     if (query.length < 2) {
       setResults([])
+      setSelectedIndex(-1)
       return
     }
 
     setIsSearching(true)
+    setSelectedIndex(-1)
     const timer = setTimeout(() => {
       async function search() {
         try {
@@ -51,6 +55,38 @@ export default function SearchBar({ onClose }: SearchBarProps) {
 
     return () => clearTimeout(timer)
   }, [query])
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (results.length === 0) return
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev))
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1))
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (selectedIndex >= 0 && selectedIndex < results.length) {
+          const selectedItem = results[selectedIndex]
+          navigate(getRoute(selectedItem))
+          onClose?.()
+        }
+        break
+      case 'Escape':
+        e.preventDefault()
+        onClose?.()
+        break
+    }
+  }
+
+  const handleResultClick = (item: any) => {
+    navigate(getRoute(item))
+    onClose?.()
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -108,6 +144,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Search movies, TV shows, anime, sports..."
               className="w-full pl-12 pr-12 py-3 bg-white/10 rounded-full border border-white/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-white placeholder-gray-400 transition-all duration-300"
               autoFocus
@@ -152,11 +189,14 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         ) : (
           <div className="space-y-2">
             {results.map((item, index) => (
-              <Link
+              <button
                 key={item.id}
-                to={getRoute(item)}
-                onClick={onClose}
-                className="flex items-center gap-4 p-4 bg-darkSurface rounded-lg border border-white/5 hover:border-white/10 hover:bg-darkHover transition-all duration-300 animate-fade-in"
+                onClick={() => handleResultClick(item)}
+                className={`flex items-center gap-4 p-4 bg-darkSurface rounded-lg border transition-all duration-300 animate-fade-in w-full text-left ${
+                  index === selectedIndex
+                    ? 'border-primary/50 bg-primary/10 shadow-glow'
+                    : 'border-white/5 hover:border-white/10 hover:bg-darkHover'
+                }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {item.poster ? (
@@ -181,7 +221,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
                     {item.year && <span className="text-xs text-gray-500">{item.year}</span>}
                   </div>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         )}
@@ -192,11 +232,23 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         <div className="p-4 border-t border-white/10">
           <h3 className="text-sm font-semibold text-gray-400 mb-3">Recent Searches</h3>
           <div className="flex flex-wrap gap-2">
-            {['Dune', 'Oppenheimer', 'Attack on Titan', 'NBA'].map((term) => (
+            {['Dune', 'Oppenheimer', 'Attack on Titan', 'NBA', 'The Last of Us', 'Formula 1'].map((term) => (
               <button
                 key={term}
                 onClick={() => setQuery(term)}
-                className="px-4 py-2 bg-darkSurface rounded-full text-sm border border-white/10 hover:bg-darkHover hover:border-white/20 transition-all duration-300"
+                className="px-4 py-2 bg-darkSurface rounded-full text-sm border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-6">Popular Searches</h3>
+          <div className="flex flex-wrap gap-2">
+            {['Marvel', 'DC', 'Horror', 'Comedy', 'Action', 'Drama'].map((term) => (
+              <button
+                key={term}
+                onClick={() => setQuery(term)}
+                className="px-4 py-2 bg-darkSurface rounded-full text-sm border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300"
               >
                 {term}
               </button>
