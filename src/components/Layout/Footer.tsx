@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
               <Tv className="w-8 h-8 text-primary" />
-              <span className="text-xl font-bold text-white tracking-tight">PATRICK CINEMA TV</span>
+              <span className="text-xl font-bold text-white tracking-tight">NEXASTREAM</span>
             </Link>
             <p className="text-gray-400 text-sm">
               Premium streaming experience with live sports, movies, TV series, and more.
@@ -141,7 +141,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2024 PATRICK CINEMA TV. All rights reserved.
+            © 2024 NEXASTREAM. All rights reserved.
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# PATRICK CINEMA TV
+# NEXASTREAM
 
 A premium streaming platform combining Live Sports, Movies, TV Series, Anime, and Live TV with a futuristic cyberpunk design.
 

@@ -38,7 +38,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             <div className="relative">
               <Tv className="w-8 h-8 text-primary transition-colors group-hover:text-primaryHover" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">PATRICK CINEMA TV</span>
+            <span className="text-xl font-bold text-white tracking-tight">NEXASTREAM</span>
           </Link>
 
           {/* Desktop Navigation */}
