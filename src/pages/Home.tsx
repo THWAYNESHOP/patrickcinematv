@@ -31,6 +31,8 @@ export default function Home() {
   const [featuredMovies, setFeaturedMovies] = useState<any[]>([])
   const [trendingMovies, setTrendingMovies] = useState<any[]>([])
   const [popularTV, setPopularTV] = useState<any[]>([])
+  const [teenRomance, setTeenRomance] = useState<any[]>([])
+  const [kDrama, setKDrama] = useState<any[]>([])
   const [activePlatform, setActivePlatform] = useState('Netflix')
   const [platformMovies, setPlatformMovies] = useState<any[]>([])
   const [platformTV, setPlatformTV] = useState<any[]>([])
@@ -40,21 +42,27 @@ export default function Home() {
   useEffect(() => {
     async function fetchHomeContent() {
       try {
-        const [trendingToday, latestMovies, trendingTV] = await Promise.all([
+        const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama] = await Promise.all([
           tmdbApi.getTrendingMoviesToday(),
           tmdbApi.getNowPlayingMovies(),
           tmdbApi.getTrendingTVToday(),
+          tmdbApi.getMoviesByGenre(10749).catch(() => []),
+          tmdbApi.getTVByOriginCountry('KR').catch(() => []),
         ])
 
         const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
         setFeaturedMovies(heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies)
         setTrendingMovies(trendingToday.length ? trendingToday : fallbackMovies)
         setPopularTV(trendingTV.length ? trendingTV : fallbackTV)
+        setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingMovies.slice(0, 8))
+        setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
       } catch (error) {
         console.warn('Home TMDB content unavailable, using fallback data:', error)
         setFeaturedMovies(fallbackMovies)
         setTrendingMovies(fallbackMovies)
         setPopularTV(fallbackTV)
+        setTeenRomance(fallbackMovies.slice(0, 8))
+        setKDrama(fallbackTV.slice(0, 8))
       } finally {
         setLoading(false)
       }
@@ -107,6 +115,29 @@ export default function Home() {
       {/* Hero Section */}
       <HeroSlider movies={featuredMovies} />
 
+      {/* Continue Watching */}
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
+        <div className="container mx-auto">
+          <ContentCarousel
+            title="Continue Watching"
+            items={trendingMovies.slice(0, 5)}
+            type="movie"
+            showProgress
+          />
+        </div>
+      </section>
+
+      {/* Trending Now */}
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
+        <div className="container mx-auto">
+          <ContentCarousel
+            title="Trending Movies Today"
+            items={trendingMovies}
+            type="movie"
+          />
+        </div>
+      </section>
+
       {/* Live Sports Section */}
       <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
@@ -117,6 +148,28 @@ export default function Home() {
             </Link>
           </div>
           <LiveMatches limit={4} />
+        </div>
+      </section>
+
+      {/* Teen Romance */}
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
+        <div className="container mx-auto">
+          <ContentCarousel
+            title="Teen Romance"
+            items={teenRomance}
+            type="movie"
+          />
+        </div>
+      </section>
+
+      {/* K-Drama */}
+      <section className="py-12 px-4 md:px-8 animate-fade-in">
+        <div className="container mx-auto">
+          <ContentCarousel
+            title="K-Drama"
+            items={kDrama}
+            type="tv"
+          />
         </div>
       </section>
 
@@ -181,18 +234,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trending Now */}
-      <section className="py-12 px-4 md:px-8 animate-fade-in">
-        <div className="container mx-auto">
-          <ContentCarousel
-            title="Trending Movies Today"
-            items={trendingMovies}
-            type="movie"
-          />
-        </div>
-      </section>
-
-      {/* Popular Movies */}
+      {/* Latest Movies */}
       <section className="py-12 px-4 md:px-8 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
@@ -210,18 +252,6 @@ export default function Home() {
             title="Top TV Series"
             items={popularTV}
             type="tv"
-          />
-        </div>
-      </section>
-
-      {/* Continue Watching */}
-      <section className="py-12 px-4 md:px-8 animate-fade-in">
-        <div className="container mx-auto">
-          <ContentCarousel
-            title="Continue Watching"
-            items={trendingMovies.slice(0, 5)}
-            type="movie"
-            showProgress
           />
         </div>
       </section>

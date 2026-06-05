@@ -361,4 +361,46 @@ export const tmdbApi = {
         : [],
     }
   },
+
+  async getMoviesByGenre(genreId: number): Promise<MovieSummary[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/discover/movie`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        sort_by: 'popularity.desc',
+        page: 1,
+        with_genres: genreId,
+      },
+      timeout: 10000,
+    })
+
+    return Array.isArray(response.data?.results)
+      ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+      : []
+  },
+
+  async getTVByOriginCountry(country: string): Promise<MovieSummary[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        sort_by: 'popularity.desc',
+        page: 1,
+        with_origin_country: country,
+      },
+      timeout: 10000,
+    })
+
+    return Array.isArray(response.data?.results)
+      ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+  },
 }
