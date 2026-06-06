@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Play, Heart, Share2 } from 'lucide-react'
+import { Play, Heart, Share2, Volume2, VolumeX } from 'lucide-react'
 import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
@@ -21,6 +21,10 @@ export default function MovieDetails() {
   const [recommendations, setRecommendations] = useState<MovieSummary[]>(recommendedMovies)
   const [loading, setLoading] = useState(true)
   const [startProgressSeconds, setStartProgressSeconds] = useState<number>(0)
+  const [trailer, setTrailer] = useState<{ key: string; embedUrl: string } | null>(null)
+  const [showTrailer, setShowTrailer] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
+  const heroRef = useRef<HTMLDivElement>(null)
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
 
   const handleProgress = (data: PlayerEventData) => {
@@ -58,6 +62,31 @@ export default function MovieDetails() {
           const trendingToday = await tmdbApi.getTrendingMoviesToday()
           setRecommendations(trendingToday.length ? trendingToday : recommendedMovies)
         }
+
+        // Fetch videos
+        const videos = await tmdbApi.getMovieVideos(id)
+        console.log("TMDB Videos:", videos)
+
+        // Select best trailer: Official Trailer > Trailer > Teaser
+        const officialTrailer = videos.find(v => v.type === 'Trailer' && v.official && v.site === 'YouTube' && v.key)
+        const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.key)
+        const teaser = videos.find(v => v.type === 'Teaser' && v.site === 'YouTube' && v.key)
+
+        const selectedTrailer = officialTrailer || trailer || teaser
+
+        if (selectedTrailer) {
+          console.log("Selected Trailer:", selectedTrailer)
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`
+          console.log("Trailer Embed URL:", embedUrl)
+          setTrailer({ key: selectedTrailer.key, embedUrl })
+
+          // Show trailer after 2 seconds
+          setTimeout(() => {
+            setShowTrailer(true)
+          }, 2000)
+        } else {
+          console.warn("No suitable trailer found")
+        }
       } catch (error) {
         console.warn('Movie details unavailable, using fallback details:', error)
         setMovie({
@@ -73,6 +102,7 @@ export default function MovieDetails() {
           cast: [],
         })
         setRecommendations(recommendedMovies)
+        console.warn("No trailer available for:", "movie", id)
       } finally {
         setLoading(false)
       }
@@ -80,6 +110,28 @@ export default function MovieDetails() {
 
     fetchMovie()
   }, [id])
+
+  // IntersectionObserver for visibility optimization
+  useEffect(() => {
+    if (!heroRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && trailer) {
+            // Hero is visible, trailer will autoplay
+          }
+        })
+      },
+      { threshold: 0.5 }
+    )
+
+    observer.observe(heroRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [trailer])
 
   if (loading) {
     return (
@@ -126,12 +178,28 @@ export default function MovieDetails() {
     <div className="min-h-screen">
       {/* Hero Backdrop */}
       <div
-        className="relative h-[60vh] md:h-[70vh] bg-cover bg-center"
+        ref={heroRef}
+        className="relative h-[60vh] md:h-[70vh] bg-cover bg-center overflow-hidden"
         style={{
           backgroundImage: `url(${movie.backdrop})`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-deepBlack via-deepBlack/70 to-transparent" />
+        <div className={`absolute inset-0 bg-gradient-to-t from-deepBlack via-deepBlack/70 to-transparent transition-opacity duration-1000 ${showTrailer ? 'opacity-0' : 'opacity-100'}`} />
+        
+        {/* Trailer Iframe */}
+        {trailer && showTrailer && (
+          <div className="absolute inset-0 transition-opacity duration-1000 opacity-100">
+            <iframe
+              src={trailer.embedUrl}
+              title={`${movie.title} Trailer`}
+              className="w-full h-full object-cover"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              style={{ border: 'none' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-deepBlack via-deepBlack/50 to-transparent pointer-events-none" />
+          </div>
+        )}
         
         <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
           <div className="container mx-auto">
@@ -187,6 +255,15 @@ export default function MovieDetails() {
                     <Share2 className="w-5 h-5" />
                     Share
                   </button>
+                  {trailer && showTrailer && (
+                    <button
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
+                    >
+                      {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      {isMuted ? 'Unmute' : 'Mute'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -66,6 +66,15 @@ interface TmdbDiscoverResponse {
   results?: TmdbMovie[]
 }
 
+interface TmdbVideo {
+  id: string
+  key: string
+  name: string
+  site: string
+  type: string
+  official: boolean
+}
+
 function toMovieSummary(movie: TmdbMovie): MovieSummary {
   const date = movie.release_date || movie.first_air_date || ''
   const type = movie.media_type === 'tv' ? 'tv' : 'movie'
@@ -466,5 +475,39 @@ export const tmdbApi = {
     return Array.isArray(response.data?.results)
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
+  },
+
+  async getMovieVideos(id: string): Promise<TmdbVideo[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/movie/${id}/videos`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+      },
+      timeout: 10000,
+    })
+
+    console.log("Movie Videos Response:", response.data?.results)
+    return Array.isArray(response.data?.results) ? response.data.results : []
+  },
+
+  async getTVVideos(id: string): Promise<TmdbVideo[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/tv/${id}/videos`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+      },
+      timeout: 10000,
+    })
+
+    console.log("TV Videos Response:", response.data?.results)
+    return Array.isArray(response.data?.results) ? response.data.results : []
   },
 }
