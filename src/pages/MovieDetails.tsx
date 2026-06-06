@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Play, Heart, Share2, Star } from 'lucide-react'
+import { Play, Heart, Share2 } from 'lucide-react'
 import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'

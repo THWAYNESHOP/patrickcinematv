@@ -39,10 +39,7 @@ export default function Home() {
   const [anime, setAnime] = useState<any[]>([])
   const [newReleases, setNewReleases] = useState<any[]>([])
   const [activePlatform, setActivePlatform] = useState('Netflix')
-  const [platformMovies, setPlatformMovies] = useState<any[]>([])
-  const [platformTV, setPlatformTV] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [platformLoading, setPlatformLoading] = useState(true)
   const { myList } = useMyList()
 
   useEffect(() => {
@@ -88,37 +85,6 @@ export default function Home() {
 
     fetchHomeContent()
   }, [])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function fetchPlatformContent() {
-      setPlatformLoading(true)
-      try {
-        const catalog = await tmdbApi.getPlatformCatalog(activePlatform)
-        if (!cancelled) {
-          setPlatformMovies(catalog.movies.slice(0, 8))
-          setPlatformTV(catalog.tv.slice(0, 8))
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.warn(`Platform catalog unavailable for ${activePlatform}, using fallback data:`, error)
-          setPlatformMovies(trendingMovies.slice(0, 8))
-          setPlatformTV(popularTV.slice(0, 8))
-        }
-      } finally {
-        if (!cancelled) {
-          setPlatformLoading(false)
-        }
-      }
-    }
-
-    fetchPlatformContent()
-
-    return () => {
-      cancelled = true
-    }
-  }, [activePlatform, trendingMovies, popularTV])
 
   if (loading) {
     return (
