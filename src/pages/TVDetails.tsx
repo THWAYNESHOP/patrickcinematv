@@ -8,7 +8,7 @@ import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 
 const fallbackRecommendations: MovieSummary[] = [
-  { id: 119051, title: 'Vidking Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021, type: 'tv' },
+  { id: 119051, title: 'Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021, type: 'tv' },
   { id: 100088, title: 'The Last of Us', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.6', year: 2023, type: 'tv' },
 ]
 

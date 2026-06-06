@@ -5,7 +5,7 @@ import { tmdbApi } from '../api/tmdb'
 const fallbackMovies = [
   {
     id: 1078605,
-    title: 'Vidking Test Movie',
+    title: 'Test Movie',
     poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
     rating: '8.0',
     year: 2024,

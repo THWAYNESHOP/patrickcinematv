@@ -9,13 +9,13 @@ export const vidkingApi = {
     const params = new URLSearchParams()
     
     if (options?.color) params.append('color', options.color)
-    if (options?.autoPlay) params.append('autoPlay', 'true')
-    if (options?.nextEpisode) params.append('nextEpisode', 'true')
-    if (options?.episodeSelector) params.append('episodeSelector', 'true')
-    if (options?.progress) params.append('progress', options.progress.toString())
+    if (options?.autoPlay) params.append('autoplay', '1')
+    if (options?.nextEpisode) params.append('next_episode', '1')
+    if (options?.episodeSelector) params.append('episode_selector', '1')
+    if (options?.progress) params.append('t', options.progress.toString())
     
     const queryString = params.toString()
-    return `https://www.vidking.net/embed/movie/${tmdbId}${queryString ? `?${queryString}` : ''}`
+    return `https://vidsrc.to/embed/movie/${tmdbId}${queryString ? `?${queryString}` : ''}`
   },
 
   getTVEmbedUrl(tmdbId: string, season: number, episode: number, options?: {
@@ -28,16 +28,16 @@ export const vidkingApi = {
     const params = new URLSearchParams()
     
     if (options?.color) params.append('color', options.color)
-    if (options?.autoPlay) params.append('autoPlay', 'true')
-    if (options?.nextEpisode) params.append('nextEpisode', 'true')
-    if (options?.episodeSelector) params.append('episodeSelector', 'true')
-    if (options?.progress) params.append('progress', options.progress.toString())
+    if (options?.autoPlay) params.append('autoplay', '1')
+    if (options?.nextEpisode) params.append('next_episode', '1')
+    if (options?.episodeSelector) params.append('episode_selector', '1')
+    if (options?.progress) params.append('t', options.progress.toString())
     
     const queryString = params.toString()
-    return `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
+    return `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
   },
 
-  // Progress tracking hook for Vidking player
+  // Progress tracking hook for VidSrc player
   setupProgressTracking(callback: (data: PlayerEventData) => void): () => void {
     const handleMessage = (event: MessageEvent) => {
       try {

@@ -15,10 +15,10 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const navigate = useNavigate()
 
   const fallbackData = [
-    { id: '1078605', title: 'Vidking Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
+    { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
     { id: '693134', title: 'Dune: Part Two', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
     { id: '872585', title: 'Oppenheimer', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', year: 2023 },
-    { id: '119051', title: 'Vidking Test Series', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2021 },
+    { id: '119051', title: 'Test Series', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2021 },
     { id: '100088', title: 'The Last of Us', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2023 },
     { id: '4', title: 'Attack on Titan', type: 'anime', poster: 'https://image.tmdb.org/t/p/w500/t21Ic7W6YBTURa1eLj5g3Z9Dqy.jpg', year: 2013 },
     { id: '5', title: 'Manchester United vs Liverpool', type: 'sports', poster: '', year: 2024 },
