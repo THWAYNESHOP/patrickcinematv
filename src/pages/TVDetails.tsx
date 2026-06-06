@@ -85,7 +85,7 @@ export default function TVDetails() {
 
         if (selectedTrailer) {
           console.log("Selected Trailer:", selectedTrailer)
-          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`
           console.log("Trailer Embed URL:", embedUrl)
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
