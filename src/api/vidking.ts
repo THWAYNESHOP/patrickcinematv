@@ -8,14 +8,14 @@ export const vidkingApi = {
   }): string {
     const params = new URLSearchParams()
     
-    if (options?.color) params.append('color', options.color)
-    if (options?.autoPlay) params.append('autoplay', '1')
-    if (options?.nextEpisode) params.append('next_episode', '1')
-    if (options?.episodeSelector) params.append('episode_selector', '1')
-    if (options?.progress) params.append('t', options.progress.toString())
+    if (options?.autoPlay) params.append('autoPlay', 'true')
+    if (options?.color) params.append('theme', options.color)
+    if (options?.progress) params.append('startAt', options.progress.toString())
     
     const queryString = params.toString()
-    return `https://vidsrc.to/embed/movie/${tmdbId}${queryString ? `?${queryString}` : ''}`
+    const url = `https://vidfast.pro/movie/${tmdbId}${queryString ? `?${queryString}` : ''}`
+    console.log('[VidFast API] Generated movie URL:', url)
+    return url
   },
 
   getTVEmbedUrl(tmdbId: string, season: number, episode: number, options?: {
@@ -27,17 +27,21 @@ export const vidkingApi = {
   }): string {
     const params = new URLSearchParams()
     
-    if (options?.color) params.append('color', options.color)
-    if (options?.autoPlay) params.append('autoplay', '1')
-    if (options?.nextEpisode) params.append('next_episode', '1')
-    if (options?.episodeSelector) params.append('episode_selector', '1')
-    if (options?.progress) params.append('t', options.progress.toString())
+    if (options?.autoPlay) params.append('autoPlay', 'true')
+    if (options?.color) params.append('theme', options.color)
+    if (options?.nextEpisode) {
+      params.append('nextButton', 'true')
+      params.append('autoNext', 'true')
+    }
+    if (options?.progress) params.append('startAt', options.progress.toString())
     
     const queryString = params.toString()
-    return `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
+    const url = `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
+    console.log('[VidFast API] Generated TV URL:', url)
+    return url
   },
 
-  // Progress tracking hook for VidSrc player
+  // Progress tracking hook for VidFast player
   setupProgressTracking(callback: (data: PlayerEventData) => void): () => void {
     const handleMessage = (event: MessageEvent) => {
       try {

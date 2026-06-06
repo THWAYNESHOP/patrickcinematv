@@ -11,7 +11,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
-    console.log('[VidSrc Player] Mounting with src:', src)
+    console.log('[VidFast Player] Mounting with src:', src)
 
     if (!onProgress) return
 
@@ -20,7 +20,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     })
 
     return () => {
-      console.log('[VidSrc Player] Unmounting, cleaning up event listeners')
+      console.log('[VidFast Player] Unmounting, cleaning up event listeners')
       cleanup()
     }
   }, [onProgress, src])
@@ -29,10 +29,10 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     const iframe = iframeRef.current
     if (!iframe) return
 
-    console.log('[VidSrc Player] Setting iframe src:', src)
+    console.log('[VidFast Player] Setting iframe src:', src)
 
     return () => {
-      console.log('[VidSrc Player] Cleaning up iframe, clearing src')
+      console.log('[VidFast Player] Cleaning up iframe, clearing src')
       iframe.src = ''
     }
   }, [src])
@@ -45,6 +45,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
       frameBorder="0"
       allowFullScreen
       allow="autoplay; encrypted-media"
+      onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
     />
   )
 }
