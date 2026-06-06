@@ -106,7 +106,7 @@ export default function TVDetails() {
     )
   }
 
-  const embedUrl = vidkingApi.getTVEmbedUrl(id || '', selectedSeason, selectedEpisode, {
+  const embedUrl = vidkingApi.getTVEmbedUrl(tv?.imdbId || id || '', selectedSeason, selectedEpisode, {
     color: 'ff008c',
     autoPlay: true,
     nextEpisode: true,

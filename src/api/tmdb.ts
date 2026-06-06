@@ -27,6 +27,7 @@ export interface MediaDetails extends MovieSummary {
   seasons?: number
   genres: string[]
   cast: CastMember[]
+  imdbId?: string
 }
 
 export interface CastMember {
@@ -38,6 +39,7 @@ export interface CastMember {
 
 interface TmdbMovie {
   id: number
+  imdb_id?: string
   title?: string
   name?: string
   poster_path?: string
@@ -101,6 +103,7 @@ function toMediaDetails(media: TmdbMovie, type: 'movie' | 'tv'): MediaDetails {
       character: person.character,
       profile: person.profile_path ? `${TMDB_IMAGE_BASE}/w185${person.profile_path}` : undefined,
     })) || [],
+    imdbId: media.imdb_id,
   }
 }
 

@@ -97,7 +97,7 @@ export default function MovieDetails() {
     )
   }
 
-  const embedUrl = vidkingApi.getMovieEmbedUrl(id || '', {
+  const embedUrl = vidkingApi.getMovieEmbedUrl(movie?.imdbId || id || '', {
     color: 'ff008c',
     autoPlay: true,
     progress: startProgressSeconds,

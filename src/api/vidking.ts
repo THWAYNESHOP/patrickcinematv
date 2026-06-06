@@ -1,5 +1,5 @@
 export const vidkingApi = {
-  getMovieEmbedUrl(tmdbId: string, options?: {
+  getMovieEmbedUrl(id: string, options?: {
     color?: string
     autoPlay?: boolean
     nextEpisode?: boolean
@@ -13,12 +13,12 @@ export const vidkingApi = {
     if (options?.progress) params.append('startAt', options.progress.toString())
     
     const queryString = params.toString()
-    const url = `https://vidfast.pro/movie/${tmdbId}${queryString ? `?${queryString}` : ''}`
+    const url = `https://vidfast.pro/movie/${id}${queryString ? `?${queryString}` : ''}`
     console.log('[VidFast API] Generated movie URL:', url)
     return url
   },
 
-  getTVEmbedUrl(tmdbId: string, season: number, episode: number, options?: {
+  getTVEmbedUrl(id: string, season: number, episode: number, options?: {
     color?: string
     autoPlay?: boolean
     nextEpisode?: boolean
@@ -36,7 +36,7 @@ export const vidkingApi = {
     if (options?.progress) params.append('startAt', options.progress.toString())
     
     const queryString = params.toString()
-    const url = `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
+    const url = `https://vidfast.pro/tv/${id}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
     console.log('[VidFast API] Generated TV URL:', url)
     return url
   },
