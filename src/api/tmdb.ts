@@ -406,4 +406,65 @@ export const tmdbApi = {
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
   },
+
+  async getNewReleases(): Promise<MovieSummary[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const [moviesResponse, tvResponse] = await Promise.all([
+      axios.get(`${TMDB_API_BASE}/discover/movie`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: 'en-US',
+          sort_by: 'release_date.desc',
+          page: 1,
+          'release_date.lte': new Date().toISOString().split('T')[0],
+          'release_date.gte': new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        },
+        timeout: 10000,
+      }),
+      axios.get(`${TMDB_API_BASE}/discover/tv`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: 'en-US',
+          sort_by: 'first_air_date.desc',
+          page: 1,
+          'first_air_date.lte': new Date().toISOString().split('T')[0],
+          'first_air_date.gte': new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        },
+        timeout: 10000,
+      }),
+    ])
+
+    const movies = Array.isArray(moviesResponse.data?.results)
+      ? moviesResponse.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+      : []
+    const tv = Array.isArray(tvResponse.data?.results)
+      ? tvResponse.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+
+    return [...movies, ...tv].slice(0, 20)
+  },
+
+  async getTVByGenre(genreId: number): Promise<MovieSummary[]> {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/discover/tv`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        sort_by: 'popularity.desc',
+        page: 1,
+        with_genres: genreId,
+      },
+      timeout: 10000,
+    })
+
+    return Array.isArray(response.data?.results)
+      ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+  },
 }

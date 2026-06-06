@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import { Play, Heart, Share2, Star } from 'lucide-react'
+import { Play, Heart, Share2 } from 'lucide-react'
 import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
@@ -155,10 +155,8 @@ export default function TVDetails() {
               <div className="flex-1">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">{tv.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-primary fill-primary" />
-                    <span className="font-semibold">{tv.rating}</span>
-                  </div>
+                  <span className="text-primary font-semibold">98% Match</span>
+                  <span className="text-gray-400">{tv.rating}</span>
                   <span className="text-gray-400">{tv.year}</span>
                   <span className="text-gray-400">{tv.seasons} Seasons</span>
                 </div>
@@ -179,14 +177,22 @@ export default function TVDetails() {
                     className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <Play className="w-5 h-5" />
-                    Watch S{selectedSeason} E{selectedEpisode}
+                    Play
                   </a>
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                    <Play className="w-5 h-5" />
+                    Trailer
+                  </button>
                   <button
                     onClick={handleMyList}
                     className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
                   >
                     <Heart className="w-5 h-5" />
                     {inMyList ? 'Remove from List' : 'Add to List'}
+                  </button>
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                    <Heart className="w-5 h-5" />
+                    Like
                   </button>
                   <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
                     <Share2 className="w-5 h-5" />
@@ -220,7 +226,12 @@ export default function TVDetails() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Cast</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white tracking-tight">Cast</h2>
+            <button className="text-primary hover:text-white transition-colors text-sm font-medium">
+              View All Cast
+            </button>
+          </div>
           <div className="flex flex-wrap gap-4">
             {tv.cast.map((actor, index) => (
               <div key={actor.id || actor.name || index} className="bg-darkSurface rounded-lg p-4 text-center w-36 border border-white/5">
@@ -242,13 +253,63 @@ export default function TVDetails() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">You May Also Like</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {recommendations.map((item) => (
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Because You Watched {tv.title}</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
               <Link
                 key={item.id}
                 to={`/tv/${item.id}`}
-                className="group"
+                className="group flex-shrink-0 w-40"
+              >
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full aspect-[2/3] object-cover"
+                  />
+                  <div className="p-3">
+                    <p className="font-medium text-sm truncate">{item.title}</p>
+                    <p className="text-gray-400 text-xs">{item.year}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Trending TV Shows</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
+              <Link
+                key={item.id}
+                to={`/tv/${item.id}`}
+                className="group flex-shrink-0 w-40"
+              >
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full aspect-[2/3] object-cover"
+                  />
+                  <div className="p-3">
+                    <p className="font-medium text-sm truncate">{item.title}</p>
+                    <p className="text-gray-400 text-xs">{item.year}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">More Like This</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
+              <Link
+                key={item.id}
+                to={`/tv/${item.id}`}
+                className="group flex-shrink-0 w-40"
               >
                 <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
                   <img
@@ -286,23 +347,56 @@ export default function TVDetails() {
             ))}
           </div>
 
+          {/* Season Info */}
+          <div className="mb-4 text-gray-400 text-sm">
+            10 Episodes • 450 min total
+          </div>
+
           {/* Episode List */}
           <div className="space-y-4">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedEpisode(i + 1)}
-                className="bg-darkSurface rounded-lg p-4 flex gap-4 hover:bg-darkHover transition-all duration-200 w-full text-left border border-white/5 hover:border-white/10"
-              >
-                <div className="w-32 aspect-video bg-gray-700 rounded flex-shrink-0" />
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Episode {i + 1}</h3>
-                  <p className="text-gray-400 text-sm mb-2">Episode description here...</p>
-                  <span className="text-gray-500 text-sm">45 min</span>
-                </div>
-                <Play className="w-10 h-10 text-primary flex-shrink-0" />
-              </button>
-            ))}
+            {Array.from({ length: 10 }).map((_, i) => {
+              const episodeNumber = i + 1
+              const isSelected = selectedEpisode === episodeNumber
+              const progressKey = `patrickCinema_progress_tv_${id}_${selectedSeason}_${episodeNumber}`
+              const savedProgress = localStorage.getItem(progressKey)
+              const progressData = savedProgress ? JSON.parse(savedProgress) : null
+              const progressPercent = progressData ? Math.floor(progressData.progress || 0) : 0
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => setSelectedEpisode(episodeNumber)}
+                  className={`bg-darkSurface rounded-lg p-4 flex gap-4 hover:bg-darkHover transition-all duration-200 w-full text-left border border-white/5 hover:border-white/10 group ${
+                    isSelected ? 'border-primary/50' : ''
+                  }`}
+                >
+                  <div className="w-32 aspect-video bg-gray-700 rounded flex-shrink-0 group-hover:brightness-110 transition-all duration-200 relative overflow-hidden">
+                    <Play className="absolute inset-0 m-auto w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    {progressPercent > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-600">
+                        <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold">Episode {episodeNumber}</h3>
+                      {progressPercent > 0 && (
+                        <span className="text-xs text-primary">{progressPercent}%</span>
+                      )}
+                    </div>
+                    <p className="text-gray-400 text-sm mb-2">Episode description here...</p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-gray-500 text-sm">45 min</span>
+                      {progressPercent > 0 && progressPercent < 90 && (
+                        <span className="text-xs text-primary">Resume</span>
+                      )}
+                    </div>
+                  </div>
+                  <Play className="w-10 h-10 text-primary flex-shrink-0" />
+                </button>
+              )
+            })}
           </div>
         </section>
       </div>

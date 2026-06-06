@@ -144,10 +144,8 @@ export default function MovieDetails() {
               <div className="flex-1">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">{movie.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-primary fill-primary" />
-                    <span className="font-semibold">{movie.rating}</span>
-                  </div>
+                  <span className="text-primary font-semibold">98% Match</span>
+                  <span className="text-gray-400">{movie.rating}</span>
                   <span className="text-gray-400">{movie.year}</span>
                   <span className="text-gray-400">{movie.runtime}</span>
                 </div>
@@ -168,14 +166,22 @@ export default function MovieDetails() {
                     className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                   >
                     <Play className="w-5 h-5" />
-                    Watch Now
+                    Play
                   </a>
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                    <Play className="w-5 h-5" />
+                    Trailer
+                  </button>
                   <button
                     onClick={handleMyList}
                     className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
                   >
                     <Heart className="w-5 h-5" />
                     {inMyList ? 'Remove from List' : 'Add to List'}
+                  </button>
+                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                    <Heart className="w-5 h-5" />
+                    Like
                   </button>
                   <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
                     <Share2 className="w-5 h-5" />
@@ -210,7 +216,12 @@ export default function MovieDetails() {
 
         {/* Cast */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Cast</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white tracking-tight">Cast</h2>
+            <button className="text-primary hover:text-white transition-colors text-sm font-medium">
+              View All Cast
+            </button>
+          </div>
           <div className="flex flex-wrap gap-4">
             {movie.cast.map((actor, index) => (
               <div key={actor.id || actor.name || index} className="bg-darkSurface rounded-lg p-4 text-center w-36 border border-white/5">
@@ -233,13 +244,63 @@ export default function MovieDetails() {
 
         {/* Recommendations */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">You May Also Like</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {recommendations.map((item) => (
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Because You Watched {movie.title}</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
               <Link
                 key={item.id}
                 to={`/movie/${item.id}`}
-                className="group"
+                className="group flex-shrink-0 w-40"
+              >
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full aspect-[2/3] object-cover"
+                  />
+                  <div className="p-3">
+                    <p className="font-medium text-sm truncate">{item.title}</p>
+                    <p className="text-gray-400 text-xs">{item.year}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">Trending Movies</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
+              <Link
+                key={item.id}
+                to={`/movie/${item.id}`}
+                className="group flex-shrink-0 w-40"
+              >
+                <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full aspect-[2/3] object-cover"
+                  />
+                  <div className="p-3">
+                    <p className="font-medium text-sm truncate">{item.title}</p>
+                    <p className="text-gray-400 text-xs">{item.year}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">More Like This</h2>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+            {recommendations.slice(0, 10).map((item) => (
+              <Link
+                key={item.id}
+                to={`/movie/${item.id}`}
+                className="group flex-shrink-0 w-40"
               >
                 <div className="bg-darkSurface rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover border border-white/5 hover:border-white/10">
                   <img
