@@ -34,11 +34,10 @@ export default function Navbar({ isScrolled }: NavbarProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="relative">
-              <Tv className="w-8 h-8 text-primary transition-colors group-hover:text-primaryHover" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight">NEXASTREAM</span>
+          <Link to="/" className="flex items-center group">
+            <span className="text-2xl font-extrabold text-white tracking-wider uppercase transition-all duration-200 group-hover:tracking-[0.15em]">
+              <span className="text-primary">NEXA</span>STREAM
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
