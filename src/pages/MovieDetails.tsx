@@ -76,7 +76,7 @@ export default function MovieDetails() {
 
         if (selectedTrailer) {
           console.log("Selected Trailer:", selectedTrailer)
-          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
           console.log("Trailer Embed URL:", embedUrl)
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
@@ -189,14 +189,35 @@ export default function MovieDetails() {
         {/* Trailer Iframe */}
         {trailer && showTrailer && (
           <div className="absolute inset-0 transition-opacity duration-1000 opacity-100">
-            <iframe
-              src={trailer.embedUrl}
-              title={`${movie.title} Trailer`}
-              className="w-full h-full object-cover"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              style={{ border: 'none' }}
-            />
+            <style>{`
+              .trailer-container iframe {
+                pointer-events: none;
+              }
+              .trailer-container::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                pointer-events: none;
+                z-index: 10;
+              }
+            `}</style>
+            <div className="trailer-container relative w-full h-full">
+              <iframe
+                src={trailer.embedUrl}
+                title={`${movie.title} Trailer`}
+                className="w-full h-full object-cover"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                style={{ border: 'none' }}
+              />
+              {/* Overlay to hide YouTube branding */}
+              <div className="absolute top-0 right-0 w-32 h-12 pointer-events-none z-20" />
+              <div className="absolute bottom-0 right-0 w-48 h-16 pointer-events-none z-20" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none z-20" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-deepBlack via-deepBlack/50 to-transparent pointer-events-none" />
           </div>
         )}
