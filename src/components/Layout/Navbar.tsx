@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Search, Menu, X, Tv } from 'lucide-react'
+import { Search, Menu, X } from 'lucide-react'
 import SearchBar from '../Search/SearchBar'
 
 interface NavbarProps {
