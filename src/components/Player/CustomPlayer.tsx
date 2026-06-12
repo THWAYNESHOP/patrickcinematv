@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings } from 'lucide-react'
+import { useScreenMode } from '../../hooks/useScreenMode'
+import ScreenModeButton from './ScreenModeButton'
 
 interface CustomPlayerProps {
   src: string
@@ -20,6 +22,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [showControls, setShowControls] = useState(true)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
     const video = videoRef.current
@@ -200,6 +203,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         src={src}
         poster={poster}
         className="w-full aspect-video"
+        style={{ objectFit: mode }}
         onClick={togglePlay}
         autoPlay={autoPlay}
         controls={false}
@@ -296,6 +300,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
                 </div>
               )}
             </div>
+
+            <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
 
             <button
               onClick={toggleFullscreen}

@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
+import { useScreenMode } from '../../hooks/useScreenMode'
+import ScreenModeButton from './ScreenModeButton'
 
 interface VidkingPlayerProps {
   src: string
@@ -9,6 +11,7 @@ interface VidkingPlayerProps {
 
 export default function VidkingPlayer({ src, onProgress, className = '' }: VidkingPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
     console.log('[VidFast Player] Mounting with src:', src)
@@ -38,15 +41,21 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   }, [src])
 
   return (
-    <iframe
-      ref={iframeRef}
-      src={src}
-      className={`w-full aspect-video ${className}`}
-      frameBorder="0"
-      allowFullScreen
-      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-      {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
-      onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
-    />
+    <div className="relative">
+      <iframe
+        ref={iframeRef}
+        src={src}
+        className={`w-full aspect-video ${className}`}
+        style={{ objectFit: mode }}
+        frameBorder="0"
+        allowFullScreen
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
+        onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
+      />
+      <div className="absolute bottom-3 right-3 z-20">
+        <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
+      </div>
+    </div>
   )
 }

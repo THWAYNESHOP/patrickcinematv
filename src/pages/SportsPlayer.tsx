@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { Maximize, Minimize, Maximize2, Radio } from 'lucide-react'
+import { Maximize2, Radio } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
-
-type FitMode = 'contain' | 'cover'
+import { useScreenMode } from '../hooks/useScreenMode'
+import ScreenModeButton from '../components/Player/ScreenModeButton'
 
 export default function SportsPlayer() {
   const { source, id } = useParams()
@@ -11,7 +11,7 @@ export default function SportsPlayer() {
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [fitMode, setFitMode] = useState<FitMode>('contain')
+  const { mode, label, cycleMode, showToast } = useScreenMode()
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -95,9 +95,6 @@ export default function SportsPlayer() {
     }
   }
 
-  const toggleFitMode = () => {
-    setFitMode(fitMode === 'contain' ? 'cover' : 'contain')
-  }
 
   if (loading) {
     return (
@@ -154,19 +151,8 @@ export default function SportsPlayer() {
 
               {/* Player Controls */}
               <div className="absolute bottom-3 right-3 z-20 flex gap-2">
-                {/* Fit/Stretch Toggle */}
-                <button
-                  onClick={toggleFitMode}
-                  title={fitMode === 'contain' ? 'Switch to Fill' : 'Switch to Fit'}
-                  className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
-                  aria-label="Toggle fit mode"
-                >
-                  {fitMode === 'contain' ? (
-                    <Maximize className="w-5 h-5" />
-                  ) : (
-                    <Minimize className="w-5 h-5" />
-                  )}
-                </button>
+                {/* Screen Mode Toggle */}
+                <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
 
                 {/* Fullscreen Toggle */}
                 <button
@@ -183,11 +169,9 @@ export default function SportsPlayer() {
               <iframe
                 ref={iframeRef}
                 src={currentStream.embedUrl}
-                className={`w-full h-full ${
-                  fitMode === 'contain' ? 'object-contain' : 'object-cover'
-                }`}
+                className="w-full h-full"
                 style={{
-                  objectFit: fitMode === 'contain' ? 'contain' : 'cover',
+                  objectFit: mode,
                 }}
                 frameBorder="0"
                 allowFullScreen
