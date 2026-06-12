@@ -72,8 +72,8 @@ export default function SportsPlayer() {
   }, [])
 
   const toggleFullscreen = async () => {
-    const iframe = iframeRef.current
-    if (!iframe) return
+    const container = playerContainerRef.current
+    if (!container) return
 
     try {
       if (!document.fullscreenElement) {
@@ -87,18 +87,15 @@ export default function SportsPlayer() {
           }
         }
 
-        // Request fullscreen on the container for better mobile support
-        const container = playerContainerRef.current
-        if (container) {
-          if (container.requestFullscreen) {
-            await container.requestFullscreen()
-          } else if ((container as any).webkitRequestFullscreen) {
-            await (container as any).webkitRequestFullscreen()
-          } else if ((container as any).mozRequestFullScreen) {
-            await (container as any).mozRequestFullScreen()
-          } else if ((container as any).msRequestFullscreen) {
-            await (container as any).msRequestFullscreen()
-          }
+        // Request fullscreen with cross-browser support for Android Chrome
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen()
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen()
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen()
         }
       } else {
         // Unlock orientation
@@ -176,14 +173,14 @@ export default function SportsPlayer() {
               }`}
             >
               {/* LIVE Indicator */}
-              <div className="absolute top-3 left-3 z-20 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+              <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full pointer-events-none">
                 <div className="w-2 h-2 bg-red-50 rounded-full animate-pulse" />
                 <span className="text-xs font-bold text-white tracking-wide">LIVE NOW</span>
               </div>
 
               {/* Player Controls - Always show on mobile, otherwise in landscape */}
               {(isMobile || isLandscape) && (
-                <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+                <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
                   {/* Screen Mode Toggle */}
                   <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
 
@@ -191,7 +188,7 @@ export default function SportsPlayer() {
                   <button
                     onClick={toggleRotation}
                     title="Rotate Video"
-                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
+                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
                     aria-label="Rotate video"
                   >
                     <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
@@ -201,7 +198,7 @@ export default function SportsPlayer() {
                   <button
                     onClick={toggleFullscreen}
                     title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
+                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
                     aria-label="Toggle fullscreen"
                   >
                     <Maximize2 className="w-5 h-5" />
@@ -209,20 +206,34 @@ export default function SportsPlayer() {
                 </div>
               )}
 
-              {/* Stream iframe with dynamic object-fit and rotation */}
-              <iframe
-                ref={iframeRef}
-                src={currentStream.embedUrl}
-                className="w-full h-full"
+              {/* Stream iframe container with dynamic object-fit and rotation */}
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden"
                 style={{
-                  objectFit: mode,
-                  transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-                  transition: 'transform 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-                frameBorder="0"
-                allowFullScreen
-                allow="autoplay; encrypted-media; fullscreen"
-              />
+              >
+                <iframe
+                  ref={iframeRef}
+                  src={currentStream.embedUrl}
+                  style={{
+                    width: mode === 'fill' ? '100%' : 'auto',
+                    height: mode === 'fill' ? '100%' : 'auto',
+                    maxWidth: mode === 'contain' ? '100%' : 'none',
+                    maxHeight: mode === 'contain' ? '100%' : 'none',
+                    minWidth: mode === 'cover' ? '100%' : 'auto',
+                    minHeight: mode === 'cover' ? '100%' : 'auto',
+                    transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+                    transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
+                    objectFit: mode === 'contain' ? 'contain' : mode === 'cover' ? 'cover' : 'fill',
+                  }}
+                  frameBorder="0"
+                  allowFullScreen
+                  allow="autoplay; encrypted-media; fullscreen"
+                />
+              </div>
             </div>
           </div>
 

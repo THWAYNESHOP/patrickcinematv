@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { RotateCw } from 'lucide-react'
+import { RotateCw, Maximize2 } from 'lucide-react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
 import { useScreenMode } from '../../hooks/useScreenMode'
 import ScreenModeButton from './ScreenModeButton'
@@ -12,8 +12,10 @@ interface VidkingPlayerProps {
 
 export default function VidkingPlayer({ src, onProgress, className = '' }: VidkingPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isLandscape, setIsLandscape] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [rotation, setRotation] = useState(0)
   const { mode, label, cycleMode, showToast } = useScreenMode()
 
@@ -66,37 +68,119 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     }
   }, [])
 
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
   const toggleRotation = () => {
     setRotation((prev) => (prev + 90) % 360)
   }
 
+  const toggleFullscreen = async () => {
+    const container = containerRef.current
+    if (!container) return
+
+    try {
+      if (!document.fullscreenElement) {
+        // Lock to landscape on mobile if supported
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.lock) {
+          try {
+            await orientation.lock('landscape')
+          } catch (e) {
+            console.warn('Screen orientation lock not supported or denied:', e)
+          }
+        }
+
+        // Request fullscreen with cross-browser support for Android Chrome
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen()
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen()
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen()
+        }
+      } else {
+        // Unlock orientation
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.unlock) {
+          orientation.unlock()
+        }
+
+        // Exit fullscreen with cross-browser support
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen()
+        }
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error)
+    }
+  }
+
   return (
-    <div className="relative">
-      <iframe
-        ref={iframeRef}
-        src={src}
-        className={`w-full aspect-video ${className}`}
+    <div ref={containerRef} className={`relative w-full aspect-video bg-black overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 w-full h-full' : ''}`}>
+      <div
+        className={`absolute inset-0 ${className}`}
         style={{
-          objectFit: mode,
-          transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          transition: 'transform 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
         }}
-        frameBorder="0"
-        allowFullScreen
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-        {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
-        onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
-      />
+      >
+        <iframe
+          ref={iframeRef}
+          src={src}
+          style={{
+            width: mode === 'fill' ? '100%' : 'auto',
+            height: mode === 'fill' ? '100%' : 'auto',
+            maxWidth: mode === 'contain' ? '100%' : 'none',
+            maxHeight: mode === 'contain' ? '100%' : 'none',
+            minWidth: mode === 'cover' ? '100%' : 'auto',
+            minHeight: mode === 'cover' ? '100%' : 'auto',
+            transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+            transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
+            objectFit: mode === 'contain' ? 'contain' : mode === 'cover' ? 'cover' : 'fill',
+          }}
+          frameBorder="0"
+          allowFullScreen
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
+          onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
+        />
+      </div>
       {/* Screen Mode Toggle - Always show on mobile, otherwise in landscape */}
       {(isMobile || isLandscape) && (
-        <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+        <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
           <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
           <button
             onClick={toggleRotation}
-            className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
+            className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
             aria-label="Rotate video"
           >
             <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
+            aria-label="Toggle fullscreen"
+          >
+            <Maximize2 className="w-5 h-5" />
           </button>
         </div>
       )}

@@ -125,7 +125,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             console.warn('Screen orientation lock not supported or denied:', e)
           }
         }
-        
+
         // Use video-specific fullscreen API for mobile (especially iOS)
         if ((video as any).webkitEnterFullscreen) {
           // iOS Safari
@@ -150,7 +150,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         if (orientation && orientation.unlock) {
           orientation.unlock()
         }
-        
+
         // Exit fullscreen
         if ((video as any).webkitExitFullscreen) {
           await (video as any).webkitExitFullscreen()
@@ -227,29 +227,31 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
       onMouseMove={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        className="w-full aspect-video"
-        style={{
-          objectFit: mode,
-          transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-          transition: 'transform 0.3s ease',
-        }}
-        onClick={togglePlay}
-        autoPlay={autoPlay}
-        controls={false}
-      />
+      <div className="relative w-full aspect-video bg-black overflow-hidden">
+        <video
+          ref={videoRef}
+          src={src}
+          poster={poster}
+          className="w-full h-full"
+          style={{
+            objectFit: mode,
+            transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+            transition: 'transform 0.3s ease, object-fit 0.3s ease',
+          }}
+          onClick={togglePlay}
+          autoPlay={autoPlay}
+          controls={false}
+        />
+      </div>
 
       {/* Controls */}
       <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity ${
+        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity z-50 pointer-events-none ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
       >
         {/* Progress Bar */}
-        <div className="mb-4">
+        <div className="mb-4 pointer-events-auto">
           <input
             type="range"
             min="0"
@@ -262,7 +264,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
 
         {/* Control Buttons */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 pointer-events-auto">
             <button
               onClick={togglePlay}
               className="p-2 hover:bg-white/20 rounded-full transition-colors neon-glow"
@@ -307,7 +309,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pointer-events-auto">
             <div className="relative">
               <button
                 onClick={() => setShowSpeedMenu(!showSpeedMenu)}
@@ -318,7 +320,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
               </button>
 
               {showSpeedMenu && (
-                <div className="absolute bottom-full right-0 mb-2 glass rounded-lg p-2 space-y-1">
+                <div className="absolute bottom-full right-0 mb-2 glass rounded-lg p-2 space-y-1 z-50">
                   {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
                     <button
                       key={speed}
@@ -360,7 +362,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
 
       {/* Title */}
       {title && (
-        <div className="absolute top-4 left-4 glass px-4 py-2 rounded-lg">
+        <div className="absolute top-4 left-4 glass px-4 py-2 rounded-lg z-40 pointer-events-none">
           <p className="text-sm font-semibold neon-text">{title}</p>
         </div>
       )}
