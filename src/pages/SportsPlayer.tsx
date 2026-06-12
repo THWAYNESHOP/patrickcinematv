@@ -6,6 +6,7 @@ import { useScreenMode } from '../hooks/useScreenMode'
 import ScreenModeButton from '../components/Player/ScreenModeButton'
 
 export default function SportsPlayer() {
+  console.log('[SportsPlayer] Mounting')
   const { source, id } = useParams()
   const [streams, setStreams] = useState<Stream[]>([])
   const [selectedStream, setSelectedStream] = useState(0)
@@ -239,7 +240,6 @@ export default function SportsPlayer() {
                     minHeight: mode === 'cover' ? '100%' : 'auto',
                     transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
                     transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
-                    objectFit: mode === 'contain' ? 'contain' : mode === 'cover' ? 'cover' : 'fill',
                   }}
                   frameBorder="0"
                   allowFullScreen

@@ -11,6 +11,7 @@ interface VidkingPlayerProps {
 }
 
 export default function VidkingPlayer({ src, onProgress, className = '' }: VidkingPlayerProps) {
+  console.log('[VidkingPlayer] Mounting with src:', src)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLandscape, setIsLandscape] = useState(false)
@@ -171,7 +172,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
             minHeight: mode === 'cover' ? '100%' : 'auto',
             transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
             transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
-            objectFit: mode === 'contain' ? 'contain' : mode === 'cover' ? 'cover' : 'fill',
           }}
           frameBorder="0"
           allowFullScreen

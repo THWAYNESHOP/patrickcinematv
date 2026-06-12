@@ -12,6 +12,7 @@ interface CustomPlayerProps {
 }
 
 export default function CustomPlayer({ src, poster, title, autoPlay = false, onProgress }: CustomPlayerProps) {
+  console.log('[CustomPlayer] Mounting with src:', src)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -28,6 +29,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
+    console.log('[CustomPlayer] Video element mounted')
     const video = videoRef.current
     if (!video) return
 
