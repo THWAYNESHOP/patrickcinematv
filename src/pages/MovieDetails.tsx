@@ -5,6 +5,7 @@ import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
+import { useScreenMode } from '../hooks/useScreenMode'
 
 const recommendedMovies = [
   { id: 1078605, title: 'Test Movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', rating: '8.0', year: 2024, type: 'movie' as const },
@@ -26,6 +27,7 @@ export default function MovieDetails() {
   const [isMuted, setIsMuted] = useState(true)
   const heroRef = useRef<HTMLDivElement>(null)
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
+  const { mode } = useScreenMode()
 
   const handleProgress = (data: PlayerEventData) => {
     localStorage.setItem(`patrickCinema_progress_movie_${id}`, JSON.stringify({
@@ -293,23 +295,25 @@ export default function MovieDetails() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 md:px-8 py-12">
+      <div className={`container mx-auto py-12 ${mode === 'fill' ? 'px-0' : 'px-4 md:px-8'}`}>
         {/* Video Player */}
-        <section id="player" className="mb-12 scroll-mt-24">
-          <div className="bg-darkSurface rounded-lg overflow-hidden border border-white/5">
+        <section id="player" className={`scroll-mt-24 ${mode === 'fill' ? 'mb-0' : 'mb-12'}`}>
+          <div className={`overflow-hidden border border-white/5 ${mode === 'fill' ? 'bg-black' : 'bg-darkSurface rounded-lg'}`}>
             <VidkingPlayer
               key={id}
               src={embedUrl}
               onProgress={handleProgress}
-              className="rounded-lg"
+              className={mode === 'fill' ? '' : 'rounded-lg'}
             />
           </div>
-          <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
-            <h3 className="font-semibold mb-2">If this title has no sources</h3>
-            <p className="text-sm text-gray-400">
-              Some brand-new or rare titles are not mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.
-            </p>
-          </div>
+          {mode !== 'fill' && (
+            <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
+              <h3 className="font-semibold mb-2">If this title has no sources</h3>
+              <p className="text-sm text-gray-400">
+                Some brand-new or rare titles are not mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Cast */}
