@@ -169,8 +169,18 @@ export default function SportsPlayer() {
             {/* Player Wrapper */}
             <div
               className={`relative bg-black ${
-                isFullscreen ? 'w-full h-full' : 'aspect-video'
+                isFullscreen
+                  ? 'w-full h-full'
+                  : mode === 'fill'
+                  ? 'w-full h-full'
+                  : 'aspect-video'
               }`}
+              style={{
+                width: isFullscreen ? '100vw' : mode === 'fill' ? '100%' : undefined,
+                height: isFullscreen ? '100dvh' : mode === 'fill' ? '100%' : undefined,
+                maxWidth: mode === 'fill' ? 'none' : undefined,
+                maxHeight: mode === 'fill' ? 'none' : undefined,
+              }}
             >
               {/* LIVE Indicator */}
               <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full pointer-events-none">
@@ -213,6 +223,8 @@ export default function SportsPlayer() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  padding: mode === 'fill' ? '0' : undefined,
+                  margin: mode === 'fill' ? '0' : undefined,
                 }}
               >
                 <iframe

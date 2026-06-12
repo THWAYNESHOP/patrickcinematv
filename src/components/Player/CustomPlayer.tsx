@@ -223,11 +223,33 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
 
   return (
     <div
-      className="relative bg-black rounded-lg overflow-hidden group"
+      className={`relative bg-black rounded-lg overflow-hidden group ${
+        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
+      }`}
       onMouseMove={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
+      style={{
+        width: isFullscreen ? '100vw' : undefined,
+        height: isFullscreen ? '100dvh' : undefined,
+      }}
     >
-      <div className="relative w-full aspect-video bg-black overflow-hidden">
+      <div
+        className={`relative bg-black overflow-hidden ${
+          isFullscreen
+            ? 'w-full h-full'
+            : mode === 'fill'
+            ? 'w-full h-full'
+            : 'aspect-video'
+        }`}
+        style={{
+          width: isFullscreen ? '100%' : mode === 'fill' ? '100%' : undefined,
+          height: isFullscreen ? '100%' : mode === 'fill' ? '100%' : undefined,
+          maxWidth: mode === 'fill' ? 'none' : undefined,
+          maxHeight: mode === 'fill' ? 'none' : undefined,
+          padding: mode === 'fill' ? '0' : undefined,
+          margin: mode === 'fill' ? '0' : undefined,
+        }}
+      >
         <video
           ref={videoRef}
           src={src}

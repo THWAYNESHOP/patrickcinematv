@@ -132,7 +132,22 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   }
 
   return (
-    <div ref={containerRef} className={`relative w-full aspect-video bg-black overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 w-full h-full' : ''}`}>
+    <div
+      ref={containerRef}
+      className={`relative bg-black overflow-hidden ${
+        isFullscreen
+          ? 'fixed inset-0 z-50'
+          : mode === 'fill'
+          ? 'w-full h-full'
+          : 'w-full aspect-video'
+      }`}
+      style={{
+        width: isFullscreen ? '100vw' : mode === 'fill' ? '100%' : undefined,
+        height: isFullscreen ? '100dvh' : mode === 'fill' ? '100%' : undefined,
+        maxWidth: mode === 'fill' ? 'none' : undefined,
+        maxHeight: mode === 'fill' ? 'none' : undefined,
+      }}
+    >
       <div
         className={`absolute inset-0 ${className}`}
         style={{
@@ -140,6 +155,8 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
+          padding: mode === 'fill' ? '0' : undefined,
+          margin: mode === 'fill' ? '0' : undefined,
         }}
       >
         <iframe
