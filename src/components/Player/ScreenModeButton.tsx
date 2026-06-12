@@ -21,7 +21,7 @@ export default function ScreenModeButton({ label, onClick, showToast }: ScreenMo
   }
 
   return (
-    <>
+    <div className="relative">
       <button
         onClick={onClick}
         title={`Screen Mode: ${label}`}
@@ -32,10 +32,10 @@ export default function ScreenModeButton({ label, onClick, showToast }: ScreenMo
       </button>
 
       {showToast && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 glass px-4 py-2 rounded-lg z-50 animate-fade-in">
+        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 glass px-4 py-2 rounded-lg z-50 whitespace-nowrap">
           <p className="text-sm font-semibold text-white">Screen Mode: {label}</p>
         </div>
       )}
-    </>
+    </div>
   )
 }
