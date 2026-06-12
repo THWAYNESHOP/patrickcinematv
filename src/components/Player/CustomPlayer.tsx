@@ -108,6 +108,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         } else if ((container as any).msRequestFullscreen) {
           await (container as any).msRequestFullscreen()
         }
+        setIsFullscreen(true)
       } else {
         // Unlock orientation
         const orientation = (screen as any).orientation
@@ -125,6 +126,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         } else if ((document as any).msExitFullscreen) {
           await (document as any).msExitFullscreen()
         }
+        setIsFullscreen(false)
       }
     } catch (error) {
       console.error('Fullscreen error:', error)
