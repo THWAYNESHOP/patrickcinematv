@@ -83,8 +83,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   }
 
   const toggleFullscreen = async () => {
-    const container = videoRef.current?.parentElement
-    if (!container) return
+    const video = videoRef.current
+    if (!video) return
 
     try {
       if (!isFullscreen) {
@@ -98,15 +98,22 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
           }
         }
         
-        // Request fullscreen
-        if (container.requestFullscreen) {
-          await container.requestFullscreen()
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen()
-        } else if ((container as any).mozRequestFullScreen) {
-          await (container as any).mozRequestFullScreen()
-        } else if ((container as any).msRequestFullscreen) {
-          await (container as any).msRequestFullscreen()
+        // Use video-specific fullscreen API for mobile (especially iOS)
+        if ((video as any).webkitEnterFullscreen) {
+          // iOS Safari
+          await (video as any).webkitEnterFullscreen()
+        } else if ((video as any).webkitRequestFullscreen) {
+          // Older iOS/Chrome
+          await (video as any).webkitRequestFullscreen()
+        } else if (video.requestFullscreen) {
+          // Standard API
+          await video.requestFullscreen()
+        } else if ((video as any).mozRequestFullScreen) {
+          // Firefox
+          await (video as any).mozRequestFullScreen()
+        } else if ((video as any).msRequestFullscreen) {
+          // IE/Edge
+          await (video as any).msRequestFullscreen()
         }
         setIsFullscreen(true)
       } else {
@@ -117,7 +124,9 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         }
         
         // Exit fullscreen
-        if (document.exitFullscreen) {
+        if ((video as any).webkitExitFullscreen) {
+          await (video as any).webkitExitFullscreen()
+        } else if (document.exitFullscreen) {
           await document.exitFullscreen()
         } else if ((document as any).webkitExitFullscreen) {
           await (document as any).webkitExitFullscreen()
@@ -193,11 +202,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         className="w-full aspect-video"
         onClick={togglePlay}
         autoPlay={autoPlay}
-        playsInline
-        webkit-playsinline="true"
-        x5-playsinline="true"
-        x5-video-player-type="h5"
-        x5-video-player-fullscreen="true"
+        controls={false}
       />
 
       {/* Controls */}

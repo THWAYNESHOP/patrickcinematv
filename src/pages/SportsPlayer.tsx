@@ -47,7 +47,8 @@ export default function SportsPlayer() {
   }, [])
 
   const toggleFullscreen = async () => {
-    if (!playerContainerRef.current) return
+    const iframe = iframeRef.current
+    if (!iframe) return
 
     try {
       if (!document.fullscreenElement) {
@@ -61,16 +62,15 @@ export default function SportsPlayer() {
           }
         }
         
-        // Request fullscreen with cross-browser support
-        const container = playerContainerRef.current
-        if (container.requestFullscreen) {
-          await container.requestFullscreen()
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen()
-        } else if ((container as any).mozRequestFullScreen) {
-          await (container as any).mozRequestFullScreen()
-        } else if ((container as any).msRequestFullscreen) {
-          await (container as any).msRequestFullscreen()
+        // Request fullscreen on iframe with cross-browser support
+        if (iframe.requestFullscreen) {
+          await iframe.requestFullscreen()
+        } else if ((iframe as any).webkitRequestFullscreen) {
+          await (iframe as any).webkitRequestFullscreen()
+        } else if ((iframe as any).mozRequestFullScreen) {
+          await (iframe as any).mozRequestFullScreen()
+        } else if ((iframe as any).msRequestFullscreen) {
+          await (iframe as any).msRequestFullscreen()
         }
       } else {
         // Unlock orientation
