@@ -44,7 +44,8 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
       className={`w-full aspect-video ${className}`}
       frameBorder="0"
       allowFullScreen
-      allow="autoplay; encrypted-media"
+      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+      {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
       onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
     />
   )

@@ -82,16 +82,53 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     setIsMuted(video.muted)
   }
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const container = videoRef.current?.parentElement
     if (!container) return
 
-    if (!isFullscreen) {
-      container.requestFullscreen()
-    } else {
-      document.exitFullscreen()
+    try {
+      if (!isFullscreen) {
+        // Lock to landscape on mobile if supported
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.lock) {
+          try {
+            await orientation.lock('landscape')
+          } catch (e) {
+            console.warn('Screen orientation lock not supported or denied:', e)
+          }
+        }
+        
+        // Request fullscreen
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen()
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen()
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen()
+        }
+      } else {
+        // Unlock orientation
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.unlock) {
+          orientation.unlock()
+        }
+        
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen()
+        }
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error)
     }
-    setIsFullscreen(!isFullscreen)
   }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,6 +191,11 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         className="w-full aspect-video"
         onClick={togglePlay}
         autoPlay={autoPlay}
+        playsInline
+        webkit-playsinline="true"
+        x5-playsinline="true"
+        x5-video-player-type="h5"
+        x5-video-player-fullscreen="true"
       />
 
       {/* Controls */}

@@ -51,11 +51,44 @@ export default function SportsPlayer() {
 
     try {
       if (!document.fullscreenElement) {
-        await playerContainerRef.current.requestFullscreen().catch((err) => {
-          console.warn('Fullscreen request failed:', err)
-        })
+        // Lock to landscape on mobile if supported
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.lock) {
+          try {
+            await orientation.lock('landscape')
+          } catch (e) {
+            console.warn('Screen orientation lock not supported or denied:', e)
+          }
+        }
+        
+        // Request fullscreen with cross-browser support
+        const container = playerContainerRef.current
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen()
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen()
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen()
+        }
       } else {
-        await document.exitFullscreen()
+        // Unlock orientation
+        const orientation = (screen as any).orientation
+        if (orientation && orientation.unlock) {
+          orientation.unlock()
+        }
+        
+        // Exit fullscreen with cross-browser support
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen()
+        }
       }
     } catch (error) {
       console.error('Fullscreen error:', error)
