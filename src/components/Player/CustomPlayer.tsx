@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings, RotateCw } from 'lucide-react'
 import { useScreenMode } from '../../hooks/useScreenMode'
 import ScreenModeButton from './ScreenModeButton'
 
@@ -23,6 +23,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [isLandscape, setIsLandscape] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [rotation, setRotation] = useState(0)
   const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
@@ -66,12 +68,13 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
 
-  // Handle orientation changes
+  // Handle orientation changes and mobile detection
   useEffect(() => {
     const checkOrientation = () => {
       const width = window.innerWidth
       const height = window.innerHeight
       setIsLandscape(width > height)
+      setIsMobile(width <= 768) // Mobile breakpoint
     }
 
     // Initial check
@@ -206,6 +209,10 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     setShowSpeedMenu(false)
   }
 
+  const toggleRotation = () => {
+    setRotation((prev) => (prev + 90) % 360)
+  }
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
@@ -225,7 +232,11 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         src={src}
         poster={poster}
         className="w-full aspect-video"
-        style={{ objectFit: mode }}
+        style={{
+          objectFit: mode,
+          transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
+          transition: 'transform 0.3s ease',
+        }}
         onClick={togglePlay}
         autoPlay={autoPlay}
         controls={false}
@@ -323,8 +334,19 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
               )}
             </div>
 
-            {/* Screen Mode Toggle - Only show in landscape mode */}
-            {isLandscape && <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />}
+            {/* Screen Mode Toggle - Always show on mobile, otherwise in landscape */}
+            {(isMobile || isLandscape) && <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />}
+
+            {/* Rotate Toggle - Always show on mobile, otherwise in landscape */}
+            {(isMobile || isLandscape) && (
+              <button
+                onClick={toggleRotation}
+                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Rotate video"
+              >
+                <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
+              </button>
+            )}
 
             <button
               onClick={toggleFullscreen}
