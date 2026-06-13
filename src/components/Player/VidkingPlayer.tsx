@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { RotateCw, Maximize2 } from 'lucide-react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
-import { useScreenMode } from '../../hooks/useScreenMode'
-import ScreenModeButton from './ScreenModeButton'
 
 interface VidkingPlayerProps {
   src: string
@@ -18,7 +16,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const [isMobile, setIsMobile] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [rotation, setRotation] = useState(0)
-  const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
     console.log('[VidFast Player] Mounting with src:', src)
@@ -138,15 +135,11 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
       className={`relative bg-black overflow-hidden ${
         isFullscreen
           ? 'fixed inset-0 z-50'
-          : mode === 'fill'
-          ? 'w-full h-full'
           : 'w-full aspect-video'
       }`}
       style={{
-        width: isFullscreen ? '100vw' : mode === 'fill' ? '100%' : undefined,
-        height: isFullscreen ? '100dvh' : mode === 'fill' ? '100%' : undefined,
-        maxWidth: mode === 'fill' ? 'none' : undefined,
-        maxHeight: mode === 'fill' ? 'none' : undefined,
+        width: isFullscreen ? '100vw' : undefined,
+        height: isFullscreen ? '100dvh' : undefined,
       }}
     >
       <div
@@ -156,22 +149,16 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
-          padding: mode === 'fill' ? '0' : undefined,
-          margin: mode === 'fill' ? '0' : undefined,
         }}
       >
         <iframe
           ref={iframeRef}
           src={src}
+          className="w-full h-full"
           style={{
-            width: mode === 'fill' ? '100%' : 'auto',
-            height: mode === 'fill' ? '100%' : 'auto',
-            maxWidth: mode === 'contain' ? '100%' : 'none',
-            maxHeight: mode === 'contain' ? '100%' : 'none',
-            minWidth: mode === 'cover' ? '100%' : 'auto',
-            minHeight: mode === 'cover' ? '100%' : 'auto',
+            objectFit: 'contain',
             transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-            transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
+            transition: 'transform 0.3s ease',
           }}
           frameBorder="0"
           allowFullScreen
@@ -180,10 +167,9 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
         />
       </div>
-      {/* Screen Mode Toggle - Always show on mobile, otherwise in landscape */}
+      {/* Controls - Always show on mobile, otherwise in landscape */}
       {(isMobile || isLandscape) && (
         <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
-          <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
           <button
             onClick={toggleRotation}
             className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"

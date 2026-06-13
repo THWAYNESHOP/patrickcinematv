@@ -7,7 +7,7 @@ import ScreenModeButton from '../components/Player/ScreenModeButton'
 
 export default function SportsPlayer() {
   console.log('[SportsPlayer] Mounting')
-  const { source, id } = useParams()
+  const { source, id, matchId } = useParams()
   const [streams, setStreams] = useState<Stream[]>([])
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -21,14 +21,18 @@ export default function SportsPlayer() {
 
   useEffect(() => {
     async function fetchStreams() {
-      if (!source || !id) {
+      // Handle both route patterns: /sports/:source/:id and /sports/:matchId
+      const streamSource = source || 'alpha' // default source if not provided
+      const streamId = id || matchId
+
+      if (!streamId) {
         setStreams([])
         setLoading(false)
         return
       }
 
       try {
-        const data = await sportsApi.getStreams(source, id)
+        const data = await sportsApi.getStreams(streamSource, streamId)
         setStreams(data)
         setLoading(false)
       } catch (error) {
@@ -38,7 +42,7 @@ export default function SportsPlayer() {
     }
 
     fetchStreams()
-  }, [source, id])
+  }, [source, id, matchId])
 
   // Handle fullscreen changes
   useEffect(() => {
@@ -231,15 +235,10 @@ export default function SportsPlayer() {
                 <iframe
                   ref={iframeRef}
                   src={currentStream.embedUrl}
+                  className={`w-full h-full ${mode === 'contain' ? 'object-contain' : mode === 'cover' ? 'object-cover' : 'object-fill'}`}
                   style={{
-                    width: mode === 'fill' ? '100%' : 'auto',
-                    height: mode === 'fill' ? '100%' : 'auto',
-                    maxWidth: mode === 'contain' ? '100%' : 'none',
-                    maxHeight: mode === 'contain' ? '100%' : 'none',
-                    minWidth: mode === 'cover' ? '100%' : 'auto',
-                    minHeight: mode === 'cover' ? '100%' : 'auto',
                     transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-                    transition: 'transform 0.3s ease, width 0.3s ease, height 0.3s ease',
+                    transition: 'transform 0.3s ease',
                   }}
                   frameBorder="0"
                   allowFullScreen
@@ -256,7 +255,7 @@ export default function SportsPlayer() {
               <div className="flex flex-wrap gap-2 sm:gap-3">
                 {streams.map((stream, index) => (
                   <button
-                    key={stream.id}
+                    key={`${stream.id}-${stream.streamNo}-${index}`}
                     onClick={() => setSelectedStream(index)}
                     className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-sm transition-all duration-150 active:scale-95 ${
                       selectedStream === index
