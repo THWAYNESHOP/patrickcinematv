@@ -6,7 +6,6 @@ import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
-import { useScreenMode } from '../hooks/useScreenMode'
 
 const fallbackRecommendations: MovieSummary[] = [
   { id: 119051, title: 'Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021, type: 'tv' },
@@ -26,7 +25,6 @@ export default function TVDetails() {
   const [isMuted, setIsMuted] = useState(true)
   const heroRef = useRef<HTMLDivElement>(null)
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
-  const { mode } = useScreenMode()
 
   useEffect(() => {
     if (id === '119051') {
@@ -306,25 +304,23 @@ export default function TVDetails() {
       </div>
 
       {/* Episodes */}
-      <div className={`container mx-auto py-12 ${mode === 'fill' ? 'px-0' : 'px-4 md:px-8'}`}>
+      <div className="container mx-auto py-12 px-4 md:px-8">
         {/* Video Player */}
-        <section id="player" className={`scroll-mt-24 ${mode === 'fill' ? 'mb-0' : 'mb-12'}`}>
-          <div className={`overflow-hidden border border-white/5 ${mode === 'fill' ? 'bg-black' : 'bg-darkSurface rounded-lg'}`}>
+        <section id="player" className="scroll-mt-24 mb-12">
+          <div className="overflow-hidden border border-white/5 bg-darkSurface rounded-lg">
             <VidkingPlayer
               key={`${id}-${selectedSeason}-${selectedEpisode}`}
               src={embedUrl}
               onProgress={handleProgress}
-              className={mode === 'fill' ? '' : 'rounded-lg'}
+              className="rounded-lg"
             />
           </div>
-          {mode !== 'fill' && (
-            <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
-              <h3 className="font-semibold mb-2">If this episode has no sources</h3>
-              <p className="text-sm text-gray-400">
-                Try a different episode or save it to My List and come back later. Newer and niche episodes sometimes need a little time before alternate mirrors appear.
-              </p>
-            </div>
-          )}
+          <div className="bg-darkSurface rounded-lg p-5 mt-4 border border-white/5">
+            <h3 className="font-semibold mb-2">If this episode has no sources</h3>
+            <p className="text-sm text-gray-400">
+              Try a different episode or save it to My List and come back later. Newer and niche episodes sometimes need a little time before alternate mirrors appear.
+            </p>
+          </div>
         </section>
 
         <section className="mb-12">

@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Maximize2, Radio, RotateCw } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
-import { useScreenMode } from '../hooks/useScreenMode'
-import ScreenModeButton from '../components/Player/ScreenModeButton'
 
 export default function SportsPlayer() {
   console.log('[SportsPlayer] Mounting')
@@ -15,7 +13,6 @@ export default function SportsPlayer() {
   const [isLandscape, setIsLandscape] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [rotation, setRotation] = useState(0)
-  const { mode, label, cycleMode, showToast } = useScreenMode()
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -152,10 +149,10 @@ export default function SportsPlayer() {
 
   return (
     <div className={`${isFullscreen ? 'fixed inset-0 z-50' : ''} bg-deepBlack`}>
-      <div className={isFullscreen ? 'w-full h-full' : `min-h-screen py-6 sm:py-8 ${mode === 'fill' ? 'px-0' : 'px-3 sm:px-4 md:px-8'}`}>
-        <div className={isFullscreen ? 'w-full h-full flex flex-col' : `container mx-auto ${mode === 'fill' ? 'max-w-none' : 'max-w-7xl'}`}>
+      <div className={isFullscreen ? 'w-full h-full' : 'min-h-screen py-6 sm:py-8 px-3 sm:px-4 md:px-8'}>
+        <div className={isFullscreen ? 'w-full h-full flex flex-col' : 'container mx-auto max-w-7xl'}>
           {/* Header - Hidden in fullscreen */}
-          {!isFullscreen && mode !== 'fill' && (
+          {!isFullscreen && (
             <div className="mb-6">
               <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Live Match</h1>
               <p className="text-sm sm:text-base text-gray-400 mt-2">
@@ -168,7 +165,7 @@ export default function SportsPlayer() {
           <div
             ref={playerContainerRef}
             className={`overflow-hidden transition-all duration-200 ${
-              isFullscreen ? 'mb-0 w-full h-full' : mode === 'fill' ? 'mb-0 w-full' : 'glass-strong rounded-lg mb-6'
+              isFullscreen ? 'mb-0 w-full h-full' : 'glass-strong rounded-lg mb-6'
             }`}
           >
             {/* Player Wrapper */}
@@ -176,15 +173,11 @@ export default function SportsPlayer() {
               className={`relative bg-black ${
                 isFullscreen
                   ? 'w-full h-full'
-                  : mode === 'fill'
-                  ? 'w-full h-full'
                   : 'aspect-video'
               }`}
               style={{
-                width: isFullscreen ? '100vw' : mode === 'fill' ? '100%' : undefined,
-                height: isFullscreen ? '100dvh' : mode === 'fill' ? '100%' : undefined,
-                maxWidth: mode === 'fill' ? 'none' : undefined,
-                maxHeight: mode === 'fill' ? 'none' : undefined,
+                width: isFullscreen ? '100vw' : undefined,
+                height: isFullscreen ? '100dvh' : undefined,
               }}
             >
               {/* LIVE Indicator */}
@@ -196,9 +189,6 @@ export default function SportsPlayer() {
               {/* Player Controls - Always show on mobile, otherwise in landscape */}
               {(isMobile || isLandscape) && (
                 <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
-                  {/* Screen Mode Toggle */}
-                  <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
-
                   {/* Rotate Toggle */}
                   <button
                     onClick={toggleRotation}
@@ -228,15 +218,14 @@ export default function SportsPlayer() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: mode === 'fill' ? '0' : undefined,
-                  margin: mode === 'fill' ? '0' : undefined,
                 }}
               >
                 <iframe
                   ref={iframeRef}
                   src={currentStream.embedUrl}
-                  className={`w-full h-full ${mode === 'contain' ? 'object-contain' : mode === 'cover' ? 'object-cover' : 'object-fill'}`}
+                  className="w-full h-full"
                   style={{
+                    objectFit: 'contain',
                     transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
                     transition: 'transform 0.3s ease',
                   }}

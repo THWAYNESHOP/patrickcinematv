@@ -1,7 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings, RotateCw } from 'lucide-react'
-import { useScreenMode } from '../../hooks/useScreenMode'
-import ScreenModeButton from './ScreenModeButton'
 
 interface CustomPlayerProps {
   src: string
@@ -26,7 +24,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [isLandscape, setIsLandscape] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [rotation, setRotation] = useState(0)
-  const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
     console.log('[CustomPlayer] Video element mounted')
@@ -239,18 +236,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
         className={`relative bg-black overflow-hidden ${
           isFullscreen
             ? 'w-full h-full'
-            : mode === 'fill'
-            ? 'w-full h-full'
             : 'aspect-video'
         }`}
-        style={{
-          width: isFullscreen ? '100%' : mode === 'fill' ? '100%' : undefined,
-          height: isFullscreen ? '100%' : mode === 'fill' ? '100%' : undefined,
-          maxWidth: mode === 'fill' ? 'none' : undefined,
-          maxHeight: mode === 'fill' ? 'none' : undefined,
-          padding: mode === 'fill' ? '0' : undefined,
-          margin: mode === 'fill' ? '0' : undefined,
-        }}
       >
         <video
           ref={videoRef}
@@ -258,9 +245,9 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
           poster={poster}
           className="w-full h-full"
           style={{
-            objectFit: mode,
+            objectFit: 'contain',
             transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-            transition: 'transform 0.3s ease, object-fit 0.3s ease',
+            transition: 'transform 0.3s ease',
           }}
           onClick={togglePlay}
           autoPlay={autoPlay}
@@ -359,9 +346,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
                 </div>
               )}
             </div>
-
-            {/* Screen Mode Toggle - Always show on mobile, otherwise in landscape */}
-            {(isMobile || isLandscape) && <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />}
 
             {/* Rotate Toggle - Always show on mobile, otherwise in landscape */}
             {(isMobile || isLandscape) && (
