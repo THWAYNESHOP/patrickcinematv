@@ -22,6 +22,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [showControls, setShowControls] = useState(true)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  const [isLandscape, setIsLandscape] = useState(false)
   const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
@@ -64,6 +65,27 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     }
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
+
+  // Handle orientation changes
+  useEffect(() => {
+    const checkOrientation = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      setIsLandscape(width > height)
+    }
+
+    // Initial check
+    checkOrientation()
+
+    // Listen for resize and orientation change events
+    window.addEventListener('resize', checkOrientation)
+    window.addEventListener('orientationchange', checkOrientation)
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation)
+      window.removeEventListener('orientationchange', checkOrientation)
+    }
+  }, [])
 
   const togglePlay = () => {
     const video = videoRef.current
@@ -301,7 +323,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
               )}
             </div>
 
-            <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
+            {/* Screen Mode Toggle - Only show in landscape mode */}
+            {isLandscape && <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />}
 
             <button
               onClick={toggleFullscreen}

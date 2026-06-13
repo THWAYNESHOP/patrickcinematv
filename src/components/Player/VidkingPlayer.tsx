@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
 import { useScreenMode } from '../../hooks/useScreenMode'
 import ScreenModeButton from './ScreenModeButton'
@@ -11,6 +11,7 @@ interface VidkingPlayerProps {
 
 export default function VidkingPlayer({ src, onProgress, className = '' }: VidkingPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isLandscape, setIsLandscape] = useState(false)
   const { mode, label, cycleMode, showToast } = useScreenMode()
 
   useEffect(() => {
@@ -40,6 +41,27 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     }
   }, [src])
 
+  // Handle orientation changes
+  useEffect(() => {
+    const checkOrientation = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      setIsLandscape(width > height)
+    }
+
+    // Initial check
+    checkOrientation()
+
+    // Listen for resize and orientation change events
+    window.addEventListener('resize', checkOrientation)
+    window.addEventListener('orientationchange', checkOrientation)
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation)
+      window.removeEventListener('orientationchange', checkOrientation)
+    }
+  }, [])
+
   return (
     <div className="relative">
       <iframe
@@ -53,9 +75,12 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
         {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
         onError={() => console.error('[VidFast Player] Iframe failed to load:', src)}
       />
-      <div className="absolute bottom-3 right-3 z-20">
-        <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
-      </div>
+      {/* Screen Mode Toggle - Only show in landscape mode */}
+      {isLandscape && (
+        <div className="absolute bottom-3 right-3 z-20">
+          <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
+        </div>
+      )}
     </div>
   )
 }

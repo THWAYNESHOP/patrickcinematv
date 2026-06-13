@@ -11,6 +11,7 @@ export default function SportsPlayer() {
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isLandscape, setIsLandscape] = useState(false)
   const { mode, label, cycleMode, showToast } = useScreenMode()
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -44,6 +45,27 @@ export default function SportsPlayer() {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  // Handle orientation changes
+  useEffect(() => {
+    const checkOrientation = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      setIsLandscape(width > height)
+    }
+
+    // Initial check
+    checkOrientation()
+
+    // Listen for resize and orientation change events
+    window.addEventListener('resize', checkOrientation)
+    window.addEventListener('orientationchange', checkOrientation)
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation)
+      window.removeEventListener('orientationchange', checkOrientation)
+    }
   }, [])
 
   const toggleFullscreen = async () => {
@@ -149,21 +171,23 @@ export default function SportsPlayer() {
                 <span className="text-xs font-bold text-white tracking-wide">LIVE NOW</span>
               </div>
 
-              {/* Player Controls */}
-              <div className="absolute bottom-3 right-3 z-20 flex gap-2">
-                {/* Screen Mode Toggle */}
-                <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
+              {/* Player Controls - Only show in landscape mode */}
+              {isLandscape && (
+                <div className="absolute bottom-3 right-3 z-20 flex gap-2">
+                  {/* Screen Mode Toggle */}
+                  <ScreenModeButton label={label} onClick={cycleMode} showToast={showToast} />
 
-                {/* Fullscreen Toggle */}
-                <button
-                  onClick={toggleFullscreen}
-                  title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                  className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
-                  aria-label="Toggle fullscreen"
-                >
-                  <Maximize2 className="w-5 h-5" />
-                </button>
-              </div>
+                  {/* Fullscreen Toggle */}
+                  <button
+                    onClick={toggleFullscreen}
+                    title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95"
+                    aria-label="Toggle fullscreen"
+                  >
+                    <Maximize2 className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
 
               {/* Stream iframe with dynamic object-fit */}
               <iframe
