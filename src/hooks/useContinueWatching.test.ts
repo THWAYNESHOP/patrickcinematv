@@ -20,7 +20,14 @@ describe('useContinueWatching', () => {
     const { result } = renderHook(() => useContinueWatching())
     
     act(() => {
-      result.current.updateProgress('123', 'Test Movie', 50, 120)
+      result.current.updateProgress({
+        id: '123',
+        title: 'Test Movie',
+        poster: 'https://example.com/poster.jpg',
+        type: 'movie',
+        progress: 50,
+        duration: 120
+      })
     })
     
     expect(result.current.continueWatching).toHaveLength(1)
@@ -31,11 +38,25 @@ describe('useContinueWatching', () => {
     const { result } = renderHook(() => useContinueWatching())
     
     act(() => {
-      result.current.updateProgress('123', 'Test Movie', 50, 120)
+      result.current.updateProgress({
+        id: '123',
+        title: 'Test Movie',
+        poster: 'https://example.com/poster.jpg',
+        type: 'movie',
+        progress: 50,
+        duration: 120
+      })
     })
     
     act(() => {
-      result.current.updateProgress('123', 'Test Movie', 75, 120)
+      result.current.updateProgress({
+        id: '123',
+        title: 'Test Movie',
+        poster: 'https://example.com/poster.jpg',
+        type: 'movie',
+        progress: 75,
+        duration: 120
+      })
     })
     
     expect(result.current.continueWatching[0].progress).toBe(75)
@@ -45,7 +66,14 @@ describe('useContinueWatching', () => {
     const { result } = renderHook(() => useContinueWatching())
     
     act(() => {
-      result.current.updateProgress('123', 'Test Movie', 50, 120)
+      result.current.updateProgress({
+        id: '123',
+        title: 'Test Movie',
+        poster: 'https://example.com/poster.jpg',
+        type: 'movie',
+        progress: 50,
+        duration: 120
+      })
     })
     
     act(() => {
