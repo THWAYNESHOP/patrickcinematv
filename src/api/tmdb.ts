@@ -1,8 +1,19 @@
 import axios from 'axios'
+import { getCached, setCached } from '../utils/apiCache'
 
 const TMDB_API_BASE = 'https://api.themoviedb.org/3'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY
+
+// Image optimization helper - returns WebP format URLs
+function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w500'): string {
+  if (!path) {
+    return 'https://image.tmdb.org/t/p/w500/8cXbitsS6dWQ5gfMTZdorpAAzEd.jpg'
+  }
+  // TMDB automatically serves WebP when supported by the browser
+  // Using original size for 4K quality backdrops
+  return `${TMDB_IMAGE_BASE}/${size}${path}`
+}
 
 export interface MovieSummary {
   id: number
@@ -82,12 +93,8 @@ function toMovieSummary(movie: TmdbMovie): MovieSummary {
   return {
     id: movie.id,
     title: movie.title || movie.name || 'Untitled',
-    poster: movie.poster_path
-      ? `${TMDB_IMAGE_BASE}/w500${movie.poster_path}`
-      : 'https://image.tmdb.org/t/p/w500/8cXbitsS6dWQ5gfMTZdorpAAzEd.jpg',
-    backdrop: movie.backdrop_path
-      ? `${TMDB_IMAGE_BASE}/original${movie.backdrop_path}`
-      : undefined,
+    poster: getOptimizedImageUrl(movie.poster_path, 'w500'),
+    backdrop: movie.backdrop_path ? getOptimizedImageUrl(movie.backdrop_path, 'original') : undefined,
     overview: movie.overview,
     rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
     year: date ? Number(date.slice(0, 4)) : undefined,
@@ -110,7 +117,7 @@ function toMediaDetails(media: TmdbMovie, type: 'movie' | 'tv'): MediaDetails {
       id: person.id,
       name: person.name,
       character: person.character,
-      profile: person.profile_path ? `${TMDB_IMAGE_BASE}/w185${person.profile_path}` : undefined,
+      profile: person.profile_path ? getOptimizedImageUrl(person.profile_path, 'w185') : undefined,
     })) || [],
     imdbId: media.imdb_id,
   }
@@ -129,6 +136,10 @@ export const tmdbApi = {
   hasApiKey: Boolean(TMDB_API_KEY),
 
   async getPopularMovies(): Promise<MovieSummary[]> {
+    const cacheKey = 'popular-movies'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -142,9 +153,12 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((movie: TmdbMovie) => toMovieSummary(movie))
       : []
+    
+    setCached(cacheKey, result)
+    return result
   },
 
   async getNowPlayingMovies(): Promise<MovieSummary[]> {
@@ -168,6 +182,10 @@ export const tmdbApi = {
   },
 
   async getTrendingMoviesToday(): Promise<MovieSummary[]> {
+    const cacheKey = 'trending-movies-today'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -180,12 +198,19 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
       : []
+    
+    setCached(cacheKey, result)
+    return result
   },
 
   async getTrendingTVToday(): Promise<MovieSummary[]> {
+    const cacheKey = 'trending-tv-today'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -198,9 +223,12 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
+    
+    setCached(cacheKey, result)
+    return result
   },
 
   async getMovieDetails(id: string): Promise<MediaDetails> {

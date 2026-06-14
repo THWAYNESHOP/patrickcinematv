@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Search, X, Film, Tv, Trophy, Zap } from 'lucide-react'
+import { Search, X, Film, Tv, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
+import { useDebounce } from '../../hooks/useDebounce'
 
 interface SearchBarProps {
   onClose?: () => void
@@ -12,7 +14,53 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const [results, setResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    type: 'all', // all, movie, tv
+    year: 'all',
+    rating: 'all',
+    sortBy: 'relevance' // relevance, rating, year, newest
+  })
   const navigate = useNavigate()
+  const searchContainerRef = useFocusTrap(true)
+  const debouncedQuery = useDebounce(query, 500)
+
+  const applyFilters = (items: any[]) => {
+    let filtered = [...items]
+
+    // Filter by type
+    if (filters.type !== 'all') {
+      filtered = filtered.filter(item => item.type === filters.type)
+    }
+
+    // Filter by year
+    if (filters.year !== 'all') {
+      if (filters.year === '2010s') {
+        filtered = filtered.filter(item => item.year >= 2010 && item.year < 2020)
+      } else if (filters.year === '2000s') {
+        filtered = filtered.filter(item => item.year >= 2000 && item.year < 2010)
+      } else {
+        filtered = filtered.filter(item => item.year === parseInt(filters.year))
+      }
+    }
+
+    // Filter by rating
+    if (filters.rating !== 'all') {
+      const minRating = parseFloat(filters.rating)
+      filtered = filtered.filter(item => item.rating && parseFloat(item.rating) >= minRating)
+    }
+
+    // Sort results
+    if (filters.sortBy === 'rating') {
+      filtered.sort((a, b) => parseFloat(b.rating || '0') - parseFloat(a.rating || '0'))
+    } else if (filters.sortBy === 'year') {
+      filtered.sort((a, b) => (b.year || 0) - (a.year || 0))
+    } else if (filters.sortBy === 'oldest') {
+      filtered.sort((a, b) => (a.year || 0) - (b.year || 0))
+    }
+
+    return filtered
+  }
 
   const fallbackData = [
     { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
@@ -26,7 +74,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   ]
 
   useEffect(() => {
-    if (query.length < 2) {
+    if (debouncedQuery.length < 2) {
       setResults([])
       setSelectedIndex(-1)
       return
@@ -34,27 +82,25 @@ export default function SearchBar({ onClose }: SearchBarProps) {
 
     setIsSearching(true)
     setSelectedIndex(-1)
-    const timer = setTimeout(() => {
-      async function search() {
-        try {
-          const tmdbResults = await tmdbApi.searchMulti(query)
-          setResults(tmdbResults)
-        } catch (error) {
-          console.warn('TMDB search unavailable, using fallback search:', error)
-          const filtered = fallbackData.filter((item) =>
-            item.title.toLowerCase().includes(query.toLowerCase())
-          )
-          setResults(filtered)
-        } finally {
-          setIsSearching(false)
-        }
+    async function search() {
+      try {
+        const tmdbResults = await tmdbApi.searchMulti(debouncedQuery)
+        const filteredResults = applyFilters(tmdbResults)
+        setResults(filteredResults)
+      } catch (error) {
+        console.warn('TMDB search unavailable, using fallback search:', error)
+        const filtered = fallbackData.filter((item) =>
+          item.title.toLowerCase().includes(debouncedQuery.toLowerCase())
+        )
+        const filteredResults = applyFilters(filtered)
+        setResults(filteredResults)
+      } finally {
+        setIsSearching(false)
       }
+    }
 
-      search()
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [query])
+    search()
+  }, [debouncedQuery, filters, applyFilters])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (results.length === 0) return
@@ -134,68 +180,128 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-deepBlack/95 flex flex-col">
+    <div ref={searchContainerRef} className="fixed inset-0 z-50 bg-deepBlack/95 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
+      <div className="p-6 border-b border-white/10">
+        <div className="flex items-center gap-4 mb-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search movies, TV shows, anime, sports..."
-              className="w-full pl-12 pr-12 py-3 bg-white/10 rounded-full border border-white/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-white placeholder-gray-400 transition-all duration-300"
+              className="w-full pl-14 pr-14 py-4 bg-white/10 rounded-full border border-white/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-white placeholder-gray-400 transition-all duration-300 text-base"
               autoFocus
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors hover:scale-110"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
+              showFilters ? 'bg-primary text-white' : 'bg-white/10 text-white hover:bg-white/20'
+            }`}
+          >
+            <Filter className="w-5 h-5" />
+          </button>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-3 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110"
             >
               <X className="w-6 h-6" />
             </button>
           )}
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="flex flex-wrap gap-3 animate-fade-in">
+            <select
+              value={filters.type}
+              onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="all">All Types</option>
+              <option value="movie">Movies</option>
+              <option value="tv">TV Shows</option>
+            </select>
+
+            <select
+              value={filters.year}
+              onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="all">All Years</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2010s">2010s</option>
+              <option value="2000s">2000s</option>
+            </select>
+
+            <select
+              value={filters.rating}
+              onChange={(e) => setFilters({ ...filters, rating: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="all">All Ratings</option>
+              <option value="8">8+ Rating</option>
+              <option value="7">7+ Rating</option>
+              <option value="6">6+ Rating</option>
+            </select>
+
+            <select
+              value={filters.sortBy}
+              onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="relevance">Relevance</option>
+              <option value="rating">Highest Rated</option>
+              <option value="year">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-6">
         {isSearching ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary shadow-glow" />
           </div>
         ) : query.length < 2 ? (
-          <div className="text-center text-gray-400 mt-20">
-            <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Start typing to search</p>
-            <p className="text-sm mt-2">Movies, TV shows, anime, and sports</p>
+          <div className="text-center text-gray-400 mt-24">
+            <Search className="w-20 h-20 mx-auto mb-6 opacity-50" />
+            <p className="text-xl font-semibold mb-2">Start typing to search</p>
+            <p className="text-base">Movies, TV shows, anime, and sports</p>
           </div>
         ) : results.length === 0 ? (
-          <div className="text-center text-gray-400 mt-20">
-            <p className="text-lg">No results found</p>
-            <p className="text-sm mt-2">Try a different search term</p>
+          <div className="text-center text-gray-400 mt-24">
+            <p className="text-xl font-semibold mb-2">No results found</p>
+            <p className="text-base">Try a different search term</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {results.map((item, index) => (
               <button
                 key={item.id}
                 onClick={() => handleResultClick(item)}
-                className={`flex items-center gap-4 p-4 bg-darkSurface rounded-lg border transition-all duration-300 animate-fade-in w-full text-left ${
+                className={`flex items-center gap-4 p-5 bg-darkSurface rounded-xl border transition-all duration-300 animate-fade-in w-full text-left ${
                   index === selectedIndex
                     ? 'border-primary/50 bg-primary/10 shadow-glow'
-                    : 'border-white/5 hover:border-white/10 hover:bg-darkHover'
+                    : 'border-white/5 hover:border-white/10 hover:bg-darkHover hover:shadow-lg hover:-translate-y-0.5'
                 }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -203,22 +309,23 @@ export default function SearchBar({ onClose }: SearchBarProps) {
                   <img
                     src={item.poster}
                     alt={item.title}
-                    className="w-16 h-24 object-cover rounded"
+                    className="w-20 h-28 object-cover rounded-lg"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-16 h-24 bg-white/10 rounded flex items-center justify-center">
-                    <Trophy className="w-8 h-8 text-primary" />
+                  <div className="w-20 h-28 bg-white/10 rounded-lg flex items-center justify-center">
+                    <Trophy className="w-10 h-10 text-primary" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-white mb-1">{item.title}</h3>
+                  <h3 className="font-bold text-lg text-white mb-2">{item.title}</h3>
                   <div className="flex items-center gap-2">
-                    <div className={`flex items-center gap-1 ${getTypeColor(item.type)}`}>
+                    <div className={`flex items-center gap-1.5 ${getTypeColor(item.type)}`}>
                       {getTypeIcon(item.type)}
-                      <span className="text-xs capitalize">{item.type}</span>
+                      <span className="text-sm capitalize font-medium">{item.type}</span>
                     </div>
-                    {item.year && <span className="text-xs text-gray-500">{item.year}</span>}
+                    {item.year && <span className="text-sm text-gray-500">•</span>}
+                    {item.year && <span className="text-sm text-gray-500 font-medium">{item.year}</span>}
                   </div>
                 </div>
               </button>
@@ -229,26 +336,26 @@ export default function SearchBar({ onClose }: SearchBarProps) {
 
       {/* Recent Searches */}
       {query.length < 2 && (
-        <div className="p-4 border-t border-white/10">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">Recent Searches</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="p-6 border-t border-white/10">
+          <h3 className="text-base font-bold text-gray-400 mb-4">Recent Searches</h3>
+          <div className="flex flex-wrap gap-3">
             {['Dune', 'Oppenheimer', 'Attack on Titan', 'NBA', 'The Last of Us', 'Formula 1'].map((term) => (
               <button
                 key={term}
                 onClick={() => setQuery(term)}
-                className="px-4 py-2 bg-darkSurface rounded-full text-sm border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300"
+                className="px-5 py-2.5 bg-darkSurface rounded-full text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium"
               >
                 {term}
               </button>
             ))}
           </div>
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 mt-6">Popular Searches</h3>
-          <div className="flex flex-wrap gap-2">
+          <h3 className="text-base font-bold text-gray-400 mb-4 mt-8">Popular Searches</h3>
+          <div className="flex flex-wrap gap-3">
             {['Marvel', 'DC', 'Horror', 'Comedy', 'Action', 'Drama'].map((term) => (
               <button
                 key={term}
                 onClick={() => setQuery(term)}
-                className="px-4 py-2 bg-darkSurface rounded-full text-sm border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300"
+                className="px-5 py-2.5 bg-darkSurface rounded-full text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium"
               >
                 {term}
               </button>

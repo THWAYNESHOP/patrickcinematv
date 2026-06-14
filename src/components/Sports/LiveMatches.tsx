@@ -12,27 +12,27 @@ interface LiveMatchesProps {
 // Loading Skeleton Component
 function MatchSkeleton() {
   return (
-    <div className="glass rounded-lg overflow-hidden animate-pulse">
+    <div className="glass rounded-xl overflow-hidden animate-pulse">
       {/* Image Skeleton */}
-      <div className="w-full h-24 bg-gray-800/50" />
+      <div className="w-full h-28 bg-gray-800/50" />
       
       {/* Content Skeleton */}
-      <div className="p-3 space-y-2">
+      <div className="p-4 space-y-3">
         {/* Header Row */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="h-3 bg-gray-800/50 rounded w-16" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-4 bg-gray-800/50 rounded w-20" />
           <div className="h-6 bg-gray-800/50 rounded-full w-20" />
         </div>
         
         {/* Score Row */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="h-3 bg-gray-800/50 rounded w-20" />
-          <div className="h-5 bg-gray-800/50 rounded w-12" />
-          <div className="h-3 bg-gray-800/50 rounded w-20" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-4 bg-gray-800/50 rounded w-24" />
+          <div className="h-6 bg-gray-800/50 rounded w-12" />
+          <div className="h-4 bg-gray-800/50 rounded w-24" />
         </div>
         
         {/* Button */}
-        <div className="h-8 bg-gray-800/50 rounded-lg mt-2" />
+        <div className="h-10 bg-gray-800/50 rounded-lg mt-2" />
       </div>
     </div>
   )
@@ -71,7 +71,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
         {Array.from({ length: 5 }).map((_, i) => (
           <MatchSkeleton key={i} />
         ))}
@@ -88,7 +88,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
       {matches.map((match) => {
         // Use the first available source if available
         const firstSource = match.sources && match.sources.length > 0 ? match.sources[0] : null
@@ -98,15 +98,15 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
           <Link
             key={match.id}
             to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
-            className="group glass rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-glow backdrop-blur-md active:scale-95"
+            className="group glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-glow backdrop-blur-md active:scale-95 hover:-translate-y-1"
           >
             {/* Image Container with Thumbnail */}
             {match.poster && (
-              <div className="relative w-full h-24 overflow-hidden bg-gray-900">
+              <div className="relative w-full h-28 overflow-hidden bg-gray-900">
                 <img
                   src={match.poster}
                   alt={match.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                   decoding="async"
                 />
@@ -142,34 +142,34 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
             )}
 
             {/* Content Container */}
-            <div className="p-3">
+            <div className="p-4">
               {/* League */}
-              <p className="text-xs text-gray-400 mb-2 truncate font-medium">{match.league}</p>
+              <p className="text-sm text-gray-400 mb-3 truncate font-semibold">{match.league}</p>
               
               {/* Teams vs Score */}
-              <div className="flex items-center justify-between gap-1.5 mb-2">
+              <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">{match.homeTeam}</p>
+                  <p className="text-sm font-bold text-white truncate">{match.homeTeam}</p>
                 </div>
                 <div className="flex-shrink-0 text-center">
-                  <p className="text-sm font-bold bg-gradient-to-r from-primary to-red-600 bg-clip-text text-transparent">
+                  <p className="text-base font-extrabold bg-gradient-to-r from-primary to-red-600 bg-clip-text text-transparent">
                     {match.score}
                   </p>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate text-right">{match.awayTeam}</p>
+                  <p className="text-sm font-bold text-white truncate text-right">{match.awayTeam}</p>
                 </div>
               </div>
 
               {/* Time */}
-              <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
-                <Clock className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{match.time}</span>
+              <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-3">
+                <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate font-medium">{match.time}</span>
               </div>
 
               {/* CTA Button */}
-              <button className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 text-primary py-2 rounded-lg transition-colors duration-150 font-semibold text-xs">
-                <Play className="w-3.5 h-3.5 flex-shrink-0" />
+              <button className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 text-primary py-2.5 rounded-lg transition-colors duration-200 font-bold text-sm">
+                <Play className="w-4 h-4 flex-shrink-0" />
                 {isLive ? 'Watch' : 'Details'}
               </button>
             </div>

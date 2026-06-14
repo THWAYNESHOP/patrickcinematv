@@ -14,7 +14,7 @@ export const vidkingApi = {
     
     const queryString = params.toString()
     const url = `https://vidfast.pro/movie/${id}${queryString ? `?${queryString}` : ''}`
-    console.log('[VidFast API] Generated movie URL:', url)
+    console.log('[Vidking API] Generated movie URL:', url)
     return url
   },
 
@@ -37,11 +37,11 @@ export const vidkingApi = {
     
     const queryString = params.toString()
     const url = `https://vidfast.pro/tv/${id}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
-    console.log('[VidFast API] Generated TV URL:', url)
+    console.log('[Vidking API] Generated TV URL:', url)
     return url
   },
 
-  // Progress tracking hook for VidFast player
+  // Progress tracking hook for Vidking player
   setupProgressTracking(callback: (data: PlayerEventData) => void): () => void {
     const handleMessage = (event: MessageEvent) => {
       try {

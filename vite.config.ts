@@ -9,6 +9,58 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.svg', 'icon-512.svg'],
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tmdb-images-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:js|css)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-resources-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'tmdb-api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              networkTimeoutSeconds: 10,
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Patrick Cinema TV',
         short_name: 'Patrick Cinema',
