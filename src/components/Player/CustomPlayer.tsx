@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, Settings, RotateCw } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, SkipForward, SkipBack } from 'lucide-react'
 
 interface CustomPlayerProps {
   src: string
@@ -15,17 +15,10 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [showControls, setShowControls] = useState(true)
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
-  const [isLandscape, setIsLandscape] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [rotation, setRotation] = useState(0)
-  const [previousOrientation, setPreviousOrientation] = useState<string | null>(null)
 
   useEffect(() => {
     console.log('[CustomPlayer] Video element mounted')
@@ -69,37 +62,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
 
-  // Handle fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
-
-  // Handle orientation changes and mobile detection
-  useEffect(() => {
-    const checkOrientation = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      setIsLandscape(width > height)
-      setIsMobile(width <= 768) // Mobile breakpoint
-    }
-
-    // Initial check
-    checkOrientation()
-
-    // Listen for resize and orientation change events
-    window.addEventListener('resize', checkOrientation)
-    window.addEventListener('orientationchange', checkOrientation)
-
-    return () => {
-      window.removeEventListener('resize', checkOrientation)
-      window.removeEventListener('orientationchange', checkOrientation)
-    }
-  }, [])
 
   const togglePlay = () => {
     const video = videoRef.current
@@ -121,71 +83,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     setIsMuted(video.muted)
   }
 
-  const toggleFullscreen = async () => {
-    const container = containerRef.current
-    if (!container) return
-
-    try {
-      if (!isFullscreen) {
-        // Save current orientation before locking
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.type) {
-          setPreviousOrientation(orientation.type)
-        }
-
-        // Lock to landscape on mobile if supported
-        if (orientation && orientation.lock) {
-          try {
-            await orientation.lock('landscape')
-          } catch (e) {
-            console.warn('Screen orientation lock not supported or denied:', e)
-          }
-        }
-
-        // Request fullscreen on container (not video element)
-        if (container.requestFullscreen) {
-          await container.requestFullscreen()
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen()
-        } else if ((container as any).mozRequestFullScreen) {
-          await (container as any).mozRequestFullScreen()
-        } else if ((container as any).msRequestFullscreen) {
-          await (container as any).msRequestFullscreen()
-        }
-        setIsFullscreen(true)
-      } else {
-        // Unlock orientation and restore previous orientation if saved
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.unlock) {
-          orientation.unlock()
-          // Try to restore previous orientation after a short delay
-          if (previousOrientation) {
-            setTimeout(async () => {
-              try {
-                await orientation.lock(previousOrientation)
-              } catch (e) {
-                console.warn('Could not restore previous orientation:', e)
-              }
-            }, 100)
-          }
-        }
-
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-          await document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen()
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen()
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen()
-        }
-        setIsFullscreen(false)
-      }
-    } catch (error) {
-      console.error('Fullscreen error:', error)
-    }
-  }
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const video = videoRef.current
@@ -218,17 +115,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     video.currentTime = Math.max(video.currentTime - 10, 0)
   }
 
-  const handleSpeedChange = (speed: number) => {
-    const video = videoRef.current
-    if (!video) return
-    video.playbackRate = speed
-    setPlaybackSpeed(speed)
-    setShowSpeedMenu(false)
-  }
-
-  const toggleRotation = () => {
-    setRotation((prev) => (prev + 90) % 360)
-  }
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -241,32 +127,18 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   return (
     <div
       ref={containerRef}
-      className={`relative bg-black rounded-lg overflow-hidden group ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
-      }`}
+      className="relative bg-black rounded-lg overflow-hidden group"
       onMouseMove={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
-      style={{
-        width: isFullscreen ? '100vw' : undefined,
-        height: isFullscreen ? '100dvh' : undefined,
-      }}
     >
-      <div
-        className={`relative bg-black overflow-hidden flex items-center justify-center ${
-          isFullscreen
-            ? 'w-full h-full'
-            : 'aspect-video'
-        }`}
-      >
+      <div className="relative bg-black overflow-hidden flex items-center justify-center aspect-video">
         <video
           ref={videoRef}
           src={src}
           poster={poster}
           className="w-full h-full"
           style={{
-            objectFit: isFullscreen ? 'cover' : 'contain',
-            transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-            transition: 'transform 0.3s ease',
+            objectFit: 'contain',
           }}
           onClick={togglePlay}
           autoPlay={autoPlay}
@@ -340,51 +212,6 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             </span>
           </div>
 
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <div className="relative">
-              <button
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1"
-              >
-                <Settings className="w-5 h-5" />
-                <span className="text-sm">{playbackSpeed}x</span>
-              </button>
-
-              {showSpeedMenu && (
-                <div className="absolute bottom-full right-0 mb-2 glass rounded-lg p-2 space-y-1 z-50">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => handleSpeedChange(speed)}
-                      className={`block w-full px-4 py-1 rounded hover:bg-white/20 transition-colors ${
-                        playbackSpeed === speed ? 'text-neonPink' : 'text-white'
-                      }`}
-                    >
-                      {speed}x
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Rotate Toggle - Always show on mobile, otherwise in landscape */}
-            {(isMobile || isLandscape) && (
-              <button
-                onClick={toggleRotation}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                aria-label="Rotate video"
-              >
-                <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
-              </button>
-            )}
-
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
-            >
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-            </button>
-          </div>
         </div>
       </div>
 

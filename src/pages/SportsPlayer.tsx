@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { Maximize2, Radio, RotateCw } from 'lucide-react'
+import { Radio } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 
 export default function SportsPlayer() {
@@ -10,9 +10,6 @@ export default function SportsPlayer() {
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isLandscape, setIsLandscape] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [rotation, setRotation] = useState(0)
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -51,27 +48,6 @@ export default function SportsPlayer() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  // Handle orientation changes and mobile detection
-  useEffect(() => {
-    const checkOrientation = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      setIsLandscape(width > height)
-      setIsMobile(width <= 768) // Mobile breakpoint
-    }
-
-    // Initial check
-    checkOrientation()
-
-    // Listen for resize and orientation change events
-    window.addEventListener('resize', checkOrientation)
-    window.addEventListener('orientationchange', checkOrientation)
-
-    return () => {
-      window.removeEventListener('resize', checkOrientation)
-      window.removeEventListener('orientationchange', checkOrientation)
-    }
-  }, [])
 
   const toggleFullscreen = async () => {
     const container = playerContainerRef.current
@@ -79,16 +55,6 @@ export default function SportsPlayer() {
 
     try {
       if (!document.fullscreenElement) {
-        // Lock to landscape on mobile if supported
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.lock) {
-          try {
-            await orientation.lock('landscape')
-          } catch (e) {
-            console.warn('Screen orientation lock not supported or denied:', e)
-          }
-        }
-
         // Request fullscreen with cross-browser support for Android Chrome
         if (container.requestFullscreen) {
           await container.requestFullscreen()
@@ -100,12 +66,6 @@ export default function SportsPlayer() {
           await (container as any).msRequestFullscreen()
         }
       } else {
-        // Unlock orientation
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.unlock) {
-          orientation.unlock()
-        }
-
         // Exit fullscreen with cross-browser support
         if (document.exitFullscreen) {
           await document.exitFullscreen()
@@ -120,10 +80,6 @@ export default function SportsPlayer() {
     } catch (error) {
       console.error('Fullscreen error:', error)
     }
-  }
-
-  const toggleRotation = () => {
-    setRotation((prev) => (prev + 90) % 360)
   }
 
 
@@ -186,30 +142,6 @@ export default function SportsPlayer() {
                 <span className="text-xs font-bold text-white tracking-wide">LIVE NOW</span>
               </div>
 
-              {/* Player Controls - Always show on mobile, otherwise in landscape */}
-              {(isMobile || isLandscape) && (
-                <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
-                  {/* Rotate Toggle */}
-                  <button
-                    onClick={toggleRotation}
-                    title="Rotate Video"
-                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
-                    aria-label="Rotate video"
-                  >
-                    <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
-                  </button>
-
-                  {/* Fullscreen Toggle */}
-                  <button
-                    onClick={toggleFullscreen}
-                    title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                    className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
-                    aria-label="Toggle fullscreen"
-                  >
-                    <Maximize2 className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
 
               {/* Stream iframe container with dynamic object-fit and rotation */}
               <div
@@ -226,8 +158,6 @@ export default function SportsPlayer() {
                   className="w-full h-full"
                   style={{
                     objectFit: 'contain',
-                    transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-                    transition: 'transform 0.3s ease',
                   }}
                   frameBorder="0"
                   allowFullScreen

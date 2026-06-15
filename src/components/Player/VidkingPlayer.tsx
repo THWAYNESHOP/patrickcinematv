@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { RotateCw, Maximize2, Settings, Volume2 } from 'lucide-react'
+import { Volume2 } from 'lucide-react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
 
 interface VidkingPlayerProps {
@@ -15,14 +15,8 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const [isLandscape, setIsLandscape] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [rotation, setRotation] = useState(0)
-  const [showSettings, setShowSettings] = useState(false)
-  const [quality, setQuality] = useState('auto')
-  const [playbackSpeed, setPlaybackSpeed] = useState(1)
-  const [audioTrack, setAudioTrack] = useState('default')
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
-  const [previousOrientation, setPreviousOrientation] = useState<string | null>(null)
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -63,16 +57,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           e.preventDefault()
           // Toggle fullscreen
           toggleFullscreen()
-          break
-        case 'r':
-          e.preventDefault()
-          // Toggle rotation
-          toggleRotation()
-          break
-        case 's':
-          e.preventDefault()
-          // Toggle settings
-          setShowSettings((prev: boolean) => !prev)
           break
       }
     }
@@ -121,27 +105,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     }
   }, [src])
 
-  // Handle orientation changes and mobile detection
-  useEffect(() => {
-    const checkOrientation = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      setIsLandscape(width > height)
-      setIsMobile(width <= 768) // Mobile breakpoint
-    }
-
-    // Initial check
-    checkOrientation()
-
-    // Listen for resize and orientation change events
-    window.addEventListener('resize', checkOrientation)
-    window.addEventListener('orientationchange', checkOrientation)
-
-    return () => {
-      window.removeEventListener('resize', checkOrientation)
-      window.removeEventListener('orientationchange', checkOrientation)
-    }
-  }, [])
 
   // Handle fullscreen changes
   useEffect(() => {
@@ -153,9 +116,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  const toggleRotation = () => {
-    setRotation((prev) => (prev + 90) % 360)
-  }
 
   const toggleFullscreen = async () => {
     const container = containerRef.current
@@ -163,21 +123,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
 
     try {
       if (!document.fullscreenElement) {
-        // Save current orientation before locking
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.type) {
-          setPreviousOrientation(orientation.type)
-        }
-
-        // Lock to landscape on mobile if supported
-        if (orientation && orientation.lock) {
-          try {
-            await orientation.lock('landscape')
-          } catch (e) {
-            console.warn('Screen orientation lock not supported or denied:', e)
-          }
-        }
-
         // Request fullscreen with cross-browser support for Android Chrome
         if (container.requestFullscreen) {
           await container.requestFullscreen()
@@ -189,22 +134,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           await (container as any).msRequestFullscreen()
         }
       } else {
-        // Unlock orientation and restore previous orientation if saved
-        const orientation = (screen as any).orientation
-        if (orientation && orientation.unlock) {
-          orientation.unlock()
-          // Try to restore previous orientation after a short delay
-          if (previousOrientation) {
-            setTimeout(async () => {
-              try {
-                await orientation.lock(previousOrientation)
-              } catch (e) {
-                console.warn('Could not restore previous orientation:', e)
-              }
-            }, 100)
-          }
-        }
-
         // Exit fullscreen with cross-browser support
         if (document.exitFullscreen) {
           await document.exitFullscreen()
@@ -271,8 +200,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           className="w-full h-full"
           style={{
             objectFit: isFullscreen ? 'cover' : 'contain',
-            transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
-            transition: 'transform 0.3s ease',
             backgroundColor: '#000',
             visibility: 'visible',
             display: 'block',
@@ -299,103 +226,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           }}
         />
       </div>
-      {/* Controls - Always show on mobile, otherwise in landscape */}
-      {(isMobile || isLandscape) && (
-        <>
-          <div className="absolute bottom-3 right-3 z-50 flex gap-2 pointer-events-auto">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-            <button
-              onClick={toggleRotation}
-              className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
-              aria-label="Rotate video"
-            >
-              <RotateCw className="w-5 h-5" style={{ transform: `rotate(${rotation}deg)` }} />
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-              className="bg-primary/80 hover:bg-primary text-white p-2.5 rounded-lg transition-colors duration-150 active:scale-95 pointer-events-auto"
-              aria-label="Toggle fullscreen"
-            >
-              <Maximize2 className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Settings Panel */}
-          {showSettings && (
-            <div className="absolute bottom-16 right-3 z-50 bg-darkSurface/95 backdrop-blur-xl rounded-xl border border-white/10 p-4 w-64 animate-fade-in">
-              <h3 className="text-white font-semibold mb-3">Video Settings</h3>
-              
-              {/* Quality Selector */}
-              <div className="mb-4">
-                <label className="text-gray-400 text-sm mb-2 block">Quality</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['auto', '1080p', '720p', '480p', '360p'].map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => setQuality(q)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        quality === q
-                          ? 'bg-primary text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
-                    >
-                      {q === 'auto' ? 'Auto' : q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Playback Speed */}
-              <div>
-                <label className="text-gray-400 text-sm mb-2 block">Playback Speed</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => setPlaybackSpeed(speed)}
-                      className={`px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        playbackSpeed === speed
-                          ? 'bg-primary text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
-                    >
-                      {speed}x
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Audio Track */}
-              <div>
-                <label className="text-gray-400 text-sm mb-2 block">Audio Track</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['default', 'english', 'spanish', 'french'].map((track) => (
-                    <button
-                      key={track}
-                      onClick={() => setAudioTrack(track)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                        audioTrack === track
-                          ? 'bg-primary text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
-                    >
-                      <Volume2 className="w-4 h-4" />
-                      {track.charAt(0).toUpperCase() + track.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
     </div>
   )
 }
