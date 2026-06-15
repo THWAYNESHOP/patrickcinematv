@@ -12,6 +12,7 @@ interface CustomPlayerProps {
 export default function CustomPlayer({ src, poster, title, autoPlay = false, onProgress }: CustomPlayerProps) {
   console.log('[CustomPlayer] Mounting with src:', src)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -24,6 +25,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [isLandscape, setIsLandscape] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [rotation, setRotation] = useState(0)
+  const [previousOrientation, setPreviousOrientation] = useState<string | null>(null)
 
   useEffect(() => {
     console.log('[CustomPlayer] Video element mounted')
@@ -66,6 +68,16 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     }
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
 
   // Handle orientation changes and mobile detection
   useEffect(() => {
@@ -110,13 +122,18 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   }
 
   const toggleFullscreen = async () => {
-    const video = videoRef.current
-    if (!video) return
+    const container = containerRef.current
+    if (!container) return
 
     try {
       if (!isFullscreen) {
-        // Lock to landscape on mobile if supported
+        // Save current orientation before locking
         const orientation = (screen as any).orientation
+        if (orientation && orientation.type) {
+          setPreviousOrientation(orientation.type)
+        }
+
+        // Lock to landscape on mobile if supported
         if (orientation && orientation.lock) {
           try {
             await orientation.lock('landscape')
@@ -125,35 +142,36 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
           }
         }
 
-        // Use video-specific fullscreen API for mobile (especially iOS)
-        if ((video as any).webkitEnterFullscreen) {
-          // iOS Safari
-          await (video as any).webkitEnterFullscreen()
-        } else if ((video as any).webkitRequestFullscreen) {
-          // Older iOS/Chrome
-          await (video as any).webkitRequestFullscreen()
-        } else if (video.requestFullscreen) {
-          // Standard API
-          await video.requestFullscreen()
-        } else if ((video as any).mozRequestFullScreen) {
-          // Firefox
-          await (video as any).mozRequestFullScreen()
-        } else if ((video as any).msRequestFullscreen) {
-          // IE/Edge
-          await (video as any).msRequestFullscreen()
+        // Request fullscreen on container (not video element)
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen()
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen()
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen()
         }
         setIsFullscreen(true)
       } else {
-        // Unlock orientation
+        // Unlock orientation and restore previous orientation if saved
         const orientation = (screen as any).orientation
         if (orientation && orientation.unlock) {
           orientation.unlock()
+          // Try to restore previous orientation after a short delay
+          if (previousOrientation) {
+            setTimeout(async () => {
+              try {
+                await orientation.lock(previousOrientation)
+              } catch (e) {
+                console.warn('Could not restore previous orientation:', e)
+              }
+            }, 100)
+          }
         }
 
         // Exit fullscreen
-        if ((video as any).webkitExitFullscreen) {
-          await (video as any).webkitExitFullscreen()
-        } else if (document.exitFullscreen) {
+        if (document.exitFullscreen) {
           await document.exitFullscreen()
         } else if ((document as any).webkitExitFullscreen) {
           await (document as any).webkitExitFullscreen()
@@ -222,6 +240,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
 
   return (
     <div
+      ref={containerRef}
       className={`relative bg-black rounded-lg overflow-hidden group ${
         isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
       }`}
@@ -233,7 +252,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
       }}
     >
       <div
-        className={`relative bg-black overflow-hidden ${
+        className={`relative bg-black overflow-hidden flex items-center justify-center ${
           isFullscreen
             ? 'w-full h-full'
             : 'aspect-video'
@@ -245,13 +264,14 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
           poster={poster}
           className="w-full h-full"
           style={{
-            objectFit: 'contain',
+            objectFit: isFullscreen ? 'cover' : 'contain',
             transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
             transition: 'transform 0.3s ease',
           }}
           onClick={togglePlay}
           autoPlay={autoPlay}
           controls={false}
+          playsInline
         />
       </div>
 

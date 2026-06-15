@@ -22,6 +22,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const [audioTrack, setAudioTrack] = useState('default')
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
+  const [previousOrientation, setPreviousOrientation] = useState<string | null>(null)
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -162,8 +163,13 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
 
     try {
       if (!document.fullscreenElement) {
-        // Lock to landscape on mobile if supported
+        // Save current orientation before locking
         const orientation = (screen as any).orientation
+        if (orientation && orientation.type) {
+          setPreviousOrientation(orientation.type)
+        }
+
+        // Lock to landscape on mobile if supported
         if (orientation && orientation.lock) {
           try {
             await orientation.lock('landscape')
@@ -183,10 +189,20 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           await (container as any).msRequestFullscreen()
         }
       } else {
-        // Unlock orientation
+        // Unlock orientation and restore previous orientation if saved
         const orientation = (screen as any).orientation
         if (orientation && orientation.unlock) {
           orientation.unlock()
+          // Try to restore previous orientation after a short delay
+          if (previousOrientation) {
+            setTimeout(async () => {
+              try {
+                await orientation.lock(previousOrientation)
+              } catch (e) {
+                console.warn('Could not restore previous orientation:', e)
+              }
+            }, 100)
+          }
         }
 
         // Exit fullscreen with cross-browser support
@@ -254,7 +270,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           src={src}
           className="w-full h-full"
           style={{
-            objectFit: 'contain',
+            objectFit: isFullscreen ? 'cover' : 'contain',
             transform: rotation !== 0 ? `rotate(${rotation}deg)` : undefined,
             transition: 'transform 0.3s ease',
             backgroundColor: '#000',
