@@ -1,31 +1,17 @@
-import { useState, useEffect } from 'react'
-import { storage } from '../utils/localStorage'
+import { useStore } from '../store/useStore'
 
 export function useMyList() {
-  const [myList, setMyList] = useState<any[]>([])
-
-  useEffect(() => {
-    setMyList(storage.getMyList())
-  }, [])
-
-  const addToMyList = (item: any) => {
-    storage.addToMyList(item)
-    setMyList(storage.getMyList())
-  }
-
-  const removeFromMyList = (id: string) => {
-    storage.removeFromMyList(id)
-    setMyList(storage.getMyList())
-  }
-
-  const isInMyList = (id: string) => {
-    return storage.isInMyList(id)
-  }
+  const myList = useStore((state) => state.myList)
+  const addToMyList = useStore((state) => state.addToMyList)
+  const removeFromMyList = useStore((state) => state.removeFromMyList)
+  const isInMyList = useStore((state) => state.isInMyList)
+  const clearMyList = useStore((state) => state.clearMyList)
 
   return {
     myList,
     addToMyList,
     removeFromMyList,
     isInMyList,
+    clearMyList,
   }
 }

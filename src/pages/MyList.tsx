@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useStore } from '../store/useStore'
 import ContentCarousel from '../components/Home/ContentCarousel'
 
 export default function MyList() {
@@ -6,11 +7,8 @@ export default function MyList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load from localStorage
-    const savedList = localStorage.getItem('patrickCinemaMyList')
-    if (savedList) {
-      setMyList(JSON.parse(savedList))
-    }
+    // Load from Zustand store
+    setMyList(useStore.getState().myList)
     setLoading(false)
   }, [])
 

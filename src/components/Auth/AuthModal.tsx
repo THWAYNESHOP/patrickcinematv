@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 
 interface AuthModalProps {
   onClose: () => void
@@ -11,17 +12,32 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { signIn, signUp } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle authentication (frontend-only)
-    console.log('Auth:', { mode, email, password, name })
-    onClose()
+    setError('')
+    setLoading(true)
+
+    try {
+      if (mode === 'login') {
+        await signIn(email, password)
+      } else {
+        await signUp(email, password, name)
+      }
+      onClose()
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleGuest = () => {
-    // Handle guest mode
-    console.log('Guest mode')
+    // Handle guest mode - continue without authentication
     onClose()
   }
 
@@ -43,6 +59,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           {mode === 'register' && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -91,6 +113,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                 placeholder="••••••••"
                 className="w-full pl-12 pr-12 py-3 bg-white/10 rounded-lg border border-white/20 focus:border-neonPink focus:outline-none neon-glow text-white placeholder-gray-400"
                 required
+                minLength={6}
               />
               <button
                 type="button"
@@ -104,9 +127,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
           <button
             type="submit"
-            className="w-full bg-neonPink hover:bg-neonPinkLight text-white py-3 rounded-lg font-semibold transition-colors neon-glow"
+            disabled={loading}
+            className="w-full bg-neonPink hover:bg-neonPinkLight text-white py-3 rounded-lg font-semibold transition-colors neon-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+              </>
+            ) : (
+              mode === 'login' ? 'Sign In' : 'Create Account'
+            )}
           </button>
         </form>
 

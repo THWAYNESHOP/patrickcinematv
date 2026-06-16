@@ -5,6 +5,7 @@ import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
+import { useStore } from '../store/useStore'
 
 const recommendedMovies = [
   { id: 1078605, title: 'Test Movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', rating: '8.0', year: 2024, type: 'movie' as const },
@@ -27,24 +28,23 @@ export default function MovieDetails() {
   const heroRef = useRef<HTMLDivElement>(null)
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
 
+  const setWatchProgress = useStore((state) => state.setWatchProgress)
+  const getWatchProgress = useStore((state) => state.getWatchProgress)
+
   const handleProgress = (data: PlayerEventData) => {
-    localStorage.setItem(`patrickCinema_progress_movie_${id}`, JSON.stringify({
-      progress: data.progress,
-      currentTime: data.currentTime,
-      timestamp: Date.now()
-    }))
+    setWatchProgress(`movie_${id}`, data.progress)
   }
 
   useEffect(() => {
-    // Load saved progress
-    const savedProgress = localStorage.getItem(`patrickCinema_progress_movie_${id}`)
-    if (savedProgress) {
-      const data = JSON.parse(savedProgress)
-      setStartProgressSeconds(Math.floor(data.currentTime || 0))
+    // Load saved progress from store
+    const savedProgress = getWatchProgress(`movie_${id}`)
+    if (savedProgress > 0) {
+      const runtime = Number(movie?.runtime) || 120
+      setStartProgressSeconds(Math.floor((savedProgress / 100) * runtime * 60))
     } else {
       setStartProgressSeconds(0)
     }
-  }, [id])
+  }, [id, movie, getWatchProgress])
 
   useEffect(() => {
     async function fetchMovie() {
@@ -168,8 +168,6 @@ export default function MovieDetails() {
       id,
       title: movie.title,
       poster: movie.poster,
-      rating: movie.rating,
-      year: movie.year,
       type: 'movie',
     })
   }

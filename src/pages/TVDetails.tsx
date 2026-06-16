@@ -6,6 +6,7 @@ import VidkingPlayer from '../components/Player/VidkingPlayer'
 import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
+import { useStore } from '../store/useStore'
 
 const fallbackRecommendations: MovieSummary[] = [
   { id: 119051, title: 'Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021, type: 'tv' },
@@ -25,6 +26,8 @@ export default function TVDetails() {
   const [isMuted, setIsMuted] = useState(true)
   const heroRef = useRef<HTMLDivElement>(null)
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
+  const setWatchProgress = useStore((state) => state.setWatchProgress)
+  const getWatchProgress = useStore((state) => state.getWatchProgress)
 
   useEffect(() => {
     if (id === '119051') {
@@ -37,23 +40,19 @@ export default function TVDetails() {
   }, [id])
 
   const handleProgress = (data: PlayerEventData) => {
-    localStorage.setItem(`patrickCinema_progress_tv_${id}_${selectedSeason}_${selectedEpisode}`, JSON.stringify({
-      progress: data.progress,
-      currentTime: data.currentTime,
-      timestamp: Date.now()
-    }))
+    setWatchProgress(`tv_${id}_${selectedSeason}_${selectedEpisode}`, data.progress)
   }
 
   useEffect(() => {
-    // Load saved progress
-    const savedProgress = localStorage.getItem(`patrickCinema_progress_tv_${id}_${selectedSeason}_${selectedEpisode}`)
-    if (savedProgress) {
-      const data = JSON.parse(savedProgress)
-      setStartProgressSeconds(Math.floor(data.currentTime || 0))
+    // Load saved progress from store
+    const savedProgress = getWatchProgress(`tv_${id}_${selectedSeason}_${selectedEpisode}`)
+    if (savedProgress > 0) {
+      const episodeRuntime = 45 // Default 45 minutes per episode
+      setStartProgressSeconds(Math.floor((savedProgress / 100) * episodeRuntime * 60))
     } else {
       setStartProgressSeconds(0)
     }
-  }, [id, selectedSeason, selectedEpisode])
+  }, [id, selectedSeason, selectedEpisode, getWatchProgress])
 
   useEffect(() => {
     async function fetchTV() {
@@ -455,10 +454,9 @@ export default function TVDetails() {
             {Array.from({ length: 10 }).map((_, i) => {
               const episodeNumber = i + 1
               const isSelected = selectedEpisode === episodeNumber
-              const progressKey = `patrickCinema_progress_tv_${id}_${selectedSeason}_${episodeNumber}`
-              const savedProgress = localStorage.getItem(progressKey)
-              const progressData = savedProgress ? JSON.parse(savedProgress) : null
-              const progressPercent = progressData ? Math.floor(progressData.progress || 0) : 0
+              const progressKey = `tv_${id}_${selectedSeason}_${episodeNumber}`
+              const savedProgress = useStore.getState().getWatchProgress(progressKey)
+              const progressPercent = Math.floor(savedProgress || 0)
 
               return (
                 <button

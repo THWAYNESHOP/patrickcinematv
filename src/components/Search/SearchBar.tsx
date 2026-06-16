@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { useDebounce } from '../../hooks/useDebounce'
+import { performFuzzySearch, getSearchSuggestions } from '../../utils/fuzzySearch'
 
 interface SearchBarProps {
   onClose?: () => void
@@ -15,11 +16,15 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [showFilters, setShowFilters] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const [filters, setFilters] = useState({
-    type: 'all', // all, movie, tv
+    type: 'all', // all, movie, tv, anime, sports
     year: 'all',
     rating: 'all',
-    sortBy: 'relevance' // relevance, rating, year, newest
+    genre: 'all',
+    language: 'all',
+    sortBy: 'relevance', // relevance, rating, year, newest
   })
   const navigate = useNavigate()
   const searchContainerRef = useFocusTrap(true)
@@ -39,6 +44,8 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         filtered = filtered.filter(item => item.year >= 2010 && item.year < 2020)
       } else if (filters.year === '2000s') {
         filtered = filtered.filter(item => item.year >= 2000 && item.year < 2010)
+      } else if (filters.year === '2020s') {
+        filtered = filtered.filter(item => item.year >= 2020)
       } else {
         filtered = filtered.filter(item => item.year === parseInt(filters.year))
       }
@@ -48,6 +55,20 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     if (filters.rating !== 'all') {
       const minRating = parseFloat(filters.rating)
       filtered = filtered.filter(item => item.rating && parseFloat(item.rating) >= minRating)
+    }
+
+    // Filter by genre
+    if (filters.genre !== 'all') {
+      filtered = filtered.filter(item => 
+        item.genre && item.genre.includes(filters.genre)
+      )
+    }
+
+    // Filter by language
+    if (filters.language !== 'all') {
+      filtered = filtered.filter(item => 
+        item.language === filters.language
+      )
     }
 
     // Sort results
@@ -77,22 +98,57 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     if (debouncedQuery.length < 2) {
       setResults([])
       setSelectedIndex(-1)
+      setSuggestions([])
+      setShowSuggestions(false)
       return
     }
 
     setIsSearching(true)
     setSelectedIndex(-1)
+    setShowSuggestions(true)
     async function search() {
       try {
         const tmdbResults = await tmdbApi.searchMulti(debouncedQuery)
-        const filteredResults = applyFilters(tmdbResults)
+        
+        // Convert to SearchableItem format
+        const searchableItems = tmdbResults.map((item: any) => ({
+          id: String(item.id),
+          title: item.title,
+          type: item.type,
+          year: item.year,
+          rating: item.rating,
+          poster: item.poster,
+          genre: item.genre || [],
+          language: item.language,
+        }))
+        
+        // Apply fuzzy search for better matching
+        const fuzzyResults = performFuzzySearch(searchableItems, debouncedQuery)
+        
+        // Get search suggestions
+        const searchSuggestions = getSearchSuggestions(searchableItems, debouncedQuery)
+        setSuggestions(searchSuggestions)
+        
+        const filteredResults = applyFilters(fuzzyResults)
         setResults(filteredResults)
       } catch (error) {
         console.warn('TMDB search unavailable, using fallback search:', error)
-        const filtered = fallbackData.filter((item) =>
-          item.title.toLowerCase().includes(debouncedQuery.toLowerCase())
-        )
-        const filteredResults = applyFilters(filtered)
+        
+        // Convert fallback data to SearchableItem format
+        const searchableFallback = fallbackData.map((item: any) => ({
+          id: String(item.id),
+          title: item.title,
+          type: item.type,
+          year: item.year,
+          poster: item.poster,
+        }))
+        
+        // Use fuzzy search on fallback data
+        const fuzzyResults = performFuzzySearch(searchableFallback, debouncedQuery)
+        const searchSuggestions = getSearchSuggestions(searchableFallback, debouncedQuery)
+        setSuggestions(searchSuggestions)
+        
+        const filteredResults = applyFilters(fuzzyResults)
         setResults(filteredResults)
       } finally {
         setIsSearching(false)
@@ -203,6 +259,25 @@ export default function SearchBar({ onClose }: SearchBarProps) {
                 <X className="w-5 h-5" />
               </button>
             )}
+            
+            {/* Search Suggestions Dropdown */}
+            {showSuggestions && suggestions.length > 0 && query.length >= 2 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-darkSurface rounded-xl border border-white/10 shadow-2xl overflow-hidden z-50">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setQuery(suggestion)
+                      setShowSuggestions(false)
+                    }}
+                    className="w-full px-5 py-3 text-left text-white hover:bg-white/10 transition-colors flex items-center gap-3"
+                  >
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <span>{suggestion}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -233,6 +308,8 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               <option value="all">All Types</option>
               <option value="movie">Movies</option>
               <option value="tv">TV Shows</option>
+              <option value="anime">Anime</option>
+              <option value="sports">Sports</option>
             </select>
 
             <select
@@ -259,6 +336,37 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               <option value="8">8+ Rating</option>
               <option value="7">7+ Rating</option>
               <option value="6">6+ Rating</option>
+            </select>
+
+            <select
+              value={filters.genre}
+              onChange={(e) => setFilters({ ...filters, genre: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="all">All Genres</option>
+              <option value="action">Action</option>
+              <option value="comedy">Comedy</option>
+              <option value="drama">Drama</option>
+              <option value="horror">Horror</option>
+              <option value="sci-fi">Sci-Fi</option>
+              <option value="thriller">Thriller</option>
+              <option value="romance">Romance</option>
+              <option value="animation">Animation</option>
+            </select>
+
+            <select
+              value={filters.language}
+              onChange={(e) => setFilters({ ...filters, language: e.target.value })}
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value="all">All Languages</option>
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="ja">Japanese</option>
+              <option value="ko">Korean</option>
+              <option value="zh">Chinese</option>
             </select>
 
             <select
