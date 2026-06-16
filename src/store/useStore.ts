@@ -64,6 +64,14 @@ interface AppState {
   };
   setUser: (user: AppState['user']) => void;
 
+  // Notification preferences
+  notificationPreferences: {
+    sports: boolean;
+    newReleases: boolean;
+    favoriteShows: boolean;
+  };
+  setNotificationPreferences: (preferences: AppState['notificationPreferences']) => void;
+
   // Supabase sync functions
   syncWithSupabase: () => Promise<void>;
   clearSupabaseData: () => Promise<void>;
@@ -178,6 +186,16 @@ export const useStore = create<AppState>()(
         set({ user });
       },
 
+      // Notification preferences
+      notificationPreferences: {
+        sports: true,
+        newReleases: true,
+        favoriteShows: true,
+      },
+      setNotificationPreferences: (preferences: AppState['notificationPreferences']) => {
+        set({ notificationPreferences: preferences });
+      },
+
       // Supabase sync functions
       syncWithSupabase: async () => {
         const { user, myList, watchProgress, watchHistory } = get();
@@ -253,6 +271,7 @@ export const useStore = create<AppState>()(
         continueWatching: state.continueWatching,
         watchHistory: state.watchHistory,
         user: state.user,
+        notificationPreferences: state.notificationPreferences,
       }),
     }
   )
