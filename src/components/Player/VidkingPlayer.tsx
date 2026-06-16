@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Volume2 } from 'lucide-react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
 
 interface VidkingPlayerProps {
@@ -12,8 +11,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   console.log('[VidkingPlayer] Mounting with src:', src)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isLandscape, setIsLandscape] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)

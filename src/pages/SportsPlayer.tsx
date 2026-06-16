@@ -9,7 +9,6 @@ export default function SportsPlayer() {
   const [streams, setStreams] = useState<Stream[]>([])
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -38,49 +37,8 @@ export default function SportsPlayer() {
     fetchStreams()
   }, [source, id, matchId])
 
-  // Handle fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
 
 
-  const toggleFullscreen = async () => {
-    const container = playerContainerRef.current
-    if (!container) return
-
-    try {
-      if (!document.fullscreenElement) {
-        // Request fullscreen with cross-browser support for Android Chrome
-        if (container.requestFullscreen) {
-          await container.requestFullscreen()
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen()
-        } else if ((container as any).mozRequestFullScreen) {
-          await (container as any).mozRequestFullScreen()
-        } else if ((container as any).msRequestFullscreen) {
-          await (container as any).msRequestFullscreen()
-        }
-      } else {
-        // Exit fullscreen with cross-browser support
-        if (document.exitFullscreen) {
-          await document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen()
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen()
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen()
-        }
-      }
-    } catch (error) {
-      console.error('Fullscreen error:', error)
-    }
-  }
 
 
   if (loading) {
@@ -104,38 +62,24 @@ export default function SportsPlayer() {
   const currentStream = streams[selectedStream]
 
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 z-50' : ''} bg-deepBlack`}>
-      <div className={isFullscreen ? 'w-full h-full' : 'min-h-screen py-6 sm:py-8 px-3 sm:px-4 md:px-8'}>
-        <div className={isFullscreen ? 'w-full h-full flex flex-col' : 'container mx-auto max-w-7xl'}>
-          {/* Header - Hidden in fullscreen */}
-          {!isFullscreen && (
-            <div className="mb-6">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Live Match</h1>
-              <p className="text-sm sm:text-base text-gray-400 mt-2">
-                Stream {selectedStream + 1} of {streams.length}
-              </p>
-            </div>
-          )}
+    <div className="bg-deepBlack">
+      <div className="min-h-screen py-6 sm:py-8 px-3 sm:px-4 md:px-8">
+        <div className="container mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Live Match</h1>
+            <p className="text-sm sm:text-base text-gray-400 mt-2">
+              Stream {selectedStream + 1} of {streams.length}
+            </p>
+          </div>
 
           {/* Player Container */}
           <div
             ref={playerContainerRef}
-            className={`overflow-hidden transition-all duration-200 ${
-              isFullscreen ? 'mb-0 w-full h-full' : 'glass-strong rounded-lg mb-6'
-            }`}
+            className="overflow-hidden transition-all duration-200 glass-strong rounded-lg mb-6"
           >
             {/* Player Wrapper */}
-            <div
-              className={`relative bg-black ${
-                isFullscreen
-                  ? 'w-full h-full'
-                  : 'aspect-video'
-              }`}
-              style={{
-                width: isFullscreen ? '100vw' : undefined,
-                height: isFullscreen ? '100dvh' : undefined,
-              }}
-            >
+            <div className="relative bg-black aspect-video">
               {/* LIVE Indicator */}
               <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full pointer-events-none">
                 <div className="w-2 h-2 bg-red-50 rounded-full animate-pulse" />
@@ -167,8 +111,8 @@ export default function SportsPlayer() {
             </div>
           </div>
 
-          {/* Stream Selector - Hidden in fullscreen */}
-          {!isFullscreen && streams.length > 1 && (
+          {/* Stream Selector */}
+          {streams.length > 1 && (
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-white mb-3">Select Stream</h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -193,9 +137,8 @@ export default function SportsPlayer() {
             </div>
           )}
 
-          {/* Stream Info - Hidden in fullscreen */}
-          {!isFullscreen && (
-            <div className="glass rounded-lg p-6">
+          {/* Stream Info */}
+          <div className="glass rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4 text-white">Stream Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
@@ -216,7 +159,6 @@ export default function SportsPlayer() {
                 </div>
               </div>
             </div>
-          )}
         </div>
       </div>
     </div>
