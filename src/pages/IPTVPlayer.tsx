@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, ChevronRight, Play, Tv, Radio } from 'lucide-react';
-import { iptvChannels, IPTVChannel, IPTVCategory } from '../data/iptvChannels';
+import { iptvChannels, IPTVChannel } from '../data/iptvChannels';
 
 export default function IPTVPlayer() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [selectedChannel, setSelectedChannel] = useState<IPTVChannel | null>(null);
 
   const toggleCategory = (categoryName: string) => {
     setExpandedCategories((prev) => {
@@ -29,7 +28,6 @@ export default function IPTVPlayer() {
   });
 
   const handleChannelClick = (channel: IPTVChannel) => {
-    setSelectedChannel(channel);
     navigate(`/sports-player/${channel.id}`, {
       state: { streamUrl: channel.url, channelName: channel.name },
     });

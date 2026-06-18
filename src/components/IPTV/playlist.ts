@@ -138,6 +138,7 @@ function guessNameFromUrl(url: string): string {
       return repairMojibake(decodeURIComponent(lastSegment))
     }
   } catch {
+    // Ignore invalid URLs
   }
 
   return 'Live Channel'

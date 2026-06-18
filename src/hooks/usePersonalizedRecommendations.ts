@@ -62,7 +62,7 @@ export function usePersonalizedRecommendations(allContent: any[]) {
     return scoredContent
       .sort((a, b) => b.score - a.score)
       .slice(0, 20)
-      .map(({ score, ...item }) => item)
+      .map(({ _score, ...item }) => item)
   }, [allContent, watchHistory, myList])
 
   return recommendations
