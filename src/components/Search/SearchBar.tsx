@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Search, X, Film, Tv, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
@@ -30,7 +30,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const searchContainerRef = useFocusTrap(true)
   const debouncedQuery = useDebounce(query, 500)
 
-  const applyFilters = (items: any[]) => {
+  const applyFilters = useCallback((items: any[]) => {
     let filtered = [...items]
 
     // Filter by type
@@ -81,7 +81,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     }
 
     return filtered
-  }
+  }, [filters])
 
   const fallbackData = [
     { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },

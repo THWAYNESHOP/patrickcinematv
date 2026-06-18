@@ -1,18 +1,32 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { Radio } from 'lucide-react'
+import { useParams, useLocation } from 'react-router-dom'
+import { Radio, ArrowLeft } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 
 export default function SportsPlayer() {
   console.log('[SportsPlayer] Mounting')
   const { source, id, matchId } = useParams()
+  const location = useLocation()
   const [streams, setStreams] = useState<Stream[]>([])
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [directStream, setDirectStream] = useState<{ url: string; name: string } | null>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
+    // Check if this is a direct IPTV stream from Live TV
+    const state = location.state as { streamUrl?: string; channelName?: string } | null
+    if (state?.streamUrl) {
+      setDirectStream({
+        url: state.streamUrl,
+        name: state.channelName || 'Live Channel',
+      })
+      setLoading(false)
+      return
+    }
+
+    // Otherwise, fetch from sports API
     async function fetchStreams() {
       // Handle both route patterns: /sports/:source/:id and /sports/:matchId
       const streamSource = source || 'alpha' // default source if not provided
@@ -35,7 +49,7 @@ export default function SportsPlayer() {
     }
 
     fetchStreams()
-  }, [source, id, matchId])
+  }, [source, id, matchId, location.state])
 
 
 
@@ -49,7 +63,7 @@ export default function SportsPlayer() {
     )
   }
 
-  if (streams.length === 0) {
+  if (!directStream && streams.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="text-center">
@@ -67,9 +81,19 @@ export default function SportsPlayer() {
         <div className="container mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Live Match</h1>
+            <div className="flex items-center gap-4 mb-2">
+              <button
+                onClick={() => window.history.back()}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                {directStream ? directStream.name : 'Live Match'}
+              </h1>
+            </div>
             <p className="text-sm sm:text-base text-gray-400 mt-2">
-              Stream {selectedStream + 1} of {streams.length}
+              {directStream ? 'Live TV Channel' : `Stream ${selectedStream + 1} of ${streams.length}`}
             </p>
           </div>
 
@@ -98,7 +122,7 @@ export default function SportsPlayer() {
               >
                 <iframe
                   ref={iframeRef}
-                  src={currentStream.embedUrl}
+                  src={directStream ? directStream.url : currentStream.embedUrl}
                   className="w-full h-full"
                   style={{
                     objectFit: 'contain',
@@ -111,8 +135,8 @@ export default function SportsPlayer() {
             </div>
           </div>
 
-          {/* Stream Selector */}
-          {streams.length > 1 && (
+          {/* Stream Selector - only show for sports API streams */}
+          {!directStream && streams.length > 1 && (
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-white mb-3">Select Stream</h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -137,8 +161,9 @@ export default function SportsPlayer() {
             </div>
           )}
 
-          {/* Stream Info */}
-          <div className="glass rounded-lg p-6">
+          {/* Stream Info - only show for sports API streams */}
+          {!directStream && (
+            <div className="glass rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4 text-white">Stream Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
@@ -159,6 +184,7 @@ export default function SportsPlayer() {
                 </div>
               </div>
             </div>
+          )}
         </div>
       </div>
     </div>
