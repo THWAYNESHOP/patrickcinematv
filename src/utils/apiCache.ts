@@ -33,7 +33,7 @@ export async function prefetchTrendingData() {
       tmdbApi.getTrendingMoviesToday().catch(() => {}),
       tmdbApi.getTrendingTVToday().catch(() => {}),
     ])
-  } catch (error) {
+  } catch {
     // Silent fail for prefetch
   }
 }
