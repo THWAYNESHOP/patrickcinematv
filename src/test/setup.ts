@@ -15,7 +15,8 @@ const localStorageMock = {
   key: vi.fn(),
 }
 
-global.localStorage = localStorageMock as any
+// @ts-ignore
+global.localStorage = localStorageMock
 
 // Cleanup after each test
 afterEach(() => {
