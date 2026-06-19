@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.svg', 'icon-512.svg'],
+      includeAssets: ['icon-192.svg', 'icon-512.svg', 'index.html'],
       workbox: {
         runtimeCaching: [
           {
@@ -59,7 +59,21 @@ export default defineConfig({
               networkTimeoutSeconds: 10,
             },
           },
+          {
+            urlPattern: /\.(?:mp4|webm|m3u8)$/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'video-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              networkTimeoutSeconds: 15,
+            },
+          },
         ],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/],
       },
       manifest: {
         name: 'Patrick Cinema TV',
@@ -114,10 +128,28 @@ export default defineConfig({
           if (id.includes('axios')) {
             return 'api-vendor'
           }
+          if (id.includes('framer-motion')) {
+            return 'animation-vendor'
+          }
+          if (id.includes('supabase')) {
+            return 'supabase-vendor'
+          }
         },
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
       },
     },
     chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true,
+    reportCompressedSize: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
   server: {
     port: 5173,
