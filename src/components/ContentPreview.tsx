@@ -11,7 +11,7 @@ interface ContentPreviewProps {
 export default function ContentPreview({ children, previewUrl, onHover, onLeave }: ContentPreviewProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const timeoutRef = useRef<number>()
+  const timeoutRef = useRef<number | undefined>(undefined)
 
   const handleMouseEnter = () => {
     setIsHovered(true)

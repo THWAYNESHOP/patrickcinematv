@@ -9,7 +9,7 @@ interface TooltipProps {
 
 export default function Tooltip({ content, children, position = 'top', delay = 200 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
-  const timeoutRef = useRef<number>()
+  const timeoutRef = useRef<number | undefined>(undefined)
   const triggerRef = useRef<HTMLDivElement>(null)
 
   const positionClasses = {
