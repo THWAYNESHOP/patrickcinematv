@@ -15,7 +15,7 @@ const localStorageMock = {
   key: vi.fn(),
 }
 
-// @ts-ignore
+// @ts-expect-error - global is not defined in TypeScript but available in test environment
 global.localStorage = localStorageMock
 
 // Cleanup after each test
