@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './styles/index.css'
+import './sentry'
 import { prefetchTrendingData } from './utils/apiCache'
 
 // Register service worker
