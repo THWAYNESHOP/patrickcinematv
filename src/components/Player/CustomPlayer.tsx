@@ -62,6 +62,21 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
 
+  // Touch event handlers for mobile
+  const handleTouchStart = () => {
+    setShowControls(true)
+  }
+
+  const handleTouchEnd = () => {
+    let hideControlsTimeout: ReturnType<typeof setTimeout>
+    hideControlsTimeout = setTimeout(() => {
+      if (isPlaying) {
+        setShowControls(false)
+      }
+    }, 3000)
+    return () => clearTimeout(hideControlsTimeout)
+  }
+
 
   const togglePlay = () => {
     const video = videoRef.current
@@ -130,6 +145,8 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
       className="relative bg-black rounded-lg overflow-hidden group"
       onMouseMove={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="relative bg-black overflow-hidden flex items-center justify-center aspect-video">
         <video
@@ -161,40 +178,41 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             max="100"
             value={progress}
             onChange={handleSeek}
-            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-neonPink neon-glow"
+            className="w-full h-2 md:h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-neonPink neon-glow"
+            style={{ height: '8px' }}
           />
         </div>
 
         {/* Control Buttons */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 pointer-events-auto">
+          <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
             <button
               onClick={togglePlay}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors neon-glow"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors neon-glow min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
             </button>
 
             <button
               onClick={skipBackward}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <SkipBack className="w-5 h-5" />
+              <SkipBack className="w-5 h-5 md:w-5 md:h-5" />
             </button>
 
             <button
               onClick={skipForward}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <SkipForward className="w-5 h-5" />
+              <SkipForward className="w-5 h-5 md:w-5 md:h-5" />
             </button>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMute}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                {isMuted ? <VolumeX className="w-5 h-5 md:w-5 md:h-5" /> : <Volume2 className="w-5 h-5 md:w-5 md:h-5" />}
               </button>
               <input
                 type="range"
@@ -203,11 +221,11 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
                 step="0.1"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-neonPink"
+                className="w-16 md:w-20 h-2 md:h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-neonPink"
               />
             </div>
 
-            <span className="text-sm text-gray-300">
+            <span className="text-xs md:text-sm text-gray-300">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>

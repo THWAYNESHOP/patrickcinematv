@@ -27,7 +27,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top ${
         isScrolled
           ? 'bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-3 shadow-lg'
           : 'bg-gradient-to-b from-deepBlack/95 via-deepBlack/80 to-transparent py-5'
@@ -63,7 +63,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110"
+              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -71,7 +71,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
 
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110"
+              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Open search"
             >
               <Search className="w-5 h-5" />
@@ -80,7 +80,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110"
+              className="lg:hidden p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -89,13 +89,13 @@ export default function Navbar({ isScrolled }: NavbarProps) {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden mt-6 bg-darkSurface/95 backdrop-blur-xl rounded-xl p-5 space-y-1 border border-white/10 shadow-2xl">
+          <div className="lg:hidden mt-6 bg-darkSurface/95 backdrop-blur-xl rounded-xl p-4 md:p-5 space-y-1 border border-white/10 shadow-2xl">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMenuOpen(false)}
-                className={`block py-3.5 px-5 rounded-xl transition-all duration-300 ${
+                className={`block py-3.5 px-4 md:px-5 rounded-xl transition-all duration-300 min-h-[48px] flex items-center ${
                   location.pathname === item.path
                     ? 'bg-primary/10 text-white font-semibold'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'

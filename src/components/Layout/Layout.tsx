@@ -31,7 +31,7 @@ export default function Layout({ children }: LayoutProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-deepBlack">
+    <div className="min-h-screen bg-deepBlack pb-safe">
       <Navbar isScrolled={isScrolled} />
       <main className="pt-16 md:pt-20">{children}</main>
       <Footer />

@@ -6,6 +6,8 @@ import LiveMatches from '../components/Sports/LiveMatches'
 import { tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
+import { usePullToRefresh } from '../hooks/usePullToRefresh'
+import { RefreshCw } from 'lucide-react'
 
 const fallbackMovies = [
   { id: 1078605, title: 'Test Movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', backdrop: 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', overview: 'A test movie embed used for local player testing.', rating: '8.0', year: 2024 },
@@ -36,72 +38,99 @@ export default function Home() {
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
 
-  useEffect(() => {
-    async function fetchHomeContent() {
-      try {
-        const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama, actionAdventureMovies, comedyMovies, animeContent, newReleasesContent, netflixCatalog, primeCatalog, disneyCatalog, appleCatalog] = await Promise.all([
-          tmdbApi.getTrendingMoviesToday(),
-          tmdbApi.getNowPlayingMovies(),
-          tmdbApi.getTrendingTVToday(),
-          tmdbApi.getMoviesByGenre(10749).catch(() => []),
-          tmdbApi.getTVByOriginCountry('KR').catch(() => []),
-          tmdbApi.getMoviesByGenre(28).catch(() => []),
-          tmdbApi.getMoviesByGenre(35).catch(() => []),
-          tmdbApi.getTVByGenre(16).catch(() => []),
-          tmdbApi.getNewReleases().catch(() => []),
-          tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
-          tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
-          tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
-          tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
-        ])
+  const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
+    onRefresh: async () => {
+      await fetchHomeContent()
+    },
+    threshold: 80,
+  })
 
-        const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
-        setFeaturedMovies(heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies)
-        setTrendingMovies(trendingToday.length ? trendingToday : fallbackMovies)
-        setPopularTV(trendingTV.length ? trendingTV : fallbackTV)
-        setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingMovies.slice(0, 8))
-        setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
-        setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingMovies.slice(0, 8))
-        setComedy(comedyMovies.length ? comedyMovies : trendingMovies.slice(0, 8))
-        setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
-        setNewReleases(newReleasesContent.length ? newReleasesContent : [...trendingMovies.slice(0, 10), ...trendingTV.slice(0, 10)])
-        setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
-        setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
-        setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
-        setAppleContent([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
-      } catch (error) {
-        console.warn('Home TMDB content unavailable, using fallback data:', error)
-        setFeaturedMovies(fallbackMovies)
-        setTrendingMovies(fallbackMovies)
-        setPopularTV(fallbackTV)
-        setTeenRomance(fallbackMovies.slice(0, 8))
-        setKDrama(fallbackTV.slice(0, 8))
-        setActionAdventure(fallbackMovies.slice(0, 8))
-        setComedy(fallbackMovies.slice(0, 8))
-        setAnime(fallbackTV.slice(0, 8))
-        setNewReleases([...fallbackMovies.slice(0, 5), ...fallbackTV.slice(0, 5)])
-        setNetflixContent([])
-        setPrimeContent([])
-        setDisneyContent([])
-        setAppleContent([])
-      } finally {
-        setLoading(false)
-      }
+  async function fetchHomeContent() {
+    try {
+      const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama, actionAdventureMovies, comedyMovies, animeContent, newReleasesContent, netflixCatalog, primeCatalog, disneyCatalog, appleCatalog] = await Promise.all([
+        tmdbApi.getTrendingMoviesToday(),
+        tmdbApi.getNowPlayingMovies(),
+        tmdbApi.getTrendingTVToday(),
+        tmdbApi.getMoviesByGenre(10749).catch(() => []),
+        tmdbApi.getTVByOriginCountry('KR').catch(() => []),
+        tmdbApi.getMoviesByGenre(28).catch(() => []),
+        tmdbApi.getMoviesByGenre(35).catch(() => []),
+        tmdbApi.getTVByGenre(16).catch(() => []),
+        tmdbApi.getNewReleases().catch(() => []),
+        tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
+        tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
+        tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
+        tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
+      ])
+
+      const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
+      setFeaturedMovies(heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies)
+      setTrendingMovies(trendingToday.length ? trendingToday : fallbackMovies)
+      setPopularTV(trendingTV.length ? trendingTV : fallbackTV)
+      setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingMovies.slice(0, 8))
+      setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
+      setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingMovies.slice(0, 8))
+      setComedy(comedyMovies.length ? comedyMovies : trendingMovies.slice(0, 8))
+      setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
+      setNewReleases(newReleasesContent.length ? newReleasesContent : [...trendingMovies.slice(0, 10), ...trendingTV.slice(0, 10)])
+      setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
+      setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
+      setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
+      setAppleContent([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
+    } catch (error) {
+      console.warn('Home TMDB content unavailable, using fallback data:', error)
+      setFeaturedMovies(fallbackMovies)
+      setTrendingMovies(fallbackMovies)
+      setPopularTV(fallbackTV)
+      setTeenRomance(fallbackMovies.slice(0, 8))
+      setKDrama(fallbackTV.slice(0, 8))
+      setActionAdventure(fallbackMovies.slice(0, 8))
+      setComedy(fallbackMovies.slice(0, 8))
+      setAnime(fallbackTV.slice(0, 8))
+      setNewReleases([...fallbackMovies.slice(0, 5), ...fallbackTV.slice(0, 5)])
+      setNetflixContent([])
+      setPrimeContent([])
+      setDisneyContent([])
+      setAppleContent([])
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchHomeContent()
   }, [])
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-neonPink border-t-transparent rounded-full" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-deepBlack">
+        <div className="relative mb-6">
+          <div className="animate-spin w-16 h-16 md:w-20 md:h-20 border-4 border-primary/30 border-t-primary rounded-full" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-full animate-pulse" />
+          </div>
+        </div>
+        <p className="text-white text-lg md:text-xl font-semibold animate-pulse">Loading NEXASTREAM...</p>
+        <p className="text-gray-400 text-sm md:text-base mt-2">Preparing your entertainment experience</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
+    <div ref={containerRef} className="min-h-screen relative">
+      {/* Pull to Refresh Indicator */}
+      {(isPulling || isRefreshing) && (
+        <div 
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-deepBlack/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300"
+          style={{ transform: `translateY(${isPulling ? Math.min(pullDistance, 80) : 0}px)` }}
+        >
+          <div className="flex items-center gap-3 py-4">
+            <RefreshCw className={`w-6 h-6 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="text-white font-medium">{isRefreshing ? 'Refreshing...' : 'Pull to refresh'}</span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Banner */}
       <HeroSlider movies={featuredMovies} />
 
