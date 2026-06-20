@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, ChevronRight, Play, Tv, Radio, Trophy } from 'lucide-react';
 import { cdnLiveTvApi, CDNChannel, CDNSportEvent } from '../api/cdnlivetv';
+import { iptvChannels } from '../data/iptvChannels';
 
 export default function IPTVPlayer() {
   const navigate = useNavigate();
@@ -22,8 +23,29 @@ export default function IPTVPlayer() {
           cdnLiveTvApi.getAllSports(),
         ]);
         
-        setChannels(channelsData);
-        setGroupedChannels(cdnLiveTvApi.groupChannelsByCountry(channelsData));
+        // If API returns empty data, use fallback
+        if (channelsData.length === 0) {
+          console.log('CDN Live TV API returned no channels, using fallback data');
+          // Convert fallback IPTV channels to CDN format
+          const fallbackChannels: CDNChannel[] = [];
+          iptvChannels.forEach(category => {
+            category.channels.forEach(channel => {
+              fallbackChannels.push({
+                name: channel.name,
+                code: channel.region.substring(0, 2).toLowerCase(),
+                url: channel.url,
+                image: channel.logo || '',
+                status: 'online',
+                viewers: Math.floor(Math.random() * 1000),
+              });
+            });
+          });
+          setChannels(fallbackChannels);
+          setGroupedChannels(cdnLiveTvApi.groupChannelsByCountry(fallbackChannels));
+        } else {
+          setChannels(channelsData);
+          setGroupedChannels(cdnLiveTvApi.groupChannelsByCountry(channelsData));
+        }
         
         // Extract all sports events
         const allEvents: CDNSportEvent[] = [];
@@ -38,6 +60,23 @@ export default function IPTVPlayer() {
         setSportsEvents(allEvents);
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Use fallback data on error
+        console.log('Error fetching CDN Live TV data, using fallback data');
+        const fallbackChannels: CDNChannel[] = [];
+        iptvChannels.forEach(category => {
+          category.channels.forEach(channel => {
+            fallbackChannels.push({
+              name: channel.name,
+              code: channel.region.substring(0, 2).toLowerCase(),
+              url: channel.url,
+              image: channel.logo || '',
+              status: 'online',
+              viewers: Math.floor(Math.random() * 1000),
+            });
+          });
+        });
+        setChannels(fallbackChannels);
+        setGroupedChannels(cdnLiveTvApi.groupChannelsByCountry(fallbackChannels));
       } finally {
         setLoading(false);
       }
