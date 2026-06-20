@@ -58,7 +58,7 @@ export default function IPTVPlayer() {
     });
   };
 
-  const filteredCountries = Object.entries(groupedChannels).filter(([country, countryChannels]) => {
+  const filteredCountries = Object.entries(groupedChannels).filter(([_country, countryChannels]) => {
     if (!searchQuery) return true;
     return countryChannels.some((channel) =>
       channel.name.toLowerCase().includes(searchQuery.toLowerCase())
