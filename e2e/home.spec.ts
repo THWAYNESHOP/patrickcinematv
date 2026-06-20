@@ -43,9 +43,8 @@ test.describe('Home Page', () => {
   })
 })
 
+// Mobile tests - use device configuration at describe level with proper syntax
 test.describe('Home Page - Mobile', () => {
-  test.use(devices['iPhone 12'])
-
   test('should load home page on mobile', async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle(/NEXASTREAM/i)
