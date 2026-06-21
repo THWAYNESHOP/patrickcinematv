@@ -6,14 +6,14 @@ export default function Sports() {
   const [selectedSport, setSelectedSport] = useState('all')
 
   return (
-    <div className="min-h-screen py-16 px-6 md:px-12 lg:px-16 bg-deepBlack">
+    <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-deepBlack">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold text-white tracking-tight">
+        <div className="mb-8 md:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
             Sports
           </h1>
-          <p className="text-base text-gray-400 mt-3">
+          <p className="text-sm md:text-base text-gray-400 mt-2 md:mt-3">
             Live matches, upcoming events, and exclusive sports content
           </p>
         </div>
@@ -27,9 +27,9 @@ export default function Sports() {
         </div>
 
         {/* Live Now Section */}
-        <section className="mb-16">
+        <section className="mb-12 md:mb-16">
           <div className="mb-6">
-            <h2 className="text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
               🔴 Live Now
             </h2>
             <p className="text-sm text-gray-400 mt-2">
@@ -42,7 +42,7 @@ export default function Sports() {
         {/* Upcoming Matches Section */}
         <section>
           <div className="mb-6">
-            <h2 className="text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
               ⏰ Upcoming Matches
             </h2>
             <p className="text-sm text-gray-400 mt-2">

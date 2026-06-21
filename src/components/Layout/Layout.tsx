@@ -9,33 +9,25 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
     }
 
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    handleResize()
     window.addEventListener('scroll', handleScroll)
-    window.addEventListener('resize', handleResize)
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
   return (
-    <div className="min-h-screen bg-deepBlack pb-safe">
+    <div className="min-h-screen bg-deepBlack pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
       <Navbar isScrolled={isScrolled} />
       <main className="pt-16 md:pt-20">{children}</main>
       <Footer />
-      {isMobile && <MobileNav />}
+      <MobileNav />
     </div>
   )
 }

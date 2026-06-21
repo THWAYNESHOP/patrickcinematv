@@ -136,7 +136,7 @@ export default function Home() {
 
       {/* Continue Watching */}
       {continueWatching.length > 0 && (
-        <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
           <div className="container mx-auto">
             <ContentCarousel
               title="Continue Watching"
@@ -155,7 +155,7 @@ export default function Home() {
       )}
 
       {/* Trending Today */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Trending Today"
@@ -166,7 +166,7 @@ export default function Home() {
       </section>
 
       {/* Recommended For You */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Recommended For You"
@@ -177,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* New Releases */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="New Releases"
@@ -188,7 +188,7 @@ export default function Home() {
       </section>
 
       {/* Live Sports */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl md:text-4xl font-bold neon-text">Live Sports</h2>
@@ -201,7 +201,7 @@ export default function Home() {
       </section>
 
       {/* Upcoming Matches */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl md:text-4xl font-bold neon-text">Upcoming Matches</h2>
@@ -214,7 +214,7 @@ export default function Home() {
       </section>
 
       {/* Teen Romance */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Teen Romance"
@@ -225,7 +225,7 @@ export default function Home() {
       </section>
 
       {/* Korean Dramas */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Korean Dramas"
@@ -236,7 +236,7 @@ export default function Home() {
       </section>
 
       {/* Action & Adventure */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Action & Adventure"
@@ -247,7 +247,7 @@ export default function Home() {
       </section>
 
       {/* Comedy */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Comedy"
@@ -258,7 +258,7 @@ export default function Home() {
       </section>
 
       {/* Anime */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Anime"
@@ -269,7 +269,7 @@ export default function Home() {
       </section>
 
       {/* Featured This Week */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="Featured This Week"
@@ -280,7 +280,7 @@ export default function Home() {
       </section>
 
       {/* My List */}
-      <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
         <div className="container mx-auto">
           <ContentCarousel
             title="My List"
@@ -292,7 +292,7 @@ export default function Home() {
 
       {/* Only on Netflix */}
       {netflixContent.length > 0 && (
-        <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
           <div className="container mx-auto">
             <ContentCarousel
               title="Only on Netflix"
@@ -305,7 +305,7 @@ export default function Home() {
 
       {/* Only on Prime Video */}
       {primeContent.length > 0 && (
-        <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
           <div className="container mx-auto">
             <ContentCarousel
               title="Only on Prime Video"
@@ -318,7 +318,7 @@ export default function Home() {
 
       {/* Only on Disney+ */}
       {disneyContent.length > 0 && (
-        <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
           <div className="container mx-auto">
             <ContentCarousel
               title="Only on Disney+"
@@ -331,7 +331,7 @@ export default function Home() {
 
       {/* Only on Apple TV+ */}
       {appleContent.length > 0 && (
-        <section className="py-16 px-6 md:px-12 lg:px-16 animate-fade-in">
+        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
           <div className="container mx-auto">
             <ContentCarousel
               title="Only on Apple TV+"

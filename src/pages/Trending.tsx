@@ -40,9 +40,9 @@ export default function Trending() {
   }
 
   return (
-    <div className="min-h-screen py-16 px-6 md:px-12 lg:px-16">
+    <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16">
       <div className="container mx-auto">
-        <h1 className="text-5xl font-bold mb-12 text-white tracking-tight">Trending</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">Trending</h1>
         <ContentCarousel title="Trending Movies Today" items={trending} type="movie" />
       </div>
     </div>
