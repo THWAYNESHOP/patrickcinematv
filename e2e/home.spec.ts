@@ -1,4 +1,4 @@
-import { test, expect, devices } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
 test.describe('Home Page', () => {
   test('should load home page', async ({ page }) => {
@@ -11,7 +11,7 @@ test.describe('Home Page', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle')
     // Check if any content is visible instead of specific hero class
-    const mainContent = page.locator('main, #root, [role="main"]')
+    const mainContent = page.locator('#root')
     await expect(mainContent).toBeVisible()
   })
 

@@ -83,9 +83,9 @@ export default function Movies() {
   }
 
   return (
-    <div className="min-h-screen py-16 px-6 md:px-12 lg:px-16">
+    <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16">
       <div className="container mx-auto">
-        <h1 className="text-5xl font-bold mb-12 text-white tracking-tight">Movies</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">Movies</h1>
         <ContentCarousel title="Trending Today" items={movies.slice(0, 6)} type="movie" />
         <ContentCarousel title="Latest Movies" items={movies} type="movie" />
       </div>

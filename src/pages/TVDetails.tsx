@@ -189,7 +189,7 @@ export default function TVDetails() {
       {/* Hero Backdrop */}
       <div
         ref={heroRef}
-        className="relative h-[60vh] md:h-[70vh] bg-cover bg-center overflow-hidden"
+        className="relative flex items-end min-h-[70vh] md:h-[70vh] bg-cover bg-center overflow-hidden"
         style={{
           backgroundImage: `url(${tv.backdrop})`,
         }}
@@ -232,17 +232,17 @@ export default function TVDetails() {
           </div>
         )}
         
-        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
+        <div className="relative z-10 w-full p-4 sm:p-8 md:p-16">
           <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row gap-8">
+            <div className="flex flex-col md:flex-row gap-5 md:gap-8">
               <img
                 src={tv.poster}
                 alt={tv.title}
-                className="w-48 md:w-64 rounded-lg shadow-2xl border border-white/10"
+                className="hidden sm:block w-32 sm:w-40 md:w-64 rounded-lg shadow-2xl border border-white/10"
               />
-              <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">{tv.title}</h1>
-                <div className="flex flex-wrap items-center gap-4 mb-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 md:mb-4 text-white tracking-tight">{tv.title}</h1>
+                <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-4 text-sm md:text-base">
                   <span className="text-primary font-semibold">98% Match</span>
                   <span className="text-gray-400">{tv.rating}</span>
                   <span className="text-gray-400">{tv.year}</span>
@@ -258,38 +258,39 @@ export default function TVDetails() {
                     </span>
                   ))}
                 </div>
-                <p className="text-gray-300 text-lg mb-6 max-w-2xl">{tv.overview}</p>
-                <div className="flex flex-wrap gap-4">
+                <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-5 md:mb-6 max-w-2xl line-clamp-3 md:line-clamp-none">{tv.overview}</p>
+                <div className="flex flex-wrap gap-2.5 md:gap-4">
                   <a
                     href="#player"
-                    className="flex items-center gap-2 bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                    className="flex items-center justify-center gap-2 bg-primary hover:bg-primaryHover text-white px-5 py-3 md:px-8 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-h-[44px]"
                   >
                     <Play className="w-5 h-5" />
                     Play
                   </a>
-                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                  <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 md:px-6 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 backdrop-blur-sm border border-white/10 min-h-[44px]">
                     <Play className="w-5 h-5" />
                     Trailer
                   </button>
                   <button
                     onClick={handleMyList}
-                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
+                    className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 md:px-6 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 backdrop-blur-sm border border-white/10 min-h-[44px]"
                   >
                     <Heart className="w-5 h-5" />
-                    {inMyList ? 'Remove from List' : 'Add to List'}
+                    <span className="hidden sm:inline">{inMyList ? 'Remove from List' : 'Add to List'}</span>
+                    <span className="sm:hidden">{inMyList ? 'Remove' : 'My List'}</span>
                   </button>
-                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                  <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 md:px-6 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 backdrop-blur-sm border border-white/10 min-h-[44px]">
                     <Heart className="w-5 h-5" />
                     Like
                   </button>
-                  <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10">
+                  <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 md:px-6 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 backdrop-blur-sm border border-white/10 min-h-[44px]">
                     <Share2 className="w-5 h-5" />
                     Share
                   </button>
                   {trailer && showTrailer && (
                     <button
                       onClick={() => setIsMuted(!isMuted)}
-                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-lg font-semibold transition-all duration-200 backdrop-blur-sm border border-white/10"
+                      className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 md:px-6 md:py-4 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 backdrop-blur-sm border border-white/10 min-h-[44px]"
                     >
                       {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                       {isMuted ? 'Unmute' : 'Mute'}
@@ -303,7 +304,7 @@ export default function TVDetails() {
       </div>
 
       {/* Episodes */}
-      <div className="container mx-auto py-12 px-4 md:px-8">
+      <div className="container mx-auto py-8 md:py-12 px-4 md:px-8">
         {/* Video Player */}
         <section id="player" className="scroll-mt-24 mb-12">
           <div className="overflow-hidden border border-white/5 bg-darkSurface rounded-lg">

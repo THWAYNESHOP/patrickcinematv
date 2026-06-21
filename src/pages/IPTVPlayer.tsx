@@ -139,7 +139,7 @@ export default function IPTVPlayer() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold neon-text mb-2">Live TV</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold neon-text mb-2">Live TV</h1>
             <p className="text-gray-400">Watch your favorite channels and sports events live</p>
           </div>
           <div className="flex items-center gap-4">
