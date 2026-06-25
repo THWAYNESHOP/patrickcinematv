@@ -64,12 +64,7 @@ export default function TVSeries() {
       }
     }
 
-   
-   fetchSeries()
-
-
-
-   
+    fetchSeries()
   }, [])
 
   if (loading) {

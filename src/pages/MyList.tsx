@@ -1,24 +1,8 @@
-import { useState, useEffect } from 'react'
 import { useStore } from '../store/useStore'
 import ContentCarousel from '../components/Home/ContentCarousel'
 
 export default function MyList() {
-  const [myList, setMyList] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Load from Zustand store
-    setMyList(useStore.getState().myList)
-    setLoading(false)
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
-      </div>
-    )
-  }
+  const myList = useStore((state) => state.myList)
 
   return (
     <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16">
