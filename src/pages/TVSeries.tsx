@@ -6,7 +6,7 @@ const fallbackSeries = [
   {
     id: 119051,
     title: 'Vidking Test Series',
-    poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',
+    poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J8ED.jpg',
     rating: '8.3',
     year: 2021,
   },
@@ -34,7 +34,7 @@ const fallbackSeries = [
   {
     id: 100088,
     title: 'The Last of Us',
-    poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',
+    poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J8ED.jpg',
     rating: '8.6',
     year: 2023,
   },
@@ -48,17 +48,28 @@ const fallbackSeries = [
 ]
 
 export default function TVSeries() {
-  const [series, setSeries] = useState<any[]>([])
+  const [trending, setTrending] = useState<any[]>([])
+  const [popular, setPopular] = useState<any[]>([])
+  const [topRated, setTopRated] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchSeries() {
       try {
-        const data = await tmdbApi.getTrendingTVToday()
-        setSeries(data.length ? data : fallbackSeries)
+        const [trendingData, popularData, topRatedData] = await Promise.all([
+          tmdbApi.getTrendingTVToday().catch(() => []),
+          tmdbApi.getPopularTV().catch(() => []),
+          tmdbApi.getTopRatedTV().catch(() => []),
+        ])
+        
+        setTrending(trendingData.length ? trendingData : fallbackSeries)
+        setPopular(popularData.length ? popularData : fallbackSeries)
+        setTopRated(topRatedData.length ? topRatedData : fallbackSeries)
       } catch (error) {
         console.warn('TV API unavailable, using fallback data:', error)
-        setSeries(fallbackSeries)
+        setTrending(fallbackSeries)
+        setPopular(fallbackSeries)
+        setTopRated(fallbackSeries)
       } finally {
         setLoading(false)
       }
@@ -69,8 +80,14 @@ export default function TVSeries() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
+        <div className="relative mb-6">
+          <div className="animate-spin w-16 h-16 md:w-20 md:h-20 border-4 border-primary/30 border-t-primary rounded-full" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-full animate-pulse" />
+          </div>
+        </div>
+        <p className="text-white text-lg md:text-xl font-semibold animate-pulse">Loading TV Series...</p>
       </div>
     )
   }
@@ -79,8 +96,9 @@ export default function TVSeries() {
     <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16">
       <div className="container mx-auto">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">TV Series</h1>
-        <ContentCarousel title="Trending Today" items={series.slice(0, 6)} type="tv" />
-        <ContentCarousel title="All TV Series" items={series} type="tv" />
+        <ContentCarousel title="Trending Today" items={trending} type="tv" />
+        <ContentCarousel title="Popular" items={popular} type="tv" />
+        <ContentCarousel title="Top Rated" items={topRated} type="tv" />
       </div>
     </div>
   )

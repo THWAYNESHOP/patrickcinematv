@@ -231,6 +231,84 @@ export const tmdbApi = {
     return result
   },
 
+  async getPopularTV(): Promise<MovieSummary[]> {
+    const cacheKey = 'popular-tv'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/tv/popular`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        page: 1,
+      },
+      timeout: 10000,
+    })
+
+    const result = Array.isArray(response.data?.results)
+      ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+    
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async getTopRatedTV(): Promise<MovieSummary[]> {
+    const cacheKey = 'top-rated-tv'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/tv/top_rated`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        page: 1,
+      },
+      timeout: 10000,
+    })
+
+    const result = Array.isArray(response.data?.results)
+      ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+    
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async getTopRatedMovies(): Promise<MovieSummary[]> {
+    const cacheKey = 'top-rated-movies'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/movie/top_rated`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+        page: 1,
+      },
+      timeout: 10000,
+    })
+
+    const result = Array.isArray(response.data?.results)
+      ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+      : []
+    
+    setCached(cacheKey, result)
+    return result
+  },
+
   async getMovieDetails(id: string): Promise<MediaDetails> {
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
