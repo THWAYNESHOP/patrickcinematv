@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Play, Tv, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, Heart, TrendingUp } from 'lucide-react';
+import { Search, Play, Tv, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp } from 'lucide-react';
 import { cdnLiveTvApi, CDNChannel, CDNSportEvent } from '../api/cdnlivetv';
 import { iptvChannels } from '../data/iptvChannels';
 
@@ -153,16 +153,6 @@ function CategorySection({
 
 function TrendingCarousel({ channels, onChannelClick }: { channels: CDNChannel[]; onChannelClick: (channel: CDNChannel) => void }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 320;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
 
   if (channels.length === 0) return null;
 

@@ -5,7 +5,7 @@ export interface WatchHistoryItem {
   id: string;
   title: string;
   poster: string;
-  type: 'movie' | 'tv' | 'sports';
+  type: 'movie' | 'tv' | 'sports' | 'anime';
   timestamp: number;
   duration?: number;
 }
@@ -14,7 +14,7 @@ export interface ContinueWatchingItem {
   id: string;
   title: string;
   poster: string;
-  type: 'movie' | 'tv' | 'sports';
+  type: 'movie' | 'tv' | 'sports' | 'anime';
   progress: number;
   lastWatched: number;
 }
@@ -23,7 +23,7 @@ export interface MyListItem {
   id: string;
   title: string;
   poster: string;
-  type: 'movie' | 'tv' | 'sports';
+  type: 'movie' | 'tv' | 'sports' | 'anime';
   addedAt: number;
   rating?: string;
   year?: number;
