@@ -23,32 +23,39 @@ export default function SportsPlayer() {
         name: state.channelName || 'Live Channel',
       })
       setLoading(false)
-      return
-    }
+    } else {
+      // Otherwise, fetch from sports API
+      async function fetchStreams() {
+        // Handle both route patterns: /sports/:source/:id and /sports/:matchId
+        const streamSource = source || 'alpha' // default source if not provided
+        const streamId = id || matchId
 
-    // Otherwise, fetch from sports API
-    async function fetchStreams() {
-      // Handle both route patterns: /sports/:source/:id and /sports/:matchId
-      const streamSource = source || 'alpha' // default source if not provided
-      const streamId = id || matchId
+        if (!streamId) {
+          setStreams([])
+          setLoading(false)
+          return
+        }
 
-      if (!streamId) {
-        setStreams([])
-        setLoading(false)
-        return
+        try {
+          const data = await sportsApi.getStreams(streamSource, streamId)
+          setStreams(data)
+          setLoading(false)
+        } catch (error) {
+          console.error('Error fetching streams:', error)
+          setLoading(false)
+        }
       }
 
-      try {
-        const data = await sportsApi.getStreams(streamSource, streamId)
-        setStreams(data)
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching streams:', error)
-        setLoading(false)
-      }
+      fetchStreams()
     }
 
-    fetchStreams()
+    // Cleanup iframe on unmount
+    return () => {
+      console.log('[SportsPlayer] Cleaning up iframe')
+      if (iframeRef.current) {
+        iframeRef.current.src = 'about:blank'
+      }
+    }
   }, [source, id, matchId, location.state])
 
 

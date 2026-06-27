@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 
 interface FocusableElement extends HTMLElement {
   dataset: {
@@ -7,6 +7,8 @@ interface FocusableElement extends HTMLElement {
 }
 
 export function useSpatialNavigation() {
+  const lastKeyTimeRef = useRef(0)
+  const KEY_THROTTLE_MS = 100 // Throttle key presses to prevent spamming
 
   const getFocusableElements = useCallback((): FocusableElement[] => {
     return Array.from(
@@ -74,6 +76,12 @@ export function useSpatialNavigation() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const now = Date.now()
+      if (now - lastKeyTimeRef.current < KEY_THROTTLE_MS) {
+        return // Ignore rapid key presses
+      }
+      lastKeyTimeRef.current = now
+
       const current = document.activeElement as FocusableElement
       if (!current) return
 

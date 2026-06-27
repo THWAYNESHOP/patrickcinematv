@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Play, Pause, Volume2, VolumeX, SkipForward, SkipBack } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, SkipForward, SkipBack, Monitor, Clock } from 'lucide-react'
 
 interface CustomPlayerProps {
   src: string
@@ -19,6 +19,9 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [showControls, setShowControls] = useState(true)
+  const [showSleepTimerMenu, setShowSleepTimerMenu] = useState(false)
+  const [sleepTimerMinutes, setSleepTimerMinutes] = useState<number | null>(null)
+  const [sleepTimerRemaining, setSleepTimerRemaining] = useState(0)
 
   useEffect(() => {
     console.log('[CustomPlayer] Video element mounted')
@@ -43,7 +46,12 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('ended', handleEnded)
 
+    // Cleanup on unmount
     return () => {
+      console.log('[CustomPlayer] Cleaning up video player')
+      video.pause()
+      video.src = ''
+      video.load()
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('ended', handleEnded)
@@ -61,6 +69,68 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
     }
     return () => clearTimeout(hideControlsTimeout)
   }, [showControls, isPlaying])
+
+  // Sleep Timer Logic
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>
+
+    if (sleepTimerMinutes !== null) {
+      const endTime = Date.now() + sleepTimerMinutes * 60 * 1000
+
+      interval = setInterval(() => {
+        const remaining = Math.max(0, endTime - Date.now())
+        setSleepTimerRemaining(remaining)
+
+        if (remaining <= 0) {
+          setSleepTimerMinutes(null)
+          clearInterval(interval)
+          const video = videoRef.current
+          if (video) {
+            video.pause()
+            setIsPlaying(false)
+          }
+        }
+      }, 1000)
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [sleepTimerMinutes])
+
+  const startSleepTimer = (minutes: number) => {
+    setSleepTimerMinutes(minutes)
+    setShowSleepTimerMenu(false)
+  }
+
+  const cancelSleepTimer = () => {
+    setSleepTimerMinutes(null)
+  }
+
+  // Picture-in-Picture
+  const togglePiP = async () => {
+    const video = videoRef.current
+    if (!video) return
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture()
+      } else {
+        await video.requestPictureInPicture()
+      }
+    } catch (error) {
+      console.error('PiP error:', error)
+    }
+  }
+
+  const formatSleepTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
 
   // Touch event handlers for mobile
   const handleTouchStart = () => {
@@ -188,21 +258,21 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
           <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
             <button
               onClick={togglePlay}
-              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors neon-glow min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors neon-glow min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
             >
               {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
             </button>
 
             <button
               onClick={skipBackward}
-              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
             >
               <SkipBack className="w-5 h-5 md:w-5 md:h-5" />
             </button>
 
             <button
               onClick={skipForward}
-              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
             >
               <SkipForward className="w-5 h-5 md:w-5 md:h-5" />
             </button>
@@ -210,7 +280,7 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMute}
-                className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
               >
                 {isMuted ? <VolumeX className="w-5 h-5 md:w-5 md:h-5" /> : <Volume2 className="w-5 h-5 md:w-5 md:h-5" />}
               </button>
@@ -230,7 +300,60 @@ export default function CustomPlayer({ src, poster, title, autoPlay = false, onP
             </span>
           </div>
 
+          <div className="flex items-center gap-2 pointer-events-auto">
+            {/* Sleep Timer */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSleepTimerMenu(!showSleepTimerMenu)}
+                className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+              >
+                <Clock className="w-5 h-5 md:w-5 md:h-5" />
+              </button>
+
+              {showSleepTimerMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-darkSurface border border-white/10 rounded-xl p-3 shadow-2xl z-50 min-w-[160px]">
+                  <div className="flex flex-col gap-2">
+                    {[15, 30, 60, 120].map(minutes => (
+                      <button
+                        key={minutes}
+                        onClick={() => startSleepTimer(minutes)}
+                        className="px-4 py-2 text-sm text-white hover:bg-white/10 rounded-lg tv-focusable tv-touch-target"
+                      >
+                        {minutes} min
+                      </button>
+                    ))}
+                    {sleepTimerMinutes !== null && (
+                      <button
+                        onClick={cancelSleepTimer}
+                        className="px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 rounded-lg tv-focusable tv-touch-target"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Picture in Picture */}
+            <button
+              onClick={togglePiP}
+              className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+            >
+              <Monitor className="w-5 h-5 md:w-5 md:h-5" />
+            </button>
+          </div>
         </div>
+
+        {/* Sleep Timer Remaining Indicator */}
+        {sleepTimerMinutes !== null && (
+          <div className="absolute top-4 right-4 glass px-3 py-2 rounded-lg z-40 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-yellow-400" />
+            <span className="text-sm font-semibold text-white">
+              {formatSleepTime(sleepTimerRemaining)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Title */}
