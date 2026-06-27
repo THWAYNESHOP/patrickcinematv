@@ -13,7 +13,7 @@ export function IconAction({ icon, label, onClick, active = false }: IconActionP
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`group flex items-center justify-center gap-2 rounded-full border transition-all duration-200 min-h-[48px] min-w-[48px] px-0 md:px-5 active:scale-95 ${
+      className={`group flex items-center justify-center gap-2 rounded-full border transition-all duration-200 min-h-[48px] min-w-[48px] px-0 md:px-5 active:scale-95 tv-focusable tv-touch-target ${
         active
           ? 'bg-primary/20 border-primary/50 text-primary'
           : 'glass border-white/15 text-white hover:bg-white/15'
@@ -36,7 +36,7 @@ export function PlayButton({ href = '#player', onClick, children }: PlayButtonPr
     <a
       href={href}
       onClick={onClick}
-      className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-sm md:text-base transition-all duration-200 shadow-lg hover:scale-105 min-h-[48px]"
+      className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-sm md:text-base transition-all duration-200 shadow-lg hover:scale-105 min-h-[48px] tv-focusable tv-touch-target"
     >
       {children}
     </a>

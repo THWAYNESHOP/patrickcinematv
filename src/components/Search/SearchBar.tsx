@@ -290,7 +290,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
           {onClose && (
             <button
               onClick={onClose}
-              className="p-3 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-3 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
             >
               <X className="w-6 h-6" />
             </button>
@@ -303,7 +303,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.type}
               onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="all">All Types</option>
               <option value="movie">Movies</option>
@@ -315,7 +315,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.year}
               onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="all">All Years</option>
               <option value="2024">2024</option>
@@ -330,7 +330,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.rating}
               onChange={(e) => setFilters({ ...filters, rating: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="all">All Ratings</option>
               <option value="8">8+ Rating</option>
@@ -341,7 +341,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.genre}
               onChange={(e) => setFilters({ ...filters, genre: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="all">All Genres</option>
               <option value="action">Action</option>
@@ -357,7 +357,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.language}
               onChange={(e) => setFilters({ ...filters, language: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="all">All Languages</option>
               <option value="en">English</option>
@@ -372,7 +372,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <select
               value={filters.sortBy}
               onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
-              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+              className="px-3 md:px-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px] tv-focusable tv-touch-target"
             >
               <option value="relevance">Relevance</option>
               <option value="rating">Highest Rated</option>
@@ -451,7 +451,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               <button
                 key={term}
                 onClick={() => setQuery(term)}
-                className="px-4 md:px-5 py-2 md:py-2.5 bg-darkSurface rounded-full text-sm md:text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium min-h-[44px]"
+                className="px-4 md:px-5 py-2 md:py-2.5 bg-darkSurface rounded-full text-sm md:text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium min-h-[44px] tv-focusable tv-touch-target"
               >
                 {term}
               </button>
@@ -463,7 +463,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               <button
                 key={term}
                 onClick={() => setQuery(term)}
-                className="px-4 md:px-5 py-2 md:py-2.5 bg-darkSurface rounded-full text-sm md:text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium min-h-[44px]"
+                className="px-4 md:px-5 py-2 md:py-2.5 bg-darkSurface rounded-full text-sm md:text-base border border-white/10 hover:bg-darkHover hover:border-white/20 hover:shadow-lg transition-all duration-300 font-medium min-h-[44px] tv-focusable tv-touch-target"
               >
                 {term}
               </button>

@@ -19,7 +19,7 @@ export default function VirtualCarousel({ items, type, showProgress }: VirtualCa
           <Link
             key={item.id}
             to={`/${type === 'tv' ? 'tv' : type === 'anime' ? 'anime' : 'movie'}/${item.id}`}
-            className="flex-shrink-0 group/card"
+            className="flex-shrink-0 group/card tv-focusable"
             style={{ width: itemWidth }}
           >
             <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">

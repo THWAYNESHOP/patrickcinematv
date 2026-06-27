@@ -108,6 +108,26 @@
     box-shadow: var(--shadow-card-hover);
   }
   
+  /* TV-friendly focus styles */
+  .tv-focusable:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.8), 0 0 20px rgba(229, 9, 20, 0.5);
+    transform: scale(1.08);
+    transition: all 0.15s ease-out;
+  }
+  
+  .tv-focusable:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.8), 0 0 20px rgba(229, 9, 20, 0.5);
+    transform: scale(1.08);
+  }
+  
+  /* Larger touch targets for TV */
+  .tv-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

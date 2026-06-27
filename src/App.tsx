@@ -4,9 +4,11 @@ import AppRoutes from './pages/Routes'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import ToastContainer from './components/ToastContainer'
 import { useWebVitals } from './hooks/useWebVitals'
+import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 
 function App() {
   useWebVitals()
+  useSpatialNavigation()
   
   return (
     <ErrorBoundary>

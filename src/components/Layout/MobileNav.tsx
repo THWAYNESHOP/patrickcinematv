@@ -27,7 +27,7 @@ export default function MobileNav() {
               onClick={() => triggerHaptic('light')}
               aria-label={item.name}
               aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 min-h-[52px] transition-all duration-200 active:scale-95 ${
+              className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 min-h-[52px] transition-all duration-200 active:scale-95 tv-focusable tv-touch-target ${
                 isActive ? 'text-white bg-primary/10' : 'text-gray-500 hover:text-gray-300'
               }`}
             >

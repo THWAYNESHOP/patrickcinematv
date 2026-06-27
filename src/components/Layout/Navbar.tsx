@@ -36,7 +36,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
       <div className="container mx-auto px-6 md:px-12 lg:px-16">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="flex items-center group tv-focusable tv-touch-target">
             <span className="text-2xl md:text-3xl font-extrabold text-white tracking-wider uppercase transition-all duration-300 group-hover:tracking-[0.15em] group-hover:scale-105">
               <span className="text-primary">NEXA</span>STREAM
             </span>
@@ -48,7 +48,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`text-sm font-semibold transition-all duration-300 relative py-2 ${
+                className={`text-sm font-semibold transition-all duration-300 relative py-2 tv-focusable tv-touch-target ${
                   location.pathname === item.path
                     ? 'text-white after:content-[""] after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
                     : 'text-gray-400 hover:text-white hover:text-shadow-sm'
@@ -63,7 +63,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -71,7 +71,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
 
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
               aria-label="Open search"
             >
               <Search className="w-5 h-5" />
@@ -80,7 +80,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="lg:hidden p-2.5 md:p-3 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -95,7 +95,7 @@ export default function Navbar({ isScrolled }: NavbarProps) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMenuOpen(false)}
-                className={`block py-3.5 px-4 md:px-5 rounded-xl transition-all duration-300 min-h-[48px] flex items-center ${
+                className={`block py-3.5 px-4 md:px-5 rounded-xl transition-all duration-300 min-h-[48px] flex items-center tv-focusable tv-touch-target ${
                   location.pathname === item.path
                     ? 'bg-primary/10 text-white font-semibold'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
