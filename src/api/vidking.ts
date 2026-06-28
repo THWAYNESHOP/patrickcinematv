@@ -9,11 +9,11 @@ export const vidkingApi = {
     const params = new URLSearchParams()
     
     if (options?.autoPlay) params.append('autoPlay', 'true')
-    if (options?.color) params.append('theme', options.color)
-    if (options?.progress) params.append('startAt', options.progress.toString())
+    if (options?.color) params.append('color', options.color)
+    if (options?.progress) params.append('progress', options.progress.toString())
     
     const queryString = params.toString()
-    const url = `https://vidfast.pro/movie/${id}${queryString ? `?${queryString}` : ''}`
+    const url = `https://www.vidking.net/embed/movie/${id}${queryString ? `?${queryString}` : ''}`
     console.log('[Vidking API] Generated movie URL:', url)
     return url
   },
@@ -28,15 +28,13 @@ export const vidkingApi = {
     const params = new URLSearchParams()
     
     if (options?.autoPlay) params.append('autoPlay', 'true')
-    if (options?.color) params.append('theme', options.color)
-    if (options?.nextEpisode) {
-      params.append('nextButton', 'true')
-      params.append('autoNext', 'true')
-    }
-    if (options?.progress) params.append('startAt', options.progress.toString())
+    if (options?.color) params.append('color', options.color)
+    if (options?.nextEpisode) params.append('nextEpisode', 'true')
+    if (options?.episodeSelector) params.append('episodeSelector', 'true')
+    if (options?.progress) params.append('progress', options.progress.toString())
     
     const queryString = params.toString()
-    const url = `https://vidfast.pro/tv/${id}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
+    const url = `https://www.vidking.net/embed/tv/${id}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
     console.log('[Vidking API] Generated TV URL:', url)
     return url
   },

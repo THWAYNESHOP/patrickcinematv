@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, X, Film, Tv, Trophy, Zap, Filter } from 'lucide-react'
+import { Search, X, Film, Monitor, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
@@ -195,7 +195,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
       case 'movie':
         return <Film className="w-4 h-4" />
       case 'tv':
-        return <Tv className="w-4 h-4" />
+        return <Film className="w-4 h-4" />
       case 'anime':
         return <Zap className="w-4 h-4" />
       case 'sports':

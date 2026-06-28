@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Play, Tv, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp } from 'lucide-react';
+import { Search, Play, Monitor, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp } from 'lucide-react';
 import { cdnLiveTvApi, CDNChannel, CDNSportEvent } from '../api/cdnlivetv';
 import { iptvChannels } from '../data/iptvChannels';
 
@@ -8,7 +8,7 @@ import { iptvChannels } from '../data/iptvChannels';
 const CATEGORIES = [
   { id: 'all', name: 'All', icon: Globe },
   { id: 'sports', name: 'Sports', icon: Trophy },
-  { id: 'movies', name: 'Movies', icon: Tv },
+  { id: 'movies', name: 'Movies', icon: Monitor },
   { id: 'news', name: 'News', icon: TrendingUp },
   { id: 'kids', name: 'Kids', icon: Star },
   { id: 'music', name: 'Music', icon: Zap },
@@ -390,7 +390,7 @@ export default function IPTVPlayer() {
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
               }`}
             >
-              <Tv className="w-4 h-4" />
+              <Monitor className="w-4 h-4" />
               Live Channels
             </button>
             <button

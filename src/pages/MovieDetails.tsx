@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Play, Plus, Check, ThumbsUp, Share2, Volume2, VolumeX, Clock, Calendar } from 'lucide-react'
-import VidkingPlayer from '../components/Player/VidkingPlayer'
+import StreamingPlayer from '../components/Player/StreamingPlayer'
+import ServerSelector from '../components/Player/ServerSelector'
+import { useStreamingProvider } from '../hooks/useStreamingProvider'
 import DetailHero, { MetaStar } from '../components/Details/DetailHero'
 import MediaRail from '../components/Details/MediaRail'
 import CastRail from '../components/Details/CastRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
-import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useStore } from '../store/useStore'
@@ -26,6 +27,8 @@ export default function MovieDetails() {
   const [recommendations, setRecommendations] = useState<MovieSummary[]>(recommendedMovies)
   const [loading, setLoading] = useState(true)
   const [startProgressSeconds, setStartProgressSeconds] = useState<number>(0)
+  const [playerError, setPlayerError] = useState(false)
+  const { selectedProviderId, setProvider, getEmbedUrl } = useStreamingProvider()
   const [trailer, setTrailer] = useState<{ key: string; embedUrl: string } | null>(null)
   const [showTrailer, setShowTrailer] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -34,8 +37,17 @@ export default function MovieDetails() {
   const setWatchProgress = useStore((state) => state.setWatchProgress)
   const getWatchProgress = useStore((state) => state.getWatchProgress)
 
-  const handleProgress = (data: PlayerEventData) => {
+  const handleProgress = (data: { progress: number; currentTime: number; duration: number }) => {
     setWatchProgress(`movie_${id}`, data.progress)
+  }
+
+  const handlePlayerError = () => {
+    setPlayerError(true)
+  }
+
+  const handleProviderChange = (newProviderId: string) => {
+    setProvider(newProviderId)
+    setPlayerError(false)
   }
 
   useEffect(() => {
@@ -130,12 +142,15 @@ export default function MovieDetails() {
     )
   }
 
-  const embedUrl = vidkingApi.getMovieEmbedUrl(movie?.imdbId || id || '', {
-    color: 'ff008c',
-    autoPlay: true,
-    progress: startProgressSeconds,
-  })
   const inMyList = isInMyList(id || '')
+
+  const embedUrl = getEmbedUrl('movie', id || '', undefined, undefined, {
+    primaryColor: 'e50914',
+    secondaryColor: '170000',
+    iconColor: 'ffffff',
+    autoplay: true,
+    startAt: startProgressSeconds,
+  })
 
   const handleMyList = () => {
     if (!movie || !id) return
@@ -216,11 +231,19 @@ export default function MovieDetails() {
           <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
             <div className="lg:col-span-2">
               <div className="overflow-hidden border border-white/5 bg-darkSurface rounded-2xl">
-                <VidkingPlayer
-                  key={id}
+                <div className="p-4 border-b border-white/5">
+                  <ServerSelector
+                    selectedProviderId={selectedProviderId}
+                    onProviderChange={handleProviderChange}
+                  />
+                </div>
+                <StreamingPlayer
+                  key={`${selectedProviderId}-${id}`}
                   src={embedUrl}
+                  providerId={selectedProviderId}
                   onProgress={handleProgress}
-                  className="rounded-2xl"
+                  onError={handlePlayerError}
+                  className="rounded-b-2xl"
                 />
               </div>
             </div>
@@ -253,9 +276,13 @@ export default function MovieDetails() {
                 </dl>
               </div>
               <div className="rounded-2xl p-5 border border-white/5 bg-darkSurface">
-                <h3 className="font-semibold mb-2 text-white text-sm">No sources yet?</h3>
+                <h3 className="font-semibold mb-2 text-white text-sm">
+                  {playerError ? 'Content unavailable' : 'No sources yet?'}
+                </h3>
                 <p className="text-sm text-gray-400">
-                  Some brand-new or rare titles aren't mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.
+                  {playerError 
+                    ? 'This content is not available on VidLink. Try adding it to My List and check back later, or browse recommendations below.'
+                    : 'Some brand-new or rare titles are not mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.'}
                 </p>
               </div>
             </aside>

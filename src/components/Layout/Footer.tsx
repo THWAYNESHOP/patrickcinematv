@@ -1,4 +1,3 @@
-import { Tv } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Footer() {
@@ -9,7 +8,6 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-5">
             <Link to="/" className="flex items-center space-x-3 group">
-              <Tv className="w-10 h-10 text-primary transition-transform duration-300 group-hover:scale-110" />
               <span className="text-2xl font-bold text-white tracking-tight">NEXASTREAM</span>
             </Link>
             <p className="text-gray-400 text-base leading-relaxed">

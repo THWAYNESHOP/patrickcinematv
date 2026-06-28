@@ -1,4 +1,4 @@
-import { Home, Film, Tv, Trophy, Radio } from 'lucide-react'
+import { Home, Film, Monitor, Trophy, Radio } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 
@@ -9,7 +9,7 @@ export default function MobileNav() {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Movies', path: '/movies', icon: Film },
-    { name: 'TV', path: '/tv', icon: Tv },
+    { name: 'TV', path: '/tv', icon: Monitor },
     { name: 'Sports', path: '/sports', icon: Trophy },
     { name: 'Live', path: '/live-tv', icon: Radio },
   ]

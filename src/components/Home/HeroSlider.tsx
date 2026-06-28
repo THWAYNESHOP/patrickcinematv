@@ -31,7 +31,7 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
   const currentMovie = movies[currentIndex]
 
   return (
-    <div className="relative h-[70vh] md:h-[85vh] lg:h-[100vh] overflow-hidden">
+    <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
       {movies.map((movie, index) => (
         <div
           key={movie.id}
@@ -39,91 +39,78 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
             index === currentIndex ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {/* Background Image with Parallax Effect - 4K Quality */}
+          {/* Background Image with High Quality */}
           <div
-            className="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-[10s] ease-out"
+            className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url(${movie.backdrop})`,
-              transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)',
+              backgroundImage: `url(${movie.backdrop?.replace('w500', 'original') || movie.backdrop})`,
               imageRendering: 'auto',
-            }}
+            } as React.CSSProperties}
           />
           
-          {/* Enhanced Gradient Overlays for Premium Depth */}
-          <div className="absolute inset-0 bg-gradient-to-r from-deepBlack via-deepBlack/75 to-deepBlack/45" />
-          <div className="absolute inset-0 bg-gradient-to-t from-deepBlack via-deepBlack/55 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
-          
-          {/* Subtle Noise Texture Overlay */}
-          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noise)"/%3E%3C/svg%3E")',
-          }} />
+          {/* Gradient Overlays for Text Readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
         </div>
       ))}
 
-      <div className="absolute inset-0 flex items-center">
-        <div className="container mx-auto px-4 md:px-12 lg:px-16">
-          <div className="max-w-3xl animate-fade-in">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-extrabold mb-4 md:mb-6 text-white tracking-tight leading-[1.1] drop-shadow-2xl">
+      <div className="absolute inset-0 flex items-end pb-12 md:pb-16 lg:pb-20">
+        <div className="container mx-auto px-4 md:px-8 lg:px-12">
+          <div className="max-w-xl md:max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-2 md:mb-3 lg:mb-4 text-white tracking-tight leading-tight">
               {currentMovie.title}
             </h1>
-            <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8 text-sm md:text-base text-gray-200">
-              <span className="flex items-center gap-2">
-                <span className="text-primary font-bold text-base md:text-lg">{currentMovie.rating}</span>
-                <span className="text-gray-400 text-xs md:text-sm">Rating</span>
-              </span>
-              {currentMovie.year && <span className="text-gray-400">•</span>}
-              {currentMovie.year && <span className="font-medium text-sm md:text-base">{currentMovie.year}</span>}
+            <div className="flex items-center gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4 lg:mb-6 text-xs md:text-sm lg:text-base">
+              <span className="text-green-400 font-semibold">{currentMovie.rating}% Match</span>
+              {currentMovie.year && <span className="text-gray-400">{currentMovie.year}</span>}
             </div>
-            <p className="text-gray-200 text-base md:text-xl lg:text-2xl mb-6 md:mb-10 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg">
+            <p className="text-gray-200 text-xs md:text-sm lg:text-lg mb-4 md:mb-6 lg:mb-8 line-clamp-2 md:line-clamp-3 leading-relaxed">
               {currentMovie.overview}
             </p>
-            <div className="flex flex-wrap gap-3 md:gap-5">
+            <div className="flex flex-wrap gap-2 md:gap-3 lg:gap-4">
               <Link
                 to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-2 md:gap-3 bg-primary hover:bg-primaryHover text-white px-6 md:px-10 py-3 md:py-4.5 rounded-xl font-bold text-sm md:text-lg transition-all duration-300 shadow-2xl hover:shadow-primary/40 hover:scale-105 hover:-translate-y-0.5 min-h-[44px]"
+                className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
               >
-                <Play className="w-5 h-5 md:w-6 md:h-6" fill="white" />
-                <span className="hidden sm:inline">Watch Now</span>
-                <span className="sm:hidden">Watch</span>
+                <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
+                Play
               </Link>
               <Link
                 to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-2 md:gap-3 bg-white/10 hover:bg-white/20 text-white px-6 md:px-10 py-3 md:py-4.5 rounded-xl font-bold text-sm md:text-lg transition-all duration-300 backdrop-blur-md border border-white/20 hover:border-white/30 hover:scale-105 hover:-translate-y-0.5 min-h-[44px]"
+                className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
               >
-                <Info className="w-5 h-5 md:w-6 md:h-6" />
-                <span className="hidden sm:inline">More Info</span>
-                <span className="sm:hidden">Info</span>
+                <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                More Info
               </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Navigation Buttons */}
+      {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 md:p-3.5 bg-black/60 hover:bg-black/80 backdrop-blur-xl rounded-full transition-all duration-300 z-10 border border-white/10 hover:border-white/30 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 group min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
-        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-primary transition-colors" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 md:p-3.5 bg-black/60 hover:bg-black/80 backdrop-blur-xl rounded-full transition-all duration-300 z-10 border border-white/10 hover:border-white/30 hover:scale-110 hover:shadow-2xl hover:shadow-black/50 group min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
-        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-primary transition-colors" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
 
-      {/* Enhanced Dots with Glow Effect */}
-      <div className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3">
+      {/* Dots */}
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
         {movies.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`h-1.5 md:h-1.5 rounded-full transition-all duration-300 ${
+            className={`h-1 rounded-full transition-all duration-300 ${
               index === currentIndex
-                ? 'bg-primary w-8 md:w-10 shadow-[0_0_12px_rgba(229,9,20,0.6)]'
-                : 'bg-white/30 hover:bg-white/50 w-2 md:w-2.5 hover:w-2.5 md:hover:w-3'
+                ? 'bg-white w-6'
+                : 'bg-white/40 hover:bg-white/60 w-1.5'
             }`}
           />
         ))}

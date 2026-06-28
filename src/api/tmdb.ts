@@ -6,9 +6,9 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY
 
 // Image optimization helper - returns WebP format URLs
-function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w500'): string {
+function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w780'): string {
   if (!path) {
-    return 'https://image.tmdb.org/t/p/w500/8cXbitsS6dWQ5gfMTZdorpAAzEd.jpg'
+    return 'https://image.tmdb.org/t/p/w780/8cXbitsS6dWQ5gfMTZdorpAAzEd.jpg'
   }
   // TMDB automatically serves WebP when supported by the browser
   // Using original size for 4K quality backdrops
@@ -93,7 +93,7 @@ function toMovieSummary(movie: TmdbMovie): MovieSummary {
   return {
     id: movie.id,
     title: movie.title || movie.name || 'Untitled',
-    poster: getOptimizedImageUrl(movie.poster_path, 'w500'),
+    poster: getOptimizedImageUrl(movie.poster_path, 'w780'),
     backdrop: movie.backdrop_path ? getOptimizedImageUrl(movie.backdrop_path, 'original') : undefined,
     overview: movie.overview,
     rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',

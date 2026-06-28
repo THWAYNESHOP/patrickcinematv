@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Play, Plus, Check, ThumbsUp, Share2, Volume2, VolumeX, Calendar, Layers, ChevronDown } from 'lucide-react'
-import VidkingPlayer from '../components/Player/VidkingPlayer'
+import StreamingPlayer from '../components/Player/StreamingPlayer'
+import ServerSelector from '../components/Player/ServerSelector'
+import { useStreamingProvider } from '../hooks/useStreamingProvider'
 import DetailHero, { MetaStar } from '../components/Details/DetailHero'
 import MediaRail from '../components/Details/MediaRail'
 import CastRail from '../components/Details/CastRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
-import { vidkingApi, PlayerEventData } from '../api/vidking'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useStore } from '../store/useStore'
@@ -24,6 +25,8 @@ export default function TVDetails() {
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [selectedEpisode, setSelectedEpisode] = useState(1)
   const [startProgressSeconds, setStartProgressSeconds] = useState<number>(0)
+  const [playerError, setPlayerError] = useState(false)
+  const { selectedProviderId, setProvider, getEmbedUrl } = useStreamingProvider()
   const [trailer, setTrailer] = useState<{ key: string; embedUrl: string } | null>(null)
   const [showTrailer, setShowTrailer] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -41,8 +44,17 @@ export default function TVDetails() {
     }
   }, [id])
 
-  const handleProgress = (data: PlayerEventData) => {
+  const handleProgress = (data: { progress: number; currentTime: number; duration: number }) => {
     setWatchProgress(`tv_${id}_${selectedSeason}_${selectedEpisode}`, data.progress)
+  }
+
+  const handlePlayerError = () => {
+    setPlayerError(true)
+  }
+
+  const handleProviderChange = (newProviderId: string) => {
+    setProvider(newProviderId)
+    setPlayerError(false)
   }
 
   useEffect(() => {
@@ -137,14 +149,16 @@ export default function TVDetails() {
     )
   }
 
-  const embedUrl = vidkingApi.getTVEmbedUrl(tv?.imdbId || id || '', selectedSeason, selectedEpisode, {
-    color: 'ff008c',
-    autoPlay: true,
-    nextEpisode: true,
-    episodeSelector: true,
-    progress: startProgressSeconds,
-  })
   const inMyList = isInMyList(id || '')
+
+  const embedUrl = getEmbedUrl('tv', id || '', selectedSeason, selectedEpisode, {
+    primaryColor: 'e50914',
+    secondaryColor: '170000',
+    iconColor: 'ffffff',
+    autoplay: true,
+    nextbutton: true,
+    startAt: startProgressSeconds,
+  })
 
   const handleMyList = () => {
     if (!tv || !id) return
@@ -227,11 +241,19 @@ export default function TVDetails() {
           <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
             <div className="lg:col-span-2">
               <div className="overflow-hidden border border-white/5 bg-darkSurface rounded-2xl">
-                <VidkingPlayer
-                  key={`${id}-${selectedSeason}-${selectedEpisode}`}
+                <div className="p-4 border-b border-white/5">
+                  <ServerSelector
+                    selectedProviderId={selectedProviderId}
+                    onProviderChange={handleProviderChange}
+                  />
+                </div>
+                <StreamingPlayer
+                  key={`${selectedProviderId}-${id}-${selectedSeason}-${selectedEpisode}`}
                   src={embedUrl}
+                  providerId={selectedProviderId}
                   onProgress={handleProgress}
-                  className="rounded-2xl"
+                  onError={handlePlayerError}
+                  className="rounded-b-2xl"
                 />
               </div>
             </div>
@@ -265,9 +287,13 @@ export default function TVDetails() {
                 </dl>
               </div>
               <div className="rounded-2xl p-5 border border-white/5 bg-darkSurface">
-                <h3 className="font-semibold mb-2 text-white text-sm">No sources for this episode?</h3>
+                <h3 className="font-semibold mb-2 text-white text-sm">
+                  {playerError ? 'Episode unavailable' : 'No sources for this episode?'}
+                </h3>
                 <p className="text-sm text-gray-400">
-                  Try a different episode or save it to My List and come back later. Newer and niche episodes sometimes need time before alternate mirrors appear.
+                  {playerError 
+                    ? 'This episode is not available on VidLink. Try a different episode or save it to My List and check back later.'
+                    : 'Try a different episode or save it to My List and come back later. Newer and niche episodes sometimes need time before alternate mirrors appear.'}
                 </p>
               </div>
             </aside>

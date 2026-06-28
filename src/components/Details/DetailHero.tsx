@@ -45,7 +45,10 @@ export default function DetailHero({
     <div
       ref={heroRef}
       className="relative flex items-end min-h-[80vh] md:min-h-[85vh] bg-cover bg-center overflow-hidden"
-      style={{ backgroundImage: `url(${backdrop})` }}
+      style={{ 
+        backgroundImage: `url(${backdrop})`,
+        imageRendering: '-webkit-optimize-contrast',
+      } as React.CSSProperties}
     >
       {/* Base scrim */}
       <div

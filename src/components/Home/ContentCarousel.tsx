@@ -128,9 +128,9 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
                     <div className="p-3 md:p-4">
                       <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
                       <div className="flex items-center gap-2 mt-2">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary fill-primary" />
-                          <span className="text-xs md:text-sm text-gray-400 font-medium">{item.rating}</span>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
+                          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
+                          <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
                         </div>
                         {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
                         {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}

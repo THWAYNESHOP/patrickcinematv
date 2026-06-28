@@ -29,7 +29,6 @@ export default function Home() {
   const [actionAdventure, setActionAdventure] = useState<any[]>([])
   const [comedy, setComedy] = useState<any[]>([])
   const [anime, setAnime] = useState<any[]>([])
-  const [newReleases, setNewReleases] = useState<any[]>([])
   const [netflixContent, setNetflixContent] = useState<any[]>([])
   const [primeContent, setPrimeContent] = useState<any[]>([])
   const [disneyContent, setDisneyContent] = useState<any[]>([])
@@ -47,7 +46,7 @@ export default function Home() {
 
   async function fetchHomeContent() {
     try {
-      const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama, actionAdventureMovies, comedyMovies, animeContent, newReleasesContent, netflixCatalog, primeCatalog, disneyCatalog, appleCatalog] = await Promise.all([
+      const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama, actionAdventureMovies, comedyMovies, animeContent, netflixCatalog, primeCatalog, disneyCatalog, appleCatalog] = await Promise.all([
         tmdbApi.getTrendingMoviesToday(),
         tmdbApi.getNowPlayingMovies(),
         tmdbApi.getTrendingTVToday(),
@@ -56,7 +55,6 @@ export default function Home() {
         tmdbApi.getMoviesByGenre(28).catch(() => []),
         tmdbApi.getMoviesByGenre(35).catch(() => []),
         tmdbApi.getTVByGenre(16).catch(() => []),
-        tmdbApi.getNewReleases().catch(() => []),
         tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
         tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
         tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
@@ -72,7 +70,6 @@ export default function Home() {
       setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingMovies.slice(0, 8))
       setComedy(comedyMovies.length ? comedyMovies : trendingMovies.slice(0, 8))
       setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
-      setNewReleases(newReleasesContent.length ? newReleasesContent : [...trendingMovies.slice(0, 10), ...trendingTV.slice(0, 10)])
       setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
       setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
       setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
@@ -87,7 +84,6 @@ export default function Home() {
       setActionAdventure(fallbackMovies.slice(0, 8))
       setComedy(fallbackMovies.slice(0, 8))
       setAnime(fallbackTV.slice(0, 8))
-      setNewReleases([...fallbackMovies.slice(0, 5), ...fallbackTV.slice(0, 5)])
       setNetflixContent([])
       setPrimeContent([])
       setDisneyContent([])
@@ -121,7 +117,7 @@ export default function Home() {
       {/* Pull to Refresh Indicator */}
       {(isPulling || isRefreshing) && (
         <div 
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-deepBlack/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300"
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center bg-darkSurface/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300"
           style={{ transform: `translateY(${isPulling ? Math.min(pullDistance, 80) : 0}px)` }}
         >
           <div className="flex items-center gap-3 py-4">
@@ -134,10 +130,10 @@ export default function Home() {
       {/* Hero Banner */}
       <HeroSlider movies={featuredMovies} />
 
-      {/* Continue Watching */}
-      {continueWatching.length > 0 && (
-        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-          <div className="container mx-auto">
+      <div className="container mx-auto py-8 md:py-12 px-4 md:px-8">
+        {/* Continue Watching */}
+        {continueWatching.length > 0 && (
+          <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Continue Watching"
               items={continueWatching.map(item => ({
@@ -150,197 +146,160 @@ export default function Home() {
               type="movie"
               showProgress
             />
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Trending Today */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Trending Today */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Trending Today"
             items={trendingMovies}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Recommended For You */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Recommended For You */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Recommended For You"
             items={[...trendingMovies.slice(0, 5), ...popularTV.slice(0, 5)]}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* New Releases */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
-          <ContentCarousel
-            title="New Releases"
-            items={newReleases}
-            type="movie"
-          />
-        </div>
-      </section>
-
-      {/* Live Sports */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold neon-text">Live Sports</h2>
-            <Link to="/sports" className="text-neonPink hover:text-white transition-colors text-sm font-semibold">
+        {/* Live Sports */}
+        <section className="mb-10 md:mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Live Sports</h2>
+            <Link to="/sports" className="text-primary hover:text-white transition-colors text-sm font-semibold">
               View All
             </Link>
           </div>
-          <LiveMatches limit={4} />
-        </div>
-      </section>
+          <div className="rounded-2xl border border-white/5 bg-darkSurface overflow-hidden">
+            <LiveMatches limit={4} />
+          </div>
+        </section>
 
-      {/* Upcoming Matches */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold neon-text">Upcoming Matches</h2>
-            <Link to="/sports" className="text-neonPink hover:text-white transition-colors text-sm font-semibold">
+        {/* Upcoming Matches */}
+        <section className="mb-10 md:mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">Upcoming Matches</h2>
+            <Link to="/sports" className="text-primary hover:text-white transition-colors text-sm font-semibold">
               View All
             </Link>
           </div>
-          <LiveMatches limit={4} variant="upcoming" />
-        </div>
-      </section>
+          <div className="rounded-2xl border border-white/5 bg-darkSurface overflow-hidden">
+            <LiveMatches limit={4} variant="upcoming" />
+          </div>
+        </section>
 
-      {/* Teen Romance */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Teen Romance */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Teen Romance"
             items={teenRomance}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Korean Dramas */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Korean Dramas */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Korean Dramas"
             items={kDrama}
             type="tv"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Action & Adventure */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Action & Adventure */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Action & Adventure"
             items={actionAdventure}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Comedy */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Comedy */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Comedy"
             items={comedy}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Anime */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Anime */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Anime"
             items={anime}
             type="tv"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Featured This Week */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* Featured This Week */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="Featured This Week"
             items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* My List */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-        <div className="container mx-auto">
+        {/* My List */}
+        <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="My List"
             items={myList.length > 0 ? myList : trendingMovies.slice(0, 5)}
             type="movie"
           />
-        </div>
-      </section>
+        </section>
 
-      {/* Only on Netflix */}
-      {netflixContent.length > 0 && (
-        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-          <div className="container mx-auto">
+        {/* Only on Netflix */}
+        {netflixContent.length > 0 && (
+          <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Netflix"
               items={netflixContent}
               type="movie"
             />
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Only on Prime Video */}
-      {primeContent.length > 0 && (
-        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-          <div className="container mx-auto">
+        {/* Only on Prime Video */}
+        {primeContent.length > 0 && (
+          <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Prime Video"
               items={primeContent}
               type="movie"
             />
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Only on Disney+ */}
-      {disneyContent.length > 0 && (
-        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-          <div className="container mx-auto">
+        {/* Only on Disney+ */}
+        {disneyContent.length > 0 && (
+          <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Disney+"
               items={disneyContent}
               type="movie"
             />
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Only on Apple TV+ */}
-      {appleContent.length > 0 && (
-        <section className="py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 animate-fade-in">
-          <div className="container mx-auto">
+        {/* Only on Apple TV+ */}
+        {appleContent.length > 0 && (
+          <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Apple TV+"
               items={appleContent}
               type="movie"
             />
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   )
 }

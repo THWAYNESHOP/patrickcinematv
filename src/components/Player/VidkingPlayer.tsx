@@ -196,7 +196,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           src={src}
           className="w-full h-full"
           style={{
-            objectFit: isFullscreen ? 'cover' : 'contain',
+            objectFit: 'contain',
             backgroundColor: '#000',
             visibility: 'visible',
             display: 'block',
