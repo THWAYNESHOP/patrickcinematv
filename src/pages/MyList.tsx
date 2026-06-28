@@ -26,10 +26,11 @@ export default function MyList() {
         return b.addedAt - a.addedAt
       case 'alphabetical':
         return a.title.localeCompare(b.title)
-      case 'rating':
+      case 'rating': {
         const ratingA = parseFloat(a.rating || '0')
         const ratingB = parseFloat(b.rating || '0')
         return ratingB - ratingA
+      }
       default:
         return 0
     }

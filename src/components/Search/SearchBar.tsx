@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, X, Film, Monitor, Trophy, Zap, Filter } from 'lucide-react'
+import { Search, X, Film, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
