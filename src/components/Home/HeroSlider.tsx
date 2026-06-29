@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
+import { useTVDetection } from '../../hooks/useTVDetection'
 
 interface HeroSliderProps {
   movies: any[]
@@ -10,13 +11,19 @@ interface HeroSliderProps {
 export default function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
+  const isTV = useTVDetection()
 
   useEffect(() => {
+    // Disable auto-rotation on TV to prevent hanging
+    if (isTV) {
+      return
+    }
+    
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % movies.length)
     }, 6000)
     return () => clearInterval(timer)
-  }, [movies.length])
+  }, [movies.length, isTV])
 
   const nextSlide = () => {
     triggerHaptic('light')
@@ -39,11 +46,11 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
             index === currentIndex ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {/* Background Image with High Quality */}
+          {/* Background Image with Optimized Quality for TV */}
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url(${movie.backdrop?.replace('w500', 'original') || movie.backdrop})`,
+              backgroundImage: `url(${movie.backdrop?.replace('w500', 'w1280') || movie.backdrop})`,
               imageRendering: 'auto',
             } as React.CSSProperties}
           />

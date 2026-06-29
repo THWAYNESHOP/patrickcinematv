@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import ToastContainer from './components/ToastContainer'
 import { useWebVitals } from './hooks/useWebVitals'
 import { useSpatialNavigation } from './hooks/useSpatialNavigation'
+import { useKeyboardHandler } from './hooks/useKeyboardHandler'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import TVGuideOverlay from './components/TVGuideOverlay'
 
@@ -14,6 +15,7 @@ function AppContent() {
   const navigate = useNavigate()
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false)
   const [isTVGuideOpen, setIsTVGuideOpen] = useState(false)
+  const { registerHandler } = useKeyboardHandler()
 
   useWebVitals()
   useSpatialNavigation()
@@ -30,41 +32,58 @@ function AppContent() {
     { path: '/my-list', keys: ['8'] }
   ]
 
+  // Register keyboard handlers using centralized system
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Open/Close shortcuts modal
-      if (e.key === '?' && !e.ctrlKey && !e.altKey) {
-        e.preventDefault()
-        setIsShortcutsModalOpen(prev => !prev)
-      }
+    const unregister: (() => void)[] = []
 
-      // Open TV Guide
-      if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.altKey) {
-        e.preventDefault()
-        setIsTVGuideOpen(prev => !prev)
-      }
+    // Open/Close shortcuts modal
+    unregister.push(
+      registerHandler('?', (e) => {
+        if (!e.ctrlKey && !e.altKey) {
+          setIsShortcutsModalOpen(prev => !prev)
+        }
+      })
+    )
 
-      // Close modals with Escape
-      if (e.key === 'Escape') {
+    // Open TV Guide
+    unregister.push(
+      registerHandler('g', (e) => {
+        if (!e.ctrlKey && !e.altKey) {
+          setIsTVGuideOpen(prev => !prev)
+        }
+      })
+    )
+
+    // Close modals with Escape
+    unregister.push(
+      registerHandler('Escape', () => {
         if (isShortcutsModalOpen) setIsShortcutsModalOpen(false)
         if (isTVGuideOpen) setIsTVGuideOpen(false)
-      }
+      })
+    )
 
-      // Quick jump with 1-8
-      const navItem = navItems.find(item => item.keys.includes(e.key))
-      if (navItem) {
-        navigate(navItem.path)
-      }
+    // Quick jump with 1-8
+    navItems.forEach(item => {
+      item.keys.forEach(key => {
+        unregister.push(
+          registerHandler(key, () => {
+            navigate(item.path)
+          })
+        )
+      })
+    })
 
-      // Open search with /
-      if (e.key === '/' && !e.ctrlKey && !e.altKey) {
-        // We'll add this later, just a placeholder
-      }
-    }
+    // Open search with /
+    unregister.push(
+      registerHandler('/', (e) => {
+        if (!e.ctrlKey && !e.altKey) {
+          // We'll add this later, just a placeholder
+        }
+      })
+    )
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [navigate, isShortcutsModalOpen, isTVGuideOpen])
+    return () => unregister.forEach(fn => fn())
+  }, [navigate, isShortcutsModalOpen, isTVGuideOpen, registerHandler])
 
   return (
     <>

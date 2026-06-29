@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { STREAMING_PROVIDERS } from '../../lib/streamingProviders'
+import { useTVDetection } from '../../hooks/useTVDetection'
 
 interface StreamingPlayerProps {
   src: string
@@ -22,6 +23,7 @@ export default function StreamingPlayer({
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
   const [loadTimeout, setLoadTimeout] = useState(false)
+  const isTV = useTVDetection()
 
   const provider = STREAMING_PROVIDERS[providerId]
 
@@ -88,16 +90,18 @@ export default function StreamingPlayer({
 
   // Set timeout to detect if content is unavailable
   useEffect(() => {
+    // TV browsers may be slower, so increase timeout
+    const timeoutDuration = isTV ? 30000 : 15000
     const timeout = setTimeout(() => {
       if (!iframeLoaded) {
         console.warn(`[${providerId}] Content may be unavailable - timeout reached`)
         setLoadTimeout(true)
         onError?.()
       }
-    }, 15000) // 15 second timeout
+    }, timeoutDuration)
 
     return () => clearTimeout(timeout)
-  }, [iframeLoaded, onError, providerId])
+  }, [iframeLoaded, onError, providerId, isTV])
 
   const vidLinkUrl = src
 

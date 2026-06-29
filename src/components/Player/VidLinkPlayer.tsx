@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTVDetection } from '../../hooks/useTVDetection'
 
 interface VidLinkPlayerProps {
   tmdbId: string | number
@@ -35,6 +36,7 @@ export default function VidLinkPlayer({
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
   const [loadTimeout, setLoadTimeout] = useState(false)
+  const isTV = useTVDetection()
 
   // Build VidLink URL
   const buildVidLinkUrl = () => {
@@ -103,16 +105,18 @@ export default function VidLinkPlayer({
 
   // Set timeout to detect if content is unavailable
   useEffect(() => {
+    // TV browsers may be slower, so increase timeout
+    const timeoutDuration = isTV ? 30000 : 15000
     const timeout = setTimeout(() => {
       if (!iframeLoaded) {
         console.warn('[VidLink] Content may be unavailable - timeout reached')
         setLoadTimeout(true)
         onError?.()
       }
-    }, 15000) // 15 second timeout
+    }, timeoutDuration)
 
     return () => clearTimeout(timeout)
-  }, [iframeLoaded, onError])
+  }, [iframeLoaded, onError, isTV])
 
   const vidLinkUrl = buildVidLinkUrl()
 

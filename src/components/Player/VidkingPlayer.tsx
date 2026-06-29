@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { vidkingApi, PlayerEventData } from '../../api/vidking'
+import { useTVDetection } from '../../hooks/useTVDetection'
 
 interface VidkingPlayerProps {
   src: string
@@ -14,6 +15,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
+  const isTV = useTVDetection()
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -90,17 +92,18 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     setIframeLoaded(false)
     setIframeError(false)
 
-    // Force iframe reload with a small delay
+    // TV browsers may need longer delay for iframe loading
+    const delay = isTV ? 200 : 100
     setTimeout(() => {
       iframe.src = src
       console.log('[Vidking Player] Iframe src set to:', iframe.src)
-    }, 100)
+    }, delay)
 
     return () => {
       console.log('[Vidking Player] Cleaning up iframe, clearing src')
       iframe.src = ''
     }
-  }, [src])
+  }, [src, isTV])
 
 
   // Handle fullscreen changes
