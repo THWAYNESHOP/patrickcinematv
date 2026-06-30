@@ -1,84 +1,91 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, updateProfile, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, type User } from 'firebase/auth';
+import { app } from '../firebase';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const auth = getAuth(app);
+    
+    // Get initial user and listen for auth changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-
-    if (error) throw error;
+    const auth = getAuth(app);
     
-    // Create profile
-    if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: fullName || null,
-      });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // Update profile with display name
+    if (fullName && userCredential.user) {
+      await updateProfile(userCredential.user, { displayName: fullName });
     }
 
-    return data;
+    // Send email verification
+    if (userCredential.user) {
+      await sendEmailVerification(userCredential.user);
+    }
+
+    return userCredential;
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-    return data;
+    const auth = getAuth(app);
+    return await signInWithEmailAndPassword(auth, email, password);
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    const auth = getAuth(app);
+    await firebaseSignOut(auth);
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) throw error;
+    const auth = getAuth(app);
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  const sendVerificationEmail = async () => {
+    const auth = getAuth(app);
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      await sendEmailVerification(currentUser);
+    }
+  };
+
+  const isEmailVerified = () => {
+    const auth = getAuth(app);
+    return auth.currentUser?.emailVerified || false;
+  };
+
+  const signInWithGoogle = async () => {
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    return await signInWithPopup(auth, provider);
+  };
+
+  const signInWithGithub = async () => {
+    const auth = getAuth(app);
+    const provider = new GithubAuthProvider();
+    return await signInWithPopup(auth, provider);
   };
 
   return {
     user,
-    session,
     loading,
     signUp,
     signIn,
     signOut,
     resetPassword,
+    signInWithGoogle,
+    signInWithGithub,
+    sendVerificationEmail,
+    isEmailVerified,
   };
 }

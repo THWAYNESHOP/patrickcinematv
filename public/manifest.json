@@ -1,6 +1,6 @@
 {
-  "name": "Patrick Cinema TV",
-  "short_name": "Patrick Cinema",
+  "name": "NEXASTREAM",
+  "short_name": "NEXA",
   "description": "Premium streaming experience with live sports, movies, TV series, and more.",
   "start_url": "/",
   "display": "standalone",

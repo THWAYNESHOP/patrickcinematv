@@ -164,6 +164,8 @@ export default function MovieDetails() {
       id,
       title: movie.title,
       poster: movie.poster,
+      rating: movie.rating,
+      year: movie.year,
       type: 'movie',
     })
   }

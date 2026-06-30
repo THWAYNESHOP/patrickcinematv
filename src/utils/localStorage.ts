@@ -1,9 +1,27 @@
 const STORAGE_KEYS = {
-  MY_LIST: 'patrickCinemaMyList',
-  WATCH_PROGRESS: 'patrickCinemaWatchProgress',
-  CONTINUE_WATCHING: 'patrickCinemaContinueWatching',
-  FAVORITES: 'patrickCinemaFavorites',
+  MY_LIST: 'nexastreamMyList',
+  WATCH_PROGRESS: 'nexastreamWatchProgress',
+  CONTINUE_WATCHING: 'nexastreamContinueWatching',
+  FAVORITES: 'nexastreamFavorites',
+} as const
+
+const LEGACY_KEY_MAP: Record<string, string> = {
+  patrickCinemaMyList: STORAGE_KEYS.MY_LIST,
+  patrickCinemaWatchProgress: STORAGE_KEYS.WATCH_PROGRESS,
+  patrickCinemaContinueWatching: STORAGE_KEYS.CONTINUE_WATCHING,
+  patrickCinemaFavorites: STORAGE_KEYS.FAVORITES,
 }
+
+function migrateLegacyStorageKeys() {
+  for (const [legacyKey, currentKey] of Object.entries(LEGACY_KEY_MAP)) {
+    const legacyValue = localStorage.getItem(legacyKey)
+    if (legacyValue !== null && localStorage.getItem(currentKey) === null) {
+      localStorage.setItem(currentKey, legacyValue)
+    }
+  }
+}
+
+migrateLegacyStorageKeys()
 
 export const storage = {
   getMyList: (): any[] => {

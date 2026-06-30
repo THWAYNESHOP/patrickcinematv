@@ -8,7 +8,9 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-5">
             <Link to="/" className="flex items-center space-x-3 group">
-              <span className="text-2xl font-bold text-white tracking-tight">NEXASTREAM</span>
+              <span className="text-2xl font-extrabold text-white tracking-wider uppercase">
+                <span className="text-primary">NEXA</span>STREAM
+              </span>
             </Link>
             <p className="text-gray-400 text-base leading-relaxed">
               Premium streaming experience with live sports, movies, TV series, and more.
@@ -20,7 +22,7 @@ export default function Footer() {
             <h3 className="text-white font-bold mb-6 text-lg">Follow Us</h3>
             <div className="flex flex-wrap gap-4">
               <a
-                href="https://www.facebook.com/"
+                href="https://www.facebook.com/share/1D3zdvyMBz/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
@@ -30,7 +32,9 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://x.com/Patrick4928461"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
               >
                 <svg className="w-5 h-5 text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
@@ -38,7 +42,9 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/jokerpaddy4/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
               >
                 <svg className="w-5 h-5 text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
@@ -46,7 +52,9 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.youtube.com/@NEXASTREAM-i5q3l"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
               >
                 <svg className="w-5 h-5 text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
@@ -77,7 +85,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-12 pt-10 text-center">
           <p className="text-gray-400 text-base font-medium">
-            © 2024 NEXASTREAM. All rights reserved.
+            © 2026 NEXASTREAM. All rights reserved.
           </p>
         </div>
       </div>

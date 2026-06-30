@@ -25,6 +25,12 @@ export function useKeyboardHandler() {
   }, [])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Check if auth modal is open - disable shortcuts when logging in
+    const authModal = document.querySelector('[data-auth-modal="true"]')
+    if (authModal) {
+      return // Don't process keyboard shortcuts when auth modal is open
+    }
+
     // On TV, throttle key presses to prevent spamming
     if (isTVRef.current) {
       const now = Date.now()

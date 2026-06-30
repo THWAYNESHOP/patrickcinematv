@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './styles/index.css'
 import './sentry'
+import './firebase'
 import { prefetchTrendingData } from './utils/apiCache'
 
 // Register service worker

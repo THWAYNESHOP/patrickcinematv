@@ -1,6 +1,6 @@
 # NEXASTREAM
 
-A premium streaming platform combining Live Sports, Movies, TV Series, Anime, and Live TV with a futuristic cyberpunk design.
+A premium streaming platform combining Live Sports, Movies, TV Series, Anime, and Live TV with a cinematic dark-theme design.
 
 ## Features
 
@@ -8,7 +8,7 @@ A premium streaming platform combining Live Sports, Movies, TV Series, Anime, an
 - **Movies & TV Series** - TMDB-based content with Vidking integration
 - **Anime** - Dedicated anime section
 - **Live TV** - Live television channels
-- **Premium UI** - Glassmorphism, neon glows, smooth animations
+- **Premium UI** - Glassmorphism, smooth animations, hero carousels
 - **Responsive Design** - Mobile-first with bottom navigation
 - **LocalStorage** - Watch progress, favorites, continue watching
 
@@ -72,8 +72,9 @@ This is required for the Live TV streams to work, as they need a proxy server to
 
 ## Color Palette
 
-- Deep Black: `#050505`
-- Neon Pink: `#ff008c`
+- Deep Black: `#0A0A0A`
+- Primary Red: `#E50914`
+- Accent Gold: `#FFD700`
 - White: `#ffffff`
 
 ## License

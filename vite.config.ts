@@ -76,13 +76,15 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/],
       },
       manifest: {
-        name: 'Patrick Cinema TV',
-        short_name: 'Patrick Cinema',
+        name: 'NEXASTREAM',
+        short_name: 'NEXA',
         description: 'Premium streaming experience with live sports, movies, TV series, and more.',
         theme_color: '#E50914',
         background_color: '#0A0A0A',
         display: 'standalone',
         orientation: 'portrait-primary',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: '/icon-192.svg',
@@ -95,6 +97,37 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any maskable'
+          }
+        ],
+        categories: ['entertainment', 'video', 'streaming'],
+        shortcuts: [
+          {
+            name: 'Home',
+            short_name: 'Home',
+            description: 'Go to home page',
+            url: '/',
+            icons: [{ src: '/icon-192.svg', sizes: '192x192' }]
+          },
+          {
+            name: 'Movies',
+            short_name: 'Movies',
+            description: 'Browse movies',
+            url: '/movies',
+            icons: [{ src: '/icon-192.svg', sizes: '192x192' }]
+          },
+          {
+            name: 'TV Series',
+            short_name: 'TV',
+            description: 'Browse TV series',
+            url: '/tv',
+            icons: [{ src: '/icon-192.svg', sizes: '192x192' }]
+          },
+          {
+            name: 'Sports',
+            short_name: 'Sports',
+            description: 'Watch live sports',
+            url: '/sports',
+            icons: [{ src: '/icon-192.svg', sizes: '192x192' }]
           }
         ]
       }
@@ -134,6 +167,9 @@ export default defineConfig({
           if (id.includes('supabase')) {
             return 'supabase-vendor'
           }
+          if (id.includes('firebase')) {
+            return 'firebase-vendor'
+          }
         },
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -148,7 +184,12 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
+    },
+    target: 'esnext',
+    modulePreload: {
+      polyfill: false,
     },
   },
   server: {

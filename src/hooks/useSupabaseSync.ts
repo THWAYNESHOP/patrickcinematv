@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { MyListItem, WatchHistoryItem } from '../store/useStore';
 
 export function useSupabaseSync() {
@@ -10,7 +10,7 @@ export function useSupabaseSync() {
   const addToWatchHistory = useStore((state) => state.addToWatchHistory);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isSupabaseConfigured) return;
 
     // Sync favorites from Supabase
     async function syncFavorites() {
@@ -99,7 +99,7 @@ export function useSupabaseRealtime() {
   const setWatchProgress = useStore((state) => state.setWatchProgress);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isSupabaseConfigured) return;
 
     // Subscribe to favorites changes
     const favoritesSubscription = supabase

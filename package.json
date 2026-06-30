@@ -1,5 +1,5 @@
 {
-  "name": "patrick-cinema-tv",
+  "name": "nexastream",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -19,6 +19,7 @@
     "axios": "^1.18.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "firebase": "^12.15.0",
     "framer-motion": "^12.40.0",
     "fuse.js": "^7.4.2",
     "hls.js": "^1.6.16",

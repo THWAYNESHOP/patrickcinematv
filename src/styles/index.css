@@ -49,6 +49,21 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
 @keyframes skeletonPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -70,6 +85,109 @@
     font-weight: 700;
     letter-spacing: -0.025em;
   }
+}
+
+/* Light theme — overrides theme tokens + common utility classes */
+html.light {
+  color-scheme: light;
+  --color-deepBlack: #f4f4f5;
+  --color-darkSurface: #ffffff;
+  --color-darkElevated: #f0f0f0;
+  --color-darkHover: #e4e4e7;
+}
+
+html.light body {
+  color: #18181b;
+}
+
+html.light .text-white {
+  color: #18181b;
+}
+
+html.light .text-gray-200 {
+  color: #3f3f46;
+}
+
+html.light .text-gray-300 {
+  color: #52525b;
+}
+
+html.light .text-gray-400 {
+  color: #71717a;
+}
+
+html.light .text-gray-500 {
+  color: #a1a1aa;
+}
+
+html.light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+html.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+html.light .bg-black\/50 {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+html.light .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+html.light .bg-deepBlack\/95 {
+  background-color: rgba(244, 244, 245, 0.95);
+}
+
+html.light .from-deepBlack\/95 {
+  --tw-gradient-from: rgba(244, 244, 245, 0.95);
+}
+
+html.light .via-deepBlack\/80 {
+  --tw-gradient-via: rgba(244, 244, 245, 0.8);
+}
+
+html.light .to-transparent {
+  --tw-gradient-to: transparent;
+}
+
+html.light .glass {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html.light .glass-strong {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light img {
+  background-color: #e4e4e7;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background-color: #f4f4f5;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background-color: rgba(229, 9, 20, 0.35);
+}
+
+html.light .skeleton {
+  background: linear-gradient(90deg, #e4e4e7 25%, #f4f4f5 50%, #e4e4e7 75%);
 }
 
 @layer utilities {
@@ -148,6 +266,30 @@
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
   }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  /* Staggered animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
 }
 
 /* Custom scrollbar */
@@ -203,6 +345,7 @@ body.is-tv-device,
   .animate-pulse-slow,
   .animate-float,
   .animate-skeleton-pulse,
+  .animate-shimmer,
   .skeleton {
     animation: none !important;
   }
@@ -240,5 +383,29 @@ body.is-tv-device,
   .glass-strong {
     backdrop-filter: none !important;
     background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce animation complexity on mobile */
+  .animate-fade-in,
+  .animate-slide-in,
+  .animate-scale-in {
+    animation-duration: 0.2s !important;
+  }
+  
+  /* Optimize glass effect for mobile */
+  .glass,
+  .glass-strong {
+    backdrop-filter: blur(12px) !important;
+  }
+  
+  /* Larger touch targets for mobile */
+  button,
+  a,
+  .tv-focusable {
+    min-height: 44px !important;
+    min-width: 44px !important;
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import HeroSlider from '../components/Home/HeroSlider'
 import ContentCarousel from '../components/Home/ContentCarousel'
@@ -8,6 +8,7 @@ import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
 import { RefreshCw } from 'lucide-react'
+import type { MovieSummary } from '../api/tmdb'
 
 const fallbackMovies = [
   { id: 1078605, title: 'Test Movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', backdrop: 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', overview: 'A test movie embed used for local player testing.', rating: '8.0', year: 2024 },
@@ -19,6 +20,30 @@ const fallbackTV = [
   { id: 119051, title: 'Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021 },
   { id: 100088, title: 'The Last of Us', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.6', year: 2023 },
 ]
+
+function HeroSkeleton() {
+  return (
+    <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden bg-darkSurface animate-pulse">
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+      <div className="absolute inset-0 flex items-end pb-12 md:pb-16 lg:pb-20">
+        <div className="container mx-auto px-4 md:px-8 lg:px-12">
+          <div className="max-w-xl md:max-w-2xl space-y-4">
+            <div className="h-10 md:h-14 lg:h-20 w-3/4 bg-white/10 rounded" />
+            <div className="h-4 w-1/3 bg-white/10 rounded" />
+            <div className="space-y-2">
+              <div className="h-3 w-full bg-white/5 rounded" />
+              <div className="h-3 w-5/6 bg-white/5 rounded" />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <div className="h-10 w-24 bg-white/20 rounded" />
+              <div className="h-10 w-28 bg-white/10 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
   const [featuredMovies, setFeaturedMovies] = useState<any[]>([])
@@ -33,84 +58,115 @@ export default function Home() {
   const [primeContent, setPrimeContent] = useState<any[]>([])
   const [disneyContent, setDisneyContent] = useState<any[]>([])
   const [appleContent, setAppleContent] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [heroLoading, setHeroLoading] = useState(true)
+  const [primaryLoading, setPrimaryLoading] = useState(true)
+  const [catalogLoading, setCatalogLoading] = useState(true)
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
 
   const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
     onRefresh: async () => {
-      await fetchHomeContent()
+      await fetchHomeContent(true)
     },
     threshold: 80,
   })
 
-  async function fetchHomeContent() {
-    try {
-      const [trendingToday, latestMovies, trendingTV, teenRomanceMovies, koreanDrama, actionAdventureMovies, comedyMovies, animeContent, netflixCatalog, primeCatalog, disneyCatalog, appleCatalog] = await Promise.all([
-        tmdbApi.getTrendingMoviesToday(),
-        tmdbApi.getNowPlayingMovies(),
-        tmdbApi.getTrendingTVToday(),
-        tmdbApi.getMoviesByGenre(10749).catch(() => []),
-        tmdbApi.getTVByOriginCountry('KR').catch(() => []),
-        tmdbApi.getMoviesByGenre(28).catch(() => []),
-        tmdbApi.getMoviesByGenre(35).catch(() => []),
-        tmdbApi.getTVByGenre(16).catch(() => []),
-        tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
-        tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
-        tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
-        tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
-      ])
+  const fetchHomeContent = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) {
+      setHeroLoading(true)
+      setPrimaryLoading(true)
+      setCatalogLoading(true)
+    }
 
+    let trendingToday: MovieSummary[] = fallbackMovies
+    let trendingTV: MovieSummary[] = fallbackTV
+
+    // Phase 1: hero + trending movies (2 calls — show hero ASAP)
+    try {
+      const [latestMovies, trendingMoviesData] = await Promise.all([
+        tmdbApi.getNowPlayingMovies(),
+        tmdbApi.getTrendingMoviesToday(),
+      ])
+      trendingToday = trendingMoviesData.length ? trendingMoviesData : fallbackMovies
       const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
       setFeaturedMovies(heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies)
-      setTrendingMovies(trendingToday.length ? trendingToday : fallbackMovies)
-      setPopularTV(trendingTV.length ? trendingTV : fallbackTV)
-      setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingMovies.slice(0, 8))
-      setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
-      setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingMovies.slice(0, 8))
-      setComedy(comedyMovies.length ? comedyMovies : trendingMovies.slice(0, 8))
-      setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
-      setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
-      setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
-      setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
-      setAppleContent([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
+      setTrendingMovies(trendingToday)
     } catch (error) {
-      console.warn('Home TMDB content unavailable, using fallback data:', error)
+      console.warn('Home hero content unavailable, using fallback data:', error)
       setFeaturedMovies(fallbackMovies)
       setTrendingMovies(fallbackMovies)
-      setPopularTV(fallbackTV)
-      setTeenRomance(fallbackMovies.slice(0, 8))
-      setKDrama(fallbackTV.slice(0, 8))
-      setActionAdventure(fallbackMovies.slice(0, 8))
-      setComedy(fallbackMovies.slice(0, 8))
-      setAnime(fallbackTV.slice(0, 8))
-      setNetflixContent([])
-      setPrimeContent([])
-      setDisneyContent([])
-      setAppleContent([])
+      trendingToday = fallbackMovies
     } finally {
-      setLoading(false)
+      setHeroLoading(false)
     }
-  }
+
+    // Phase 2 & 3: load remaining rows in parallel after hero is visible
+    await Promise.all([
+      (async () => {
+        try {
+          const tvData = await tmdbApi.getTrendingTVToday()
+          trendingTV = tvData.length ? tvData : fallbackTV
+          setPopularTV(trendingTV)
+        } catch {
+          setPopularTV(fallbackTV)
+        } finally {
+          setPrimaryLoading(false)
+        }
+      })(),
+      (async () => {
+        try {
+          const [
+            teenRomanceMovies,
+            koreanDrama,
+            actionAdventureMovies,
+            comedyMovies,
+            animeContent,
+            netflixCatalog,
+            primeCatalog,
+            disneyCatalog,
+            appleCatalog,
+          ] = await Promise.all([
+            tmdbApi.getMoviesByGenre(10749).catch(() => []),
+            tmdbApi.getTVByOriginCountry('KR').catch(() => []),
+            tmdbApi.getMoviesByGenre(28).catch(() => []),
+            tmdbApi.getMoviesByGenre(35).catch(() => []),
+            tmdbApi.getTVByGenre(16).catch(() => []),
+            tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
+          ])
+
+          setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingToday.slice(0, 8))
+          setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
+          setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingToday.slice(0, 8))
+          setComedy(comedyMovies.length ? comedyMovies : trendingToday.slice(0, 8))
+          setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
+          setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
+          setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
+          setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
+          setAppleContent([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
+        } catch (error) {
+          console.warn('Home catalog content unavailable:', error)
+          setTeenRomance(trendingToday.slice(0, 8))
+          setKDrama(trendingTV.slice(0, 8))
+          setActionAdventure(trendingToday.slice(0, 8))
+          setComedy(trendingToday.slice(0, 8))
+          setAnime(trendingTV.slice(0, 8))
+          setNetflixContent([])
+          setPrimeContent([])
+          setDisneyContent([])
+          setAppleContent([])
+        } finally {
+          setCatalogLoading(false)
+        }
+      })(),
+    ])
+  }, [])
 
   useEffect(() => {
     fetchHomeContent()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-deepBlack">
-        <div className="relative mb-6">
-          <div className="animate-spin w-16 h-16 md:w-20 md:h-20 border-4 border-primary/30 border-t-primary rounded-full" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-full animate-pulse" />
-          </div>
-        </div>
-        <p className="text-white text-lg md:text-xl font-semibold animate-pulse">Loading NEXASTREAM...</p>
-        <p className="text-gray-400 text-sm md:text-base mt-2">Preparing your entertainment experience</p>
-      </div>
-    )
-  }
+  }, [fetchHomeContent])
 
   return (
     <div ref={containerRef} className="min-h-screen relative">
@@ -128,7 +184,7 @@ export default function Home() {
       )}
 
       {/* Hero Banner */}
-      <HeroSlider movies={featuredMovies} />
+      {heroLoading ? <HeroSkeleton /> : <HeroSlider movies={featuredMovies} />}
 
       <div className="container mx-auto py-8 md:py-12 px-4 md:px-8">
         {/* Continue Watching */}
@@ -155,6 +211,7 @@ export default function Home() {
             title="Trending Today"
             items={trendingMovies}
             type="movie"
+            loading={heroLoading}
           />
         </section>
 
@@ -164,6 +221,7 @@ export default function Home() {
             title="Recommended For You"
             items={[...trendingMovies.slice(0, 5), ...popularTV.slice(0, 5)]}
             type="movie"
+            loading={primaryLoading}
           />
         </section>
 
@@ -199,6 +257,7 @@ export default function Home() {
             title="Teen Romance"
             items={teenRomance}
             type="movie"
+            loading={catalogLoading}
           />
         </section>
 
@@ -208,6 +267,7 @@ export default function Home() {
             title="Korean Dramas"
             items={kDrama}
             type="tv"
+            loading={catalogLoading}
           />
         </section>
 
@@ -217,6 +277,7 @@ export default function Home() {
             title="Action & Adventure"
             items={actionAdventure}
             type="movie"
+            loading={catalogLoading}
           />
         </section>
 
@@ -226,6 +287,7 @@ export default function Home() {
             title="Comedy"
             items={comedy}
             type="movie"
+            loading={catalogLoading}
           />
         </section>
 
@@ -235,6 +297,7 @@ export default function Home() {
             title="Anime"
             items={anime}
             type="tv"
+            loading={catalogLoading}
           />
         </section>
 
@@ -244,6 +307,7 @@ export default function Home() {
             title="Featured This Week"
             items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
             type="movie"
+            loading={primaryLoading}
           />
         </section>
 
@@ -253,49 +317,54 @@ export default function Home() {
             title="My List"
             items={myList.length > 0 ? myList : trendingMovies.slice(0, 5)}
             type="movie"
+            loading={primaryLoading && myList.length === 0}
           />
         </section>
 
         {/* Only on Netflix */}
-        {netflixContent.length > 0 && (
+        {(catalogLoading || netflixContent.length > 0) && (
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Netflix"
               items={netflixContent}
               type="movie"
+              loading={catalogLoading}
             />
           </section>
         )}
 
         {/* Only on Prime Video */}
-        {primeContent.length > 0 && (
+        {(catalogLoading || primeContent.length > 0) && (
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Prime Video"
               items={primeContent}
               type="movie"
+              loading={catalogLoading}
             />
           </section>
         )}
 
         {/* Only on Disney+ */}
-        {disneyContent.length > 0 && (
+        {(catalogLoading || disneyContent.length > 0) && (
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Disney+"
               items={disneyContent}
               type="movie"
+              loading={catalogLoading}
             />
           </section>
         )}
 
         {/* Only on Apple TV+ */}
-        {appleContent.length > 0 && (
+        {(catalogLoading || appleContent.length > 0) && (
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Only on Apple TV+"
               items={appleContent}
               type="movie"
+              loading={catalogLoading}
             />
           </section>
         )}

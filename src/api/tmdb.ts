@@ -596,7 +596,6 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    console.log("Movie Videos Response:", response.data?.results)
     return Array.isArray(response.data?.results) ? response.data.results : []
   },
 
@@ -613,7 +612,6 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    console.log("TV Videos Response:", response.data?.results)
     return Array.isArray(response.data?.results) ? response.data.results : []
   },
 }

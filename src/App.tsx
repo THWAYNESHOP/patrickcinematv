@@ -9,6 +9,9 @@ import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 import { useKeyboardHandler } from './hooks/useKeyboardHandler'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import TVGuideOverlay from './components/TVGuideOverlay'
+import { useAuthBridge } from './hooks/useAuthBridge'
+import { useFirestoreSync, useFirestoreRealtime } from './hooks/useFirestoreSync'
+import EmailVerificationBanner from './components/Auth/EmailVerificationBanner'
 
 // Helper component inside App to use useNavigate
 function AppContent() {
@@ -19,6 +22,9 @@ function AppContent() {
 
   useWebVitals()
   useSpatialNavigation()
+  useAuthBridge()
+  useFirestoreSync()
+  useFirestoreRealtime()
 
   // Nav items for quick jump
   const navItems = [
@@ -45,15 +51,6 @@ function AppContent() {
       })
     )
 
-    // Open TV Guide
-    unregister.push(
-      registerHandler('g', (e) => {
-        if (!e.ctrlKey && !e.altKey) {
-          setIsTVGuideOpen(prev => !prev)
-        }
-      })
-    )
-
     // Close modals with Escape
     unregister.push(
       registerHandler('Escape', () => {
@@ -76,9 +73,18 @@ function AppContent() {
     // Open search with /
     unregister.push(
       registerHandler('/', (e) => {
-        if (!e.ctrlKey && !e.altKey) {
-          // We'll add this later, just a placeholder
+        if (e.ctrlKey || e.altKey) return false
+
+        const target = e.target as HTMLElement
+        if (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable
+        ) {
+          return false
         }
+
+        window.dispatchEvent(new CustomEvent('nexastream:open-search'))
       })
     )
 
@@ -88,6 +94,7 @@ function AppContent() {
   return (
     <>
       <Layout>
+        <EmailVerificationBanner />
         <AppRoutes />
         <ToastContainer />
       </Layout>

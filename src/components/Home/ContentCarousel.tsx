@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Play, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Star, Plus, Check } from 'lucide-react'
 import { CardSkeleton } from '../Skeleton'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
+import { useMyList } from '../../hooks/useMyList'
 
 interface ContentCarouselProps {
   title: string
@@ -19,8 +20,9 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
+  const { addToMyList, removeFromMyList, isInMyList } = useMyList()
 
-  const scroll = (direction: 'left' | 'right') => {
+  const scroll = useCallback((direction: 'left' | 'right') => {
     triggerHaptic('light')
     if (scrollRef.current) {
       const scrollAmount = 300
@@ -30,9 +32,9 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
           : scrollRef.current.scrollLeft + scrollAmount
       scrollRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' })
     }
-  }
+  }, [triggerHaptic])
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (scrollRef.current) {
       setCanScrollLeft(scrollRef.current.scrollLeft > 0)
       setCanScrollRight(
@@ -40,19 +42,18 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
           scrollRef.current.scrollWidth - scrollRef.current.clientWidth
       )
     }
-  }
+  }, [])
 
-  // Touch handlers for swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     setTouchEnd(0)
     setTouchStart(e.targetTouches[0].clientX)
-  }
+  }, [])
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX)
-  }
+  }, [])
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return
     
     const distance = touchStart - touchEnd
@@ -63,7 +64,86 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
     } else if (distance < -minSwipeDistance) {
       scroll('left')
     }
-  }
+  }, [touchStart, touchEnd, scroll])
+
+  const carouselItems = useMemo(() => {
+    return items.map((item) => {
+      const itemId = String(item.id)
+      const inMyList = isInMyList(itemId)
+      const itemType = item.type || type
+
+      const handleMyList = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (inMyList) {
+          removeFromMyList(itemId)
+          return
+        }
+
+        addToMyList({
+          id: itemId,
+          title: item.title,
+          poster: item.poster,
+          rating: item.rating,
+          year: item.year,
+          type: itemType,
+        })
+      }
+
+      return (
+        <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-52 group/card">
+          <Link
+            to={`/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`}
+            className="block"
+          >
+            <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
+              <div className="relative aspect-[2/3]">
+                <img
+                  src={item.poster}
+                  srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
+                  sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px"
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
+                </div>
+                {showProgress && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+                    <div className="h-full bg-primary" style={{ width: '45%' }} />
+                  </div>
+                )}
+                {/* Add to List Button */}
+                <button
+                  onClick={handleMyList}
+                  className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
+                >
+                  {inMyList ? (
+                    <Check className="w-4 h-4 text-white" />
+                  ) : (
+                    <Plus className="w-4 h-4 text-white" />
+                  )}
+                </button>
+              </div>
+              <div className="p-3 md:p-4">
+                <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
+                    <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
+                    <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
+                  </div>
+                  {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
+                  {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      )
+    })
+  }, [items, type, showProgress, addToMyList, removeFromMyList, isInMyList])
 
   return (
     <div className="mb-12 md:mb-16">
@@ -100,45 +180,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
               onTouchEnd={handleTouchEnd}
               className="flex gap-5 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             >
-              {items.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/${(item.type || type) === 'tv' ? 'tv' : (item.type || type) === 'anime' ? 'anime' : 'movie'}/${item.id}`}
-                  className="flex-shrink-0 w-36 sm:w-44 md:w-52 group/card"
-                >
-                  <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
-                    <div className="relative aspect-[2/3]">
-                      <img
-                        src={item.poster}
-                        srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
-                        sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px"
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
-                      </div>
-                      {showProgress && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
-                          <div className="h-full bg-primary" style={{ width: '45%' }} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 md:p-4">
-                      <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
-                          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
-                          <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
-                        </div>
-                        {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
-                        {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+              {carouselItems}
             </div>
 
             {/* Right Button */}

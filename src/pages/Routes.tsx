@@ -12,9 +12,15 @@ const LiveTV = lazy(() => import('./LiveTV'))
 const Anime = lazy(() => import('./Anime'))
 const Trending = lazy(() => import('./Trending'))
 const MyList = lazy(() => import('./MyList'))
+const Profile = lazy(() => import('./Profile'))
 const MovieDetails = lazy(() => import('./MovieDetails'))
 const TVDetails = lazy(() => import('./TVDetails'))
 const SportsPlayer = lazy(() => import('./SportsPlayer'))
+const Contact = lazy(() => import('./Contact'))
+const Privacy = lazy(() => import('./Privacy'))
+const Terms = lazy(() => import('./Terms'))
+const Dmca = lazy(() => import('./Dmca'))
+const NotFound = lazy(() => import('./NotFound'))
 
 // Loading component for Suspense
 function PageLoader() {
@@ -40,10 +46,16 @@ export default function AppRoutes() {
           <Route path="/anime" element={<PageTransition><Anime /></PageTransition>} />
           <Route path="/trending" element={<PageTransition><Trending /></PageTransition>} />
           <Route path="/my-list" element={<PageTransition><MyList /></PageTransition>} />
+          <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
           <Route path="/movie/:id" element={<PageTransition><MovieDetails /></PageTransition>} />
           <Route path="/tv/:id" element={<PageTransition><TVDetails /></PageTransition>} />
           <Route path="/sports/:source/:id" element={<PageTransition><SportsPlayer /></PageTransition>} />
           <Route path="/sports/:matchId" element={<PageTransition><SportsPlayer /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+          <Route path="/dmca" element={<PageTransition><Dmca /></PageTransition>} />
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </Suspense>
     </AnimatePresence>

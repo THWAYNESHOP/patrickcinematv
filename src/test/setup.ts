@@ -5,6 +5,22 @@ import * as matchers from '@testing-library/jest-dom/matchers'
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers)
 
+// Add type declarations for jest-dom matchers
+declare global {
+  namespace Vi {
+    interface Assertion extends jest.Matchers<void, any> {
+      toBeInTheDocument(): any
+      toHaveTextContent(text: string | RegExp): any
+      toBeVisible(): any
+      toBeDisabled(): any
+      toBeEnabled(): any
+      toHaveClass(...classNames: string[]): any
+      toHaveAttribute(attr: string, value?: any): any
+      toHaveStyle(styles: Record<string, string>): any
+    }
+  }
+}
+
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
