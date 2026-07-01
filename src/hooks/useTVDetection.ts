@@ -48,17 +48,17 @@ export function useTVDetection() {
         // No touch support (TVs don't have touchscreens)
         !('ontouchstart' in window) ||
         // Limited device memory (common in smart TVs)
-        (navigator as any).deviceMemory <= 4 ||
+        (((navigator as unknown) as { deviceMemory?: number }).deviceMemory || 0) <= 4 ||
         // No pointer events (TVs use remote, not mouse)
         window.matchMedia('(pointer: coarse)').matches === false
 
       // Check for specific TV APIs
       const hasTVAPIs = 
-        !!(window as any).webkitTVRemote ||
-        !!(window as any).TVControl ||
-        !!(window as any).tizen ||
-        !!(window as any).webos ||
-        !!(window as any).AmazonFireTV
+        Boolean(((window as unknown) as { webkitTVRemote?: unknown }).webkitTVRemote) ||
+        Boolean(((window as unknown) as { TVControl?: unknown }).TVControl) ||
+        Boolean(((window as unknown) as { tizen?: unknown }).tizen) ||
+        Boolean(((window as unknown) as { webos?: unknown }).webos) ||
+        Boolean(((window as unknown) as { AmazonFireTV?: unknown }).AmazonFireTV)
 
       const detected = isTVUserAgent || hasTVCharacteristics || hasTVAPIs
       

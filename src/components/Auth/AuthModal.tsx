@@ -63,8 +63,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         setSuccessMessage('Password reset email sent! Check your inbox.')
         setLoading(false)
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Authentication failed')
+      } else {
+        setError(String(err) || 'Authentication failed')
+      }
       setLoading(false)
     }
   }
@@ -84,8 +88,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         await signInWithGithub()
       }
       onClose()
-    } catch (err: any) {
-      setError(err.message || 'Social sign in failed')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Social sign in failed')
+      } else {
+        setError(String(err) || 'Social sign in failed')
+      }
       setLoading(false)
     }
   }

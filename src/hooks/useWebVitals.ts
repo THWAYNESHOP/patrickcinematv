@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
-import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals'
+import { onCLS, onFCP, onLCP, onTTFB, onINP, Metric } from 'web-vitals'
 
 export function useWebVitals() {
   useEffect(() => {
-    const logMetric = (metric: any) => {
+    const logMetric = (metric: Metric) => {
       // Log to console in development
       if (import.meta.env.DEV) {
         console.log(`[Web Vitals] ${metric.name}:`, metric.value, metric)
       }
-      
+
       // Send to analytics service in production
       if (import.meta.env.PROD) {
         // Replace with your analytics service

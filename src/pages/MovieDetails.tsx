@@ -10,6 +10,7 @@ import CastRail from '../components/Details/CastRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
+import { useToast } from '../hooks/useToast'
 import { useStore } from '../store/useStore'
 
 const recommendedMovies = [
@@ -32,6 +33,9 @@ export default function MovieDetails() {
   const [trailer, setTrailer] = useState<{ key: string; embedUrl: string } | null>(null)
   const [showTrailer, setShowTrailer] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const toast = useToast()
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
 
   const setWatchProgress = useStore((state) => state.setWatchProgress)
@@ -66,6 +70,7 @@ export default function MovieDetails() {
       if (!id) return
 
       setLoading(true)
+      setFetchError(null)
       try {
         const details = await tmdbApi.getMovieDetails(id)
         setMovie(details)
@@ -109,9 +114,12 @@ export default function MovieDetails() {
           }
         }
       } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to fetch movie details.'
         if (import.meta.env.DEV) {
           console.warn('Movie details unavailable, using fallback details:', error)
         }
+        setFetchError('Unable to load movie details. Showing fallback content.')
+        toast.error(`Movie load failed: ${message}`)
         setMovie({
           id: Number(id) || 0,
           title: 'Movie',
@@ -134,7 +142,7 @@ export default function MovieDetails() {
     }
 
     fetchMovie()
-  }, [id])
+  }, [id, retryCount, toast])
 
   if (loading) {
     return (
@@ -200,6 +208,27 @@ export default function MovieDetails() {
 
   return (
     <div className="min-h-screen">
+      {fetchError && (
+        <div className="container mx-auto py-6 px-4 md:px-8">
+          <div className="rounded-3xl border border-primary/20 bg-primary/10 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-primary">Unable to load movie details</p>
+              <p className="mt-1 text-sm text-gray-200">{fetchError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setFetchError(null)
+                setLoading(true)
+                setRetryCount((prev) => prev + 1)
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
       <DetailHero
         backdrop={movie.backdrop}
         poster={movie.poster}

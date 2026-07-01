@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Play, Monitor, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp } from 'lucide-react';
 import { cdnLiveTvApi, CDNChannel, CDNSportEvent } from '../api/cdnlivetv';
 import { iptvChannels } from '../data/iptvChannels';
+import { useToast } from '../hooks/useToast';
 
 // Define categories
 const CATEGORIES = [
@@ -185,13 +186,17 @@ export default function IPTVPlayer() {
   const [channels, setChannels] = useState<CDNChannel[]>([]);
   const [sportsEvents, setSportsEvents] = useState<CDNSportEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'channels' | 'sports'>('channels');
+  const toast = useToast();
 
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
+        setFetchError(null);
         const [channelsData, sportsData] = await Promise.all([
           cdnLiveTvApi.getChannels(),
           cdnLiveTvApi.getAllSports(),
@@ -229,7 +234,10 @@ export default function IPTVPlayer() {
         }
         setSportsEvents(allEvents);
       } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to fetch live TV content.'
         console.error('Error fetching data:', error);
+        setFetchError('Unable to load live TV content. Showing fallback channels.')
+        toast.error(`Live TV load failed: ${message}`)
         const fallbackChannels: CDNChannel[] = [];
         iptvChannels.forEach(category => {
           category.channels.forEach(channel => {
@@ -250,7 +258,7 @@ export default function IPTVPlayer() {
     }
 
     fetchData();
-  }, []);
+  }, [retryCount]);
 
   // Categorize channels
   const categorizedChannels = useMemo(() => {
@@ -341,6 +349,21 @@ export default function IPTVPlayer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-deepBlack via-darkSurface to-deepBlack pt-16 md:pt-20">
+      {fetchError && (
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-4">
+          <div className="bg-yellow-600/95 text-white px-4 py-3 rounded-lg flex items-center justify-between shadow-md">
+            <div className="text-sm">{fetchError}</div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setRetryCount((c) => c + 1)}
+                className="px-3 py-1.5 bg-white text-black rounded-md font-semibold hover:opacity-90 transition"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-white/5">
         <div className="absolute -top-32 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
@@ -573,6 +596,27 @@ export default function IPTVPlayer() {
           </div>
         )}
       </div>
+      {fetchError && (
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="rounded-3xl border border-primary/20 bg-primary/10 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-primary">Live TV load issue</p>
+              <p className="mt-1 text-sm text-gray-200">{fetchError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setFetchError(null)
+                setLoading(true)
+                setRetryCount((prev) => prev + 1)
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

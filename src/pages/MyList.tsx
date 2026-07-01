@@ -109,7 +109,7 @@ export default function MyList() {
             <p className="text-gray-500 text-base">Try changing your filter or sort options</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
             {sortedItems.map((item) => (
               <div key={item.id} className="group relative">
                 <Link
@@ -128,7 +128,7 @@ export default function MyList() {
                         <Play className="w-10 h-10 text-primary" fill="white" />
                       </div>
                     </div>
-                    <div className="p-3 md:p-4">
+                    <div className="p-2 md:p-3">
                       <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex items-center gap-1">
@@ -162,7 +162,7 @@ export default function MyList() {
                   to={`/${item.type === 'tv' ? 'tv' : item.type === 'anime' ? 'anime' : 'movie'}/${item.id}`}
                   className="flex-shrink-0"
                 >
-                  <div className="relative w-24 md:w-32 aspect-[2/3] rounded-lg overflow-hidden">
+                  <div className="relative w-20 md:w-28 aspect-[2/3] rounded-lg overflow-hidden">
                     <img
                       src={item.poster}
                       alt={item.title}

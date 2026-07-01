@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import AuthModal from './AuthModal'
 
 describe('AuthModal', () => {
@@ -14,10 +14,10 @@ describe('AuthModal', () => {
   it('should toggle between login and register modes', () => {
     render(<AuthModal onClose={mockOnClose} />)
     
-    const toggleButton = screen.getByText(/register/i)
-    fireEvent.click(toggleButton)
+    const toggleButton = screen.getByText(/sign up/i)
+    act(() => fireEvent.click(toggleButton))
     
-    expect(screen.getByText('Create Account')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument()
   })
 
   it('should close modal when close button is clicked', () => {
@@ -33,7 +33,7 @@ describe('AuthModal', () => {
     render(<AuthModal onClose={mockOnClose} />)
     
     // Switch to register mode
-    fireEvent.click(screen.getByText(/register/i))
+    act(() => fireEvent.click(screen.getByText(/sign up/i)))
     
     const passwordInput = screen.getByLabelText(/^password$/i)
     fireEvent.change(passwordInput, { target: { value: 'Test123!' } })

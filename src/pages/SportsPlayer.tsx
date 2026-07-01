@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { Radio, ArrowLeft } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
+import { useToast } from '../hooks/useToast'
 
 export default function SportsPlayer() {
   if (import.meta.env.DEV) {
@@ -12,7 +13,10 @@ export default function SportsPlayer() {
   const [streams, setStreams] = useState<Stream[]>([])
   const [selectedStream, setSelectedStream] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
   const [directStream, setDirectStream] = useState<{ url: string; name: string } | null>(null)
+  const toast = useToast()
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -34,16 +38,25 @@ export default function SportsPlayer() {
 
         if (!streamId) {
           setStreams([])
+          setFetchError('No valid stream ID found for this match.')
           setLoading(false)
           return
         }
 
         try {
+          setFetchError(null)
+          setLoading(true)
           const data = await sportsApi.getStreams(streamSource, streamId)
+          if (data.length === 0) {
+            setFetchError('No streams available for this match right now.')
+          }
           setStreams(data)
           setLoading(false)
         } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unable to fetch streams.'
           console.error('Error fetching streams:', error)
+          setFetchError('Unable to load match streams. Please try again.')
+          toast.error(`Stream load failed: ${message}`)
           setLoading(false)
         }
       }
@@ -60,7 +73,7 @@ export default function SportsPlayer() {
         iframeRef.current.src = 'about:blank'
       }
     }
-  }, [source, id, matchId, location.state])
+  }, [source, id, matchId, location.state, retryCount, toast])
 
 
 
@@ -70,6 +83,28 @@ export default function SportsPlayer() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="animate-spin w-16 h-16 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-deepBlack px-4">
+        <div className="max-w-xl w-full glass rounded-3xl border border-primary/20 bg-primary/10 p-6 text-center">
+          <p className="text-sm font-semibold text-primary">Unable to load live streams</p>
+          <p className="mt-3 text-gray-200">{fetchError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setFetchError(null)
+              setLoading(true)
+              setRetryCount((prev) => prev + 1)
+            }}
+            className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     )
   }

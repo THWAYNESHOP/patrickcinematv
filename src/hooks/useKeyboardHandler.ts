@@ -34,11 +34,12 @@ export function useKeyboardHandler() {
     // On TV, throttle key presses to prevent spamming
     if (isTVRef.current) {
       const now = Date.now()
-      const lastKeyTime = (handleKeyDown as any).lastKeyTime || 0
+      const handlerMeta = handleKeyDown as unknown as { lastKeyTime?: number }
+      const lastKeyTime = handlerMeta.lastKeyTime || 0
       if (now - lastKeyTime < 150) {
         return // Throttle on TV
       }
-      (handleKeyDown as any).lastKeyTime = now
+      handlerMeta.lastKeyTime = now
     }
 
     // Check registered handlers

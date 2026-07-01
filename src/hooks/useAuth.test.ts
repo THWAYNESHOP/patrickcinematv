@@ -10,7 +10,8 @@ vi.mock('../firebase', () => ({
 vi.mock('firebase/auth', () => ({
   getAuth: vi.fn(() => ({})),
   onAuthStateChanged: vi.fn((_auth, callback) => {
-    callback(null) // Default to no user
+    // Call asynchronously so hook initial loading state remains true
+    setTimeout(() => callback(null), 0)
     return vi.fn()
   }),
   signInWithEmailAndPassword: vi.fn(),

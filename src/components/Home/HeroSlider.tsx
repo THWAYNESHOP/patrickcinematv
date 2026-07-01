@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useTVDetection } from '../../hooks/useTVDetection'
+import type { MovieSummary } from '../../api/tmdb'
 
 interface HeroSliderProps {
-  movies: any[]
+  movies: MovieSummary[]
 }
 
 export default function HeroSlider({ movies }: HeroSliderProps) {

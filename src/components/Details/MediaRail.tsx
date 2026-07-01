@@ -19,7 +19,7 @@ export default function MediaRail({ title, items, type }: MediaRailProps) {
           <Link
             key={item.id}
             to={`/${type}/${item.id}`}
-            className="group flex-shrink-0 w-32 sm:w-36 md:w-44 snap-start"
+            className="group flex-shrink-0 w-28 sm:w-32 md:w-40 snap-start"
           >
             <div className="relative rounded-xl overflow-hidden border border-white/5 group-hover:border-primary/40 transition-all duration-300 group-hover:-translate-y-1 shadow-lg group-hover:shadow-glow">
               <img

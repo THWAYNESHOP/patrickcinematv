@@ -18,8 +18,12 @@ export default function EmailVerificationBanner() {
     try {
       await sendVerificationEmail()
       setMessage('Verification email sent! Please check your inbox.')
-    } catch (error: any) {
-      setMessage(error.message || 'Failed to send verification email')
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setMessage(error.message || 'Failed to send verification email')
+      } else {
+        setMessage(String(error) || 'Failed to send verification email')
+      }
     } finally {
       setLoading(false)
     }

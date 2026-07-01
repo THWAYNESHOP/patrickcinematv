@@ -26,6 +26,7 @@ if ('serviceWorker' in navigator) {
 
 // Prefetch trending data in the background for faster navigation
 prefetchTrendingData()
+void import('./pages/Trending')
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

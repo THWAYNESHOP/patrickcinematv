@@ -1,13 +1,14 @@
-import { useRef, useState, useCallback, useMemo } from 'react'
+import { useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Play, Star, Plus, Check } from 'lucide-react'
 import { CardSkeleton } from '../Skeleton'
+import type { MovieSummary } from '../../api/tmdb'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useMyList } from '../../hooks/useMyList'
 
 interface ContentCarouselProps {
   title: string
-  items: any[]
+  items: MovieSummary[]
   type: 'movie' | 'tv' | 'anime'
   showProgress?: boolean
   loading?: boolean
@@ -66,8 +67,14 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
     }
   }, [touchStart, touchEnd, scroll])
 
+  useEffect(() => {
+    if (!loading) {
+      handleScroll()
+    }
+  }, [handleScroll, items.length, loading])
+
   const carouselItems = useMemo(() => {
-    return items.map((item) => {
+    return items.map((item: MovieSummary) => {
       const itemId = String(item.id)
       const inMyList = isInMyList(itemId)
       const itemType = item.type || type
@@ -92,7 +99,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
       }
 
       return (
-        <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-52 group/card">
+        <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card">
           <Link
             to={`/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`}
             className="block"
@@ -102,7 +109,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
                 <img
                   src={item.poster}
                   srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
-                  sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px"
+                  sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
                   alt={item.title}
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -127,7 +134,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
                   )}
                 </button>
               </div>
-              <div className="p-3 md:p-4">
+              <div className="p-2 md:p-3">
                 <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">

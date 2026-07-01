@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { useToast } from './useToast'
 import { useAuth } from './useAuth'
 
 export interface WatchHistoryItem {
@@ -23,6 +24,7 @@ export function useUserWatchHistory() {
   const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([])
   const [watchProgress, setWatchProgress] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  const toast = useToast()
 
   // Fetch user's watch history and progress
   useEffect(() => {
@@ -67,13 +69,14 @@ export function useUserWatchHistory() {
         setWatchProgress(progressMap)
       } catch (error) {
         console.error('Error fetching user watch data:', error)
+        toast.error('Unable to load your watch history and progress.')
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserData()
-  }, [user])
+  }, [user, toast])
 
   // Add item to watch history
   const addToHistory = async (item: Omit<WatchHistoryItem, 'id' | 'user_id' | 'timestamp'>) => {
@@ -113,6 +116,7 @@ export function useUserWatchHistory() {
       })
     } catch (error) {
       console.error('Error adding to watch history:', error)
+      toast.error('Unable to save watch history.')
     }
   }
 
@@ -137,6 +141,7 @@ export function useUserWatchHistory() {
       }))
     } catch (error) {
       console.error('Error updating watch progress:', error)
+      toast.error('Unable to update watch progress.')
     }
   }
 
@@ -156,6 +161,7 @@ export function useUserWatchHistory() {
       setWatchHistory((prev) => prev.filter((h) => h.item_id !== itemId))
     } catch (error) {
       console.error('Error removing from watch history:', error)
+      toast.error('Unable to remove item from watch history.')
     }
   }
 
@@ -174,6 +180,7 @@ export function useUserWatchHistory() {
       setWatchHistory([])
     } catch (error) {
       console.error('Error clearing watch history:', error)
+      toast.error('Unable to clear watch history.')
     }
   }
 

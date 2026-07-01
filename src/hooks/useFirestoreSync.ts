@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
+import { useToast } from './useToast';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import type { MyListItem, WatchHistoryItem } from '../store/useStore';
@@ -9,6 +10,7 @@ export function useFirestoreSync() {
   const addToMyList = useStore((state) => state.addToMyList);
   const setWatchProgress = useStore((state) => state.setWatchProgress);
   const addToWatchHistory = useStore((state) => state.addToWatchHistory);
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -39,6 +41,7 @@ export function useFirestoreSync() {
         favorites.forEach((item) => addToMyList(item));
       } catch (error) {
         console.error('Error syncing favorites:', error);
+        toast.error('Failed to sync favorites from Firestore.')
       }
     }
 
@@ -55,6 +58,7 @@ export function useFirestoreSync() {
         });
       } catch (error) {
         console.error('Error syncing watch progress:', error);
+        toast.error('Failed to sync watch progress from Firestore.')
       }
     }
 
@@ -84,13 +88,14 @@ export function useFirestoreSync() {
         history.forEach((item) => addToWatchHistory(item));
       } catch (error) {
         console.error('Error syncing watch history:', error);
+        toast.error('Failed to sync watch history from Firestore.')
       }
     }
 
     syncFavorites();
     syncWatchProgress();
     syncWatchHistory();
-  }, [user, addToMyList, setWatchProgress, addToWatchHistory]);
+  }, [user, addToMyList, setWatchProgress, addToWatchHistory, toast]);
 }
 
 export function useFirestoreRealtime() {
@@ -98,6 +103,7 @@ export function useFirestoreRealtime() {
   const addToMyList = useStore((state) => state.addToMyList);
   const removeFromMyList = useStore((state) => state.removeFromMyList);
   const setWatchProgress = useStore((state) => state.setWatchProgress);
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -121,7 +127,10 @@ export function useFirestoreRealtime() {
           }
         });
       },
-      (error) => console.error('Favorites subscription error:', error)
+      (error) => {
+      console.error('Favorites subscription error:', error)
+      toast.error('Favorites subscription failed.')
+    }
     );
 
     // Subscribe to watch progress changes
@@ -135,14 +144,17 @@ export function useFirestoreRealtime() {
           }
         });
       },
-      (error) => console.error('Progress subscription error:', error)
+      (error) => {
+      console.error('Progress subscription error:', error)
+      toast.error('Watch progress subscription failed.')
+    }
     );
 
     return () => {
       favoritesUnsubscribe();
       progressUnsubscribe();
     };
-  }, [user, addToMyList, removeFromMyList, setWatchProgress]);
+  }, [user, addToMyList, removeFromMyList, setWatchProgress, toast]);
 }
 
 // Helper functions to sync data to Firestore

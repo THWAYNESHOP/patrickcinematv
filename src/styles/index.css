@@ -227,17 +227,19 @@ html.light .skeleton {
   }
   
   /* TV-friendly focus styles */
-  .tv-focusable:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.8), 0 0 20px rgba(229, 9, 20, 0.5);
-    transform: scale(1.08);
-    transition: all 0.15s ease-out;
+  .tv-focusable:focus,
+  .tv-focusable:focus-visible,
+  .tv-focusable:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
   }
-  
+
   .tv-focusable:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.8), 0 0 20px rgba(229, 9, 20, 0.5);
-    transform: scale(1.08);
+    box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.8), 0 0 20px rgba(229, 9, 20, 0.5) !important;
+    transform: scale(1.02) !important;
   }
   
   /* Larger touch targets for TV */

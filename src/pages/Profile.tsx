@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore'
+import { useToast } from '../hooks/useToast'
 import { useAuth } from '../hooks/useAuth'
 import { User, Mail, Clock, Heart, Play, LogOut } from 'lucide-react'
 import { signOut } from 'firebase/auth'
@@ -10,12 +11,15 @@ export default function Profile() {
   const { myList, watchHistory, watchProgress } = useStore()
   const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'progress'>('favorites')
 
+  const toast = useToast()
+
   const handleSignOut = async () => {
     try {
       const auth = getAuth()
       await signOut(auth)
     } catch (error) {
       console.error('Sign out failed:', error)
+      toast.error('Unable to sign out. Please try again.')
     }
   }
 
@@ -110,7 +114,7 @@ export default function Profile() {
 
         {/* Content */}
         {activeTab === 'favorites' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             {myList.length === 0 ? (
               <div className="col-span-full text-center py-12 text-gray-400">
                 No favorites yet
@@ -123,7 +127,7 @@ export default function Profile() {
                     alt={item.title}
                     className="w-full aspect-[2/3] object-cover"
                   />
-                  <div className="p-3">
+                  <div className="p-2">
                     <h3 className="text-sm font-medium text-white truncate">{item.title}</h3>
                   </div>
                 </div>
