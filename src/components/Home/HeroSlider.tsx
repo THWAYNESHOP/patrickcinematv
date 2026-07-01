@@ -108,20 +108,6 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
         <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-        {movies.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? 'bg-white w-6'
-                : 'bg-white/40 hover:bg-white/60 w-1.5'
-            }`}
-          />
-        ))}
-      </div>
     </div>
   )
 }

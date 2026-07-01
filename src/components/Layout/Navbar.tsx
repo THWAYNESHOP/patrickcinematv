@@ -41,15 +41,13 @@ function NavDropdown({ label, items, isActive, onNavigate }: NavDropdownProps) {
     <div
       ref={ref}
       className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
     >
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
         aria-haspopup="true"
-        className={`inline-flex items-center gap-1 text-sm font-semibold transition-all duration-300 relative py-2 px-1 tv-focusable tv-touch-target whitespace-nowrap ${
+        className={`inline-flex items-center gap-1 text-sm font-semibold transition-all duration-300 relative py-2 px-1 tv-focusable tv-touch-target whitespace-nowrap min-h-[44px] ${
           groupActive
             ? 'text-white after:content-[""] after:absolute after:-bottom-2 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
             : 'text-gray-400 hover:text-white'

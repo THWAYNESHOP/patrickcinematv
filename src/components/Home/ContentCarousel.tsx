@@ -165,7 +165,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
             {canScrollLeft && (
               <button
                 onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 -translate-x-2 md:-translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </button>
@@ -187,7 +187,7 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
             {canScrollRight && (
               <button
                 onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-x-2 md:translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
               >
                 <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </button>
