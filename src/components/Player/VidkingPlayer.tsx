@@ -9,7 +9,6 @@ interface VidkingPlayerProps {
 }
 
 export default function VidkingPlayer({ src, onProgress, className = '' }: VidkingPlayerProps) {
-  console.log('[VidkingPlayer] Mounting with src:', src)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -25,32 +24,26 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
         case 'k':
           e.preventDefault()
           // Toggle play/pause (placeholder)
-          console.log('Toggle play/pause')
           break
         case 'ArrowLeft':
           e.preventDefault()
           // Seek backward 10 seconds
-          console.log('Seek backward')
           break
         case 'ArrowRight':
           e.preventDefault()
           // Seek forward 10 seconds
-          console.log('Seek forward')
           break
         case 'ArrowUp':
           e.preventDefault()
           // Volume up
-          console.log('Volume up')
           break
         case 'ArrowDown':
           e.preventDefault()
           // Volume down
-          console.log('Volume down')
           break
         case 'm':
           e.preventDefault()
           // Toggle mute (placeholder)
-          console.log('Toggle mute')
           break
         case 'f':
           e.preventDefault()
@@ -65,10 +58,12 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   }, [])
 
   useEffect(() => {
-    console.log('[Vidking Player] Mounting with src:', src)
-    console.log('[Vidking Player] Current URL being loaded:', src)
-    console.log('[Vidking Player] Iframe ref:', iframeRef.current)
-    console.log('[Vidking Player] Window location:', window.location.href)
+    if (import.meta.env.DEV) {
+      console.log('[Vidking Player] Mounting with src:', src)
+      console.log('[Vidking Player] Current URL being loaded:', src)
+      console.log('[Vidking Player] Iframe ref:', iframeRef.current)
+      console.log('[Vidking Player] Window location:', window.location.href)
+    }
 
     if (!onProgress) return
 
@@ -77,7 +72,9 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     })
 
     return () => {
-      console.log('[Vidking Player] Unmounting, cleaning up event listeners')
+      if (import.meta.env.DEV) {
+        console.log('[Vidking Player] Unmounting, cleaning up event listeners')
+      }
       cleanup()
     }
   }, [onProgress, src])
@@ -86,9 +83,11 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     const iframe = iframeRef.current
     if (!iframe) return
 
-    console.log('[Vidking Player] Setting iframe src:', src)
-    console.log('[Vidking Player] Iframe element:', iframe)
-    console.log('[Vidking Player] Current iframe src before setting:', iframe.src)
+    if (import.meta.env.DEV) {
+      console.log('[Vidking Player] Setting iframe src:', src)
+      console.log('[Vidking Player] Iframe element:', iframe)
+      console.log('[Vidking Player] Current iframe src before setting:', iframe.src)
+    }
     setIframeLoaded(false)
     setIframeError(false)
 
@@ -96,11 +95,15 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     const delay = isTV ? 200 : 100
     setTimeout(() => {
       iframe.src = src
-      console.log('[Vidking Player] Iframe src set to:', iframe.src)
+      if (import.meta.env.DEV) {
+        console.log('[Vidking Player] Iframe src set to:', iframe.src)
+      }
     }, delay)
 
     return () => {
-      console.log('[Vidking Player] Cleaning up iframe, clearing src')
+      if (import.meta.env.DEV) {
+        console.log('[Vidking Player] Cleaning up iframe, clearing src')
+      }
       iframe.src = ''
     }
   }, [src, isTV])
@@ -146,7 +149,9 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
         }
       }
     } catch (error) {
-      console.error('Fullscreen error:', error)
+      if (import.meta.env.DEV) {
+        console.error('Fullscreen error:', error)
+      }
     }
   }
 
@@ -217,11 +222,15 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           loading="eager"
           {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
           onError={() => {
-            console.error('[Vidking Player] Iframe failed to load:', src)
+            if (import.meta.env.DEV) {
+              console.error('[Vidking Player] Iframe failed to load:', src)
+            }
             setIframeError(true)
           }}
           onLoad={() => {
-            console.log('[Vidking Player] Iframe loaded successfully:', src)
+            if (import.meta.env.DEV) {
+              console.log('[Vidking Player] Iframe loaded successfully:', src)
+            }
             setIframeLoaded(true)
           }}
         />

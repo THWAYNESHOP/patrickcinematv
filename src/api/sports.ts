@@ -104,11 +104,15 @@ function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIV
 export const sportsApi = {
   async getLiveMatches(): Promise<Match[]> {
     try {
-      console.log('Fetching live matches from:', `${SPORTS_API_BASE}/matches/live`)
+      if (import.meta.env.DEV) {
+        console.log('Fetching live matches from:', `${SPORTS_API_BASE}/matches/live`)
+      }
       const response = await axios.get(`${SPORTS_API_BASE}/matches/live`, {
         timeout: 10000,
       })
-      console.log('Live matches response:', response.data)
+      if (import.meta.env.DEV) {
+        console.log('Live matches response:', response.data)
+      }
       return Array.isArray(response.data)
         ? response.data.map((match: StreamedMatch) => normalizeMatch(match))
         : []
@@ -128,7 +132,9 @@ export const sportsApi = {
 
   async getUpcomingMatches(): Promise<Match[]> {
     try {
-      console.log('Fetching upcoming matches from:', `${SPORTS_API_BASE}/matches/all`)
+      if (import.meta.env.DEV) {
+        console.log('Fetching upcoming matches from:', `${SPORTS_API_BASE}/matches/all`)
+      }
       const response = await axios.get(`${SPORTS_API_BASE}/matches/all`, {
         timeout: 10000,
       })
@@ -152,7 +158,9 @@ export const sportsApi = {
 
   async getStreams(source: string, id: string): Promise<Stream[]> {
     try {
-      console.log('Fetching streams from:', `${SPORTS_API_BASE}/stream/${source}/${id}`)
+      if (import.meta.env.DEV) {
+        console.log('Fetching streams from:', `${SPORTS_API_BASE}/stream/${source}/${id}`)
+      }
       const response = await axios.get(`${SPORTS_API_BASE}/stream/${source}/${id}`, {
         timeout: 10000,
       })

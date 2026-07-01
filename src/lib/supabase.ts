@@ -18,9 +18,9 @@ export const isSupabaseConfigured =
   !supabaseUrl.includes('your-supabase') &&
   supabaseAnonKey !== 'your-supabase-anon-key';
 
-export const supabase: SupabaseClient = isSupabaseConfigured
+export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient('https://placeholder.supabase.co', 'placeholder-anon-key');
+  : null;
 
 export type Database = {
   public: {

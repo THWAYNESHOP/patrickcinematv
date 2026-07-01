@@ -80,7 +80,9 @@ export default function MovieDetails() {
 
         // Fetch videos
         const videos = await tmdbApi.getMovieVideos(id)
-        console.log("TMDB Videos:", videos)
+        if (import.meta.env.DEV) {
+          console.log("TMDB Videos:", videos)
+        }
 
         // Select best trailer: Official Trailer > Trailer > Teaser
         const officialTrailer = videos.find(v => v.type === 'Trailer' && v.official && v.site === 'YouTube' && v.key)
@@ -90,9 +92,11 @@ export default function MovieDetails() {
         const selectedTrailer = officialTrailer || trailer || teaser
 
         if (selectedTrailer) {
-          console.log("Selected Trailer:", selectedTrailer)
           const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
-          console.log("Trailer Embed URL:", embedUrl)
+          if (import.meta.env.DEV) {
+            console.log("Selected Trailer:", selectedTrailer)
+            console.log("Trailer Embed URL:", embedUrl)
+          }
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
           // Show trailer after 2 seconds
@@ -100,10 +104,14 @@ export default function MovieDetails() {
             setShowTrailer(true)
           }, 2000)
         } else {
-          console.warn("No suitable trailer found")
+          if (import.meta.env.DEV) {
+            console.warn("No suitable trailer found")
+          }
         }
       } catch (error) {
-        console.warn('Movie details unavailable, using fallback details:', error)
+        if (import.meta.env.DEV) {
+          console.warn('Movie details unavailable, using fallback details:', error)
+        }
         setMovie({
           id: Number(id) || 0,
           title: 'Movie',
@@ -117,7 +125,9 @@ export default function MovieDetails() {
           cast: [],
         })
         setRecommendations(recommendedMovies)
-        console.warn("No trailer available for:", "movie", id)
+        if (import.meta.env.DEV) {
+          console.warn("No trailer available for:", "movie", id)
+        }
       } finally {
         setLoading(false)
       }

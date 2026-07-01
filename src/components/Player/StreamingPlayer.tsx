@@ -67,7 +67,9 @@ export default function StreamingPlayer({
       // Handle PLAYER_EVENT events (VidLink style)
       if (event.data?.type === 'PLAYER_EVENT') {
         const { event: eventType, currentTime, duration } = event.data.data
-        console.log(`[${providerId}] Player ${eventType} at ${currentTime}s of ${duration}s`)
+        if (import.meta.env.DEV) {
+          console.log(`[${providerId}] Player ${eventType} at ${currentTime}s of ${duration}s`)
+        }
       }
 
       // Handle VidKing style progress events
@@ -94,7 +96,9 @@ export default function StreamingPlayer({
     const timeoutDuration = isTV ? 30000 : 15000
     const timeout = setTimeout(() => {
       if (!iframeLoaded) {
-        console.warn(`[${providerId}] Content may be unavailable - timeout reached`)
+        if (import.meta.env.DEV) {
+          console.warn(`[${providerId}] Content may be unavailable - timeout reached`)
+        }
         setLoadTimeout(true)
         onError?.()
       }
@@ -184,11 +188,15 @@ export default function StreamingPlayer({
           loading="eager"
           {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
           onError={() => {
-            console.error(`[${providerId}] Iframe failed to load:`, vidLinkUrl)
+            if (import.meta.env.DEV) {
+              console.error(`[${providerId}] Iframe failed to load:`, vidLinkUrl)
+            }
             setIframeError(true)
           }}
           onLoad={() => {
-            console.log(`[${providerId}] Iframe loaded successfully:`, vidLinkUrl)
+            if (import.meta.env.DEV) {
+              console.log(`[${providerId}] Iframe loaded successfully:`, vidLinkUrl)
+            }
             setIframeLoaded(true)
           }}
         />

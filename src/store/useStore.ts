@@ -203,6 +203,7 @@ export const useStore = create<AppState>()(
 
         try {
           const { supabase } = await import('../lib/supabase');
+          if (!supabase) return;
 
           // Sync favorites
           if (myList.length > 0) {
@@ -253,6 +254,7 @@ export const useStore = create<AppState>()(
 
         try {
           const { supabase } = await import('../lib/supabase');
+          if (!supabase) return;
 
           // Clear all user data from Supabase
           await supabase.from('watch_progress').delete().eq('user_id', user.id);

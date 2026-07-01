@@ -14,7 +14,7 @@ A premium streaming platform combining Live Sports, Movies, TV Series, Anime, an
 
 ## Tech Stack
 
-- React 18
+- React 19
 - TypeScript
 - Vite
 - Tailwind CSS
@@ -22,6 +22,32 @@ A premium streaming platform combining Live Sports, Movies, TV Series, Anime, an
 - Lucide Icons
 - Framer Motion
 - Axios
+
+## Required environment variables
+
+This project depends on several Vite environment variables for API access and integrations:
+
+- `VITE_TMDB_API_KEY`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FIREBASE_MEASUREMENT_ID`
+- `VITE_SENTRY_DSN`
+- `VITE_STREAM_PROXY_URL`
+
+### Secure setup
+
+- Copy `.env.example` to `.env.local` for local development.
+- Never commit `.env`, `.env.local`, or real secrets to GitHub.
+- For Cloudflare Pages, add the same variables in the Pages project settings under Build & Deploy > Environment variables.
+- If you deploy from GitHub Actions, store the values in GitHub Secrets and inject them into the build step.
+
+> Only variables prefixed with `VITE_` are exposed to the frontend bundle. If something must stay truly private, keep it on a server-side endpoint or Cloudflare Worker instead of the client app.
 
 ## Installation
 
@@ -51,11 +77,22 @@ npm run build
 ### Cloudflare Pages
 
 1. Build the project: `npm run build`
-2. Deploy the `dist` folder to Cloudflare Pages
-3. **Important**: Set the following environment variable in Cloudflare Pages settings:
-   - `VITE_STREAM_PROXY_URL=https://patrick-cinema-tv.patrickcinematv.workers.dev/api/stream`
+2. Set the build output directory to `dist`
+3. In Cloudflare Pages, add the required environment variables under Build & Deploy > Environment variables, including:
+   - `VITE_TMDB_API_KEY`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID`
+   - `VITE_SENTRY_DSN`
+   - `VITE_STREAM_PROXY_URL`
 
-This is required for the Live TV streams to work, as they need a proxy server to add the User-Agent header.
+This is required for features like the TMDB API, authentication, and Live TV stream proxying to work correctly.
 
 ## API Integration
 

@@ -23,11 +23,11 @@ export function clearCache(): void {
   cache.clear()
 }
 
+import { tmdbApi } from '../api/tmdb'
+
 // Prefetch trending data in the background
 export async function prefetchTrendingData() {
   try {
-    const { tmdbApi } = await import('../api/tmdb')
-    
     // Prefetch trending movies and TV
     await Promise.all([
       tmdbApi.getTrendingMoviesToday().catch(() => {}),

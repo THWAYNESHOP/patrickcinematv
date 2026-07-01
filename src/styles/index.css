@@ -338,8 +338,8 @@ img {
 }
 
 /* TV-specific optimizations - disable resource-intensive animations */
-body.is-tv-device,
-@media (tv) {
+/* TV-specific optimizations - apply for body class and TV media query */
+body.is-tv-device {
   /* Disable infinite animations that cause hanging on TV */
   .animate-glow,
   .animate-pulse-slow,
@@ -349,36 +349,79 @@ body.is-tv-device,
   .skeleton {
     animation: none !important;
   }
-  
+
   /* Reduce transition durations for snappier TV navigation */
   * {
     transition-duration: 0.1s !important;
     animation-duration: 0.1s !important;
   }
-  
+
   /* Disable hover effects since TVs don't have hover */
   .card-hover:hover {
     transform: none !important;
   }
-  
+
   /* Optimize focus states for TV */
   .tv-focusable:focus {
     box-shadow: 0 0 0 6px rgba(229, 9, 20, 0.9), 0 0 30px rgba(229, 9, 20, 0.6) !important;
     transform: scale(1.1) !important;
   }
-  
+
   /* Larger touch targets for TV remotes */
   .tv-touch-target {
     min-height: 60px !important;
     min-width: 60px !important;
   }
-  
+
   /* Disable smooth scrolling on TV for better performance */
   html {
     scroll-behavior: auto !important;
   }
-  
+
   /* Reduce GPU load by disabling backdrop filters on TV */
+  .glass,
+  .glass-strong {
+    backdrop-filter: none !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+@media (tv) {
+  /* Duplicate the same rules for the TV media query to ensure behavior
+     both when the `is-tv-device` class is present and when the UA reports
+     a TV media type. */
+  .animate-glow,
+  .animate-pulse-slow,
+  .animate-float,
+  .animate-skeleton-pulse,
+  .animate-shimmer,
+  .skeleton {
+    animation: none !important;
+  }
+
+  * {
+    transition-duration: 0.1s !important;
+    animation-duration: 0.1s !important;
+  }
+
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  .tv-focusable:focus {
+    box-shadow: 0 0 0 6px rgba(229, 9, 20, 0.9), 0 0 30px rgba(229, 9, 20, 0.6) !important;
+    transform: scale(1.1) !important;
+  }
+
+  .tv-touch-target {
+    min-height: 60px !important;
+    min-width: 60px !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+
   .glass,
   .glass-strong {
     backdrop-filter: none !important;
@@ -416,7 +459,7 @@ body.is-tv-device,
   }
   
   /* Better tap targets for carousel cards */
-  .group\\/card {
+  .group .card {
     min-height: 44px !important;
   }
   

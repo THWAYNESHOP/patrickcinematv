@@ -10,12 +10,14 @@ export function useSupabaseSync() {
   const addToWatchHistory = useStore((state) => state.addToWatchHistory);
 
   useEffect(() => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured || !supabase) return;
+
+    const client = supabase;
 
     // Sync favorites from Supabase
     async function syncFavorites() {
       if (!user) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('favorites')
         .select('*')
         .eq('user_id', user.id)
@@ -42,7 +44,7 @@ export function useSupabaseSync() {
     // Sync watch progress from Supabase
     async function syncWatchProgress() {
       if (!user) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('watch_progress')
         .select('*')
         .eq('user_id', user.id);
@@ -62,7 +64,7 @@ export function useSupabaseSync() {
     // Sync watch history from Supabase
     async function syncWatchHistory() {
       if (!user) return;
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('watch_history')
         .select('*')
         .eq('user_id', user.id)
@@ -99,10 +101,12 @@ export function useSupabaseRealtime() {
   const setWatchProgress = useStore((state) => state.setWatchProgress);
 
   useEffect(() => {
-    if (!user || !isSupabaseConfigured) return;
+    if (!user || !isSupabaseConfigured || !supabase) return;
+
+    const client = supabase;
 
     // Subscribe to favorites changes
-    const favoritesSubscription = supabase
+    const favoritesSubscription = client
       .channel('favorites-changes')
       .on(
         'postgres_changes',
@@ -130,7 +134,7 @@ export function useSupabaseRealtime() {
       .subscribe();
 
     // Subscribe to watch progress changes
-    const progressSubscription = supabase
+    const progressSubscription = client
       .channel('progress-changes')
       .on(
         'postgres_changes',

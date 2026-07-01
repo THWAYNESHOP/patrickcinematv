@@ -95,7 +95,9 @@ export default function VidLinkPlayer({
       // Handle PLAYER_EVENT events
       if (event.data?.type === 'PLAYER_EVENT') {
         const { event: eventType, currentTime, duration } = event.data.data
-        console.log(`[VidLink] Player ${eventType} at ${currentTime}s of ${duration}s`)
+        if (import.meta.env.DEV) {
+          console.log(`[VidLink] Player ${eventType} at ${currentTime}s of ${duration}s`)
+        }
       }
     }
 
@@ -109,7 +111,9 @@ export default function VidLinkPlayer({
     const timeoutDuration = isTV ? 30000 : 15000
     const timeout = setTimeout(() => {
       if (!iframeLoaded) {
-        console.warn('[VidLink] Content may be unavailable - timeout reached')
+        if (import.meta.env.DEV) {
+          console.warn('[VidLink] Content may be unavailable - timeout reached')
+        }
         setLoadTimeout(true)
         onError?.()
       }
@@ -199,11 +203,15 @@ export default function VidLinkPlayer({
           loading="eager"
           {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
           onError={() => {
-            console.error('[VidLink] Iframe failed to load:', vidLinkUrl)
+            if (import.meta.env.DEV) {
+              console.error('[VidLink] Iframe failed to load:', vidLinkUrl)
+            }
             setIframeError(true)
           }}
           onLoad={() => {
-            console.log('[VidLink] Iframe loaded successfully:', vidLinkUrl)
+            if (import.meta.env.DEV) {
+              console.log('[VidLink] Iframe loaded successfully:', vidLinkUrl)
+            }
             setIframeLoaded(true)
           }}
         />

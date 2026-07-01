@@ -4,7 +4,9 @@ import { Radio, ArrowLeft } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 
 export default function SportsPlayer() {
-  console.log('[SportsPlayer] Mounting')
+  if (import.meta.env.DEV) {
+    console.log('[SportsPlayer] Mounting')
+  }
   const { source, id, matchId } = useParams()
   const location = useLocation()
   const [streams, setStreams] = useState<Stream[]>([])
@@ -51,7 +53,9 @@ export default function SportsPlayer() {
 
     // Cleanup iframe on unmount
     return () => {
-      console.log('[SportsPlayer] Cleaning up iframe')
+      if (import.meta.env.DEV) {
+        console.log('[SportsPlayer] Cleaning up iframe')
+      }
       if (iframeRef.current) {
         iframeRef.current.src = 'about:blank'
       }

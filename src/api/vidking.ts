@@ -14,7 +14,9 @@ export const vidkingApi = {
     
     const queryString = params.toString()
     const url = `https://www.vidking.net/embed/movie/${id}${queryString ? `?${queryString}` : ''}`
-    console.log('[Vidking API] Generated movie URL:', url)
+    if (import.meta.env.DEV) {
+      console.log('[Vidking API] Generated movie URL:', url)
+    }
     return url
   },
 
@@ -35,7 +37,9 @@ export const vidkingApi = {
     
     const queryString = params.toString()
     const url = `https://www.vidking.net/embed/tv/${id}/${season}/${episode}${queryString ? `?${queryString}` : ''}`
-    console.log('[Vidking API] Generated TV URL:', url)
+    if (import.meta.env.DEV) {
+      console.log('[Vidking API] Generated TV URL:', url)
+    }
     return url
   },
 
