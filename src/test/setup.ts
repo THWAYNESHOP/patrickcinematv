@@ -22,6 +22,18 @@ declare global {
   }
 }
 
+// Provide dummy Firebase env variables for tests
+const testEnv = import.meta.env as Record<string, string | undefined>
+Object.assign(testEnv, {
+  VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ?? 'test-firebase-api-key',
+  VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? 'test-firebase-project-id',
+  VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? 'test-firebase-auth-domain',
+  VITE_FIREBASE_STORAGE_BUCKET: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ?? 'test-firebase-storage-bucket',
+  VITE_FIREBASE_MESSAGING_SENDER_ID: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? 'test-firebase-messaging-sender-id',
+  VITE_FIREBASE_APP_ID: import.meta.env.VITE_FIREBASE_APP_ID ?? 'test-firebase-app-id',
+  VITE_FIREBASE_MEASUREMENT_ID: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID ?? 'test-firebase-measurement-id',
+})
+
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
