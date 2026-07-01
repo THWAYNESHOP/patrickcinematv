@@ -197,8 +197,9 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api/stream': {
-        target: 'http://localhost:3001',
+        target: process.env.VITE_STREAM_PROXY_URL || 'http://localhost:3001',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/stream/, ''),
       },
     },
   },
