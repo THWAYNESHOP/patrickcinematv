@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
@@ -8,15 +9,15 @@ expect.extend(matchers)
 // Add type declarations for jest-dom matchers
 declare global {
   namespace Vi {
-    interface Assertion extends jest.Matchers<void, any> {
-      toBeInTheDocument(): any
-      toHaveTextContent(text: string | RegExp): any
-      toBeVisible(): any
-      toBeDisabled(): any
-      toBeEnabled(): any
-      toHaveClass(...classNames: string[]): any
-      toHaveAttribute(attr: string, value?: any): any
-      toHaveStyle(styles: Record<string, string>): any
+    interface Assertion extends jest.Matchers<void, unknown> {
+      toBeInTheDocument(): void
+      toHaveTextContent(text: string | RegExp): void
+      toBeVisible(): void
+      toBeDisabled(): void
+      toBeEnabled(): void
+      toHaveClass(...classNames: string[]): void
+      toHaveAttribute(attr: string, value?: unknown): void
+      toHaveStyle(styles: Record<string, string>): void
     }
   }
 }

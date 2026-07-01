@@ -109,6 +109,11 @@ export default function StreamingPlayer({
 
   const vidLinkUrl = src
 
+  const vendorAttrs: Partial<React.IframeHTMLAttributes<HTMLIFrameElement>> = {
+    // Cross-browser fullscreen attribute (React uses allowFullScreen)
+    allowFullScreen: true,
+  }
+
   return (
     <div
       ref={containerRef}
@@ -186,7 +191,7 @@ export default function StreamingPlayer({
           title={`${provider?.displayName || 'Streaming'} Player`}
           name="streaming-player"
           loading="eager"
-          {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
+          {...(vendorAttrs)}
           onError={() => {
             if (import.meta.env.DEV) {
               console.error(`[${providerId}] Iframe failed to load:`, vidLinkUrl)

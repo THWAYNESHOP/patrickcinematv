@@ -24,7 +24,7 @@ function migrateLegacyStorageKeys() {
 migrateLegacyStorageKeys()
 
 export const storage = {
-  getMyList: (): any[] => {
+  getMyList: (): unknown[] => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.MY_LIST)
       return data ? JSON.parse(data) : []
@@ -33,25 +33,26 @@ export const storage = {
     }
   },
 
-  setMyList: (list: any[]): void => {
+  setMyList: (list: unknown[]): void => {
     localStorage.setItem(STORAGE_KEYS.MY_LIST, JSON.stringify(list))
   },
 
-  addToMyList: (item: any): void => {
+  addToMyList: (item: unknown): void => {
     const list = storage.getMyList()
-    if (!list.find((i) => String(i.id) === String(item.id))) {
+    const id = ((item as unknown) as { id?: string })?.id
+    if (!list.find((i) => String(((i as unknown) as { id?: string })?.id) === String(id))) {
       list.push(item)
       storage.setMyList(list)
     }
   },
 
   removeFromMyList: (id: string): void => {
-    const list = storage.getMyList().filter((item) => String(item.id) !== String(id))
+    const list = storage.getMyList().filter((item) => String(((item as unknown) as { id?: string })?.id) !== String(id))
     storage.setMyList(list)
   },
 
   isInMyList: (id: string): boolean => {
-    return storage.getMyList().some((item) => String(item.id) === String(id))
+    return storage.getMyList().some((item) => String(((item as unknown) as { id?: string })?.id) === String(id))
   },
 
   getWatchProgress: (itemId: string): number => {
@@ -75,7 +76,7 @@ export const storage = {
     }
   },
 
-  getContinueWatching: (): any[] => {
+  getContinueWatching: (): unknown[] => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CONTINUE_WATCHING)
       return data ? JSON.parse(data) : []
@@ -84,22 +85,27 @@ export const storage = {
     }
   },
 
-  setContinueWatching: (items: any[]): void => {
+  setContinueWatching: (items: unknown[]): void => {
     localStorage.setItem(STORAGE_KEYS.CONTINUE_WATCHING, JSON.stringify(items))
   },
 
-  addToContinueWatching: (item: any): void => {
+  addToContinueWatching: (item: unknown): void => {
     const list = storage.getContinueWatching()
-    const existingIndex = list.findIndex((i) => i.id === item.id)
-    
+    const existingIndex = (list as unknown as Array<{ id?: string; lastWatched?: number }>).findIndex(
+      (i) => ((i as unknown) as { id?: string }).id === ((item as unknown) as { id?: string }).id,
+    )
+
     if (existingIndex >= 0) {
-      list[existingIndex] = { ...item, lastWatched: Date.now() }
+      ;(list as unknown as Array<{ lastWatched?: number }>)[existingIndex] = {
+        ...((item as unknown) as Record<string, unknown>),
+        lastWatched: Date.now(),
+      }
     } else {
-      list.push({ ...item, lastWatched: Date.now() })
+      list.push({ ...((item as unknown) as Record<string, unknown>), lastWatched: Date.now() })
     }
-    
+
     // Sort by last watched
-    list.sort((a, b) => b.lastWatched - a.lastWatched)
-    storage.setContinueWatching(list.slice(0, 20)) // Keep only last 20
+    ;(list as unknown as Array<{ lastWatched: number }>).sort((a, b) => b.lastWatched - a.lastWatched)
+    storage.setContinueWatching((list as unknown as Array<Record<string, unknown>>).slice(0, 20)) // Keep only last 20
   },
 }

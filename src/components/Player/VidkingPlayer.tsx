@@ -16,6 +16,10 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   const [iframeError, setIframeError] = useState(false)
   const isTV = useTVDetection()
 
+  const vendorAttrs: Partial<React.IframeHTMLAttributes<HTMLIFrameElement>> = {
+    allowFullScreen: true,
+  }
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       // Keyboard shortcuts for player
@@ -125,27 +129,41 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
     if (!container) return
 
     try {
-      if (!document.fullscreenElement) {
+        if (!document.fullscreenElement) {
         // Request fullscreen with cross-browser support for Android Chrome
         if (container.requestFullscreen) {
           await container.requestFullscreen()
-        } else if ((container as any).webkitRequestFullscreen) {
-          await (container as any).webkitRequestFullscreen()
-        } else if ((container as any).mozRequestFullScreen) {
-          await (container as any).mozRequestFullScreen()
-        } else if ((container as any).msRequestFullscreen) {
-          await (container as any).msRequestFullscreen()
+        } else {
+          const vendorElem = container as unknown as {
+            webkitRequestFullscreen?: () => Promise<void>
+            mozRequestFullScreen?: () => Promise<void>
+            msRequestFullscreen?: () => Promise<void>
+          }
+          if (vendorElem.webkitRequestFullscreen) {
+            await vendorElem.webkitRequestFullscreen()
+          } else if (vendorElem.mozRequestFullScreen) {
+            await vendorElem.mozRequestFullScreen()
+          } else if (vendorElem.msRequestFullscreen) {
+            await vendorElem.msRequestFullscreen()
+          }
         }
       } else {
         // Exit fullscreen with cross-browser support
         if (document.exitFullscreen) {
           await document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen()
-        } else if ((document as any).mozCancelFullScreen) {
-          await (document as any).mozCancelFullScreen()
-        } else if ((document as any).msExitFullscreen) {
-          await (document as any).msExitFullscreen()
+        } else {
+          const vendorDoc = document as unknown as {
+            webkitExitFullscreen?: () => Promise<void>
+            mozCancelFullScreen?: () => Promise<void>
+            msExitFullscreen?: () => Promise<void>
+          }
+          if (vendorDoc.webkitExitFullscreen) {
+            await vendorDoc.webkitExitFullscreen()
+          } else if (vendorDoc.mozCancelFullScreen) {
+            await vendorDoc.mozCancelFullScreen()
+          } else if (vendorDoc.msExitFullscreen) {
+            await vendorDoc.msExitFullscreen()
+          }
         }
       }
     } catch (error) {
@@ -220,7 +238,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           title="Video Player"
           name="vidking-player"
           loading="eager"
-          {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
+          {...(vendorAttrs)}
           onError={() => {
             if (import.meta.env.DEV) {
               console.error('[Vidking Player] Iframe failed to load:', src)

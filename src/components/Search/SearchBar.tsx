@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, X, Film, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
+import type { MovieSummary } from '../../api/tmdb'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { useDebounce } from '../../hooks/useDebounce'
 import { performFuzzySearch, getSearchSuggestions } from '../../utils/fuzzySearch'
@@ -12,7 +13,19 @@ interface SearchBarProps {
 
 export default function SearchBar({ onClose }: SearchBarProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<any[]>([])
+
+  interface SearchableItem {
+    id: string
+    title: string
+    type: 'movie' | 'tv' | 'anime' | 'sports'
+    year?: number
+    rating?: string
+    poster?: string
+    genre?: string[]
+    language?: string
+  }
+
+  const [results, setResults] = useState<SearchableItem[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [showFilters, setShowFilters] = useState(false)
@@ -30,7 +43,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const searchContainerRef = useFocusTrap(true)
   const debouncedQuery = useDebounce(query, 500)
 
-  const applyFilters = useCallback((items: any[]) => {
+  function applyFilters(items: SearchableItem[]) {
     let filtered = [...items]
 
     // Filter by type
@@ -41,13 +54,13 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     // Filter by year
     if (filters.year !== 'all') {
       if (filters.year === '2010s') {
-        filtered = filtered.filter(item => item.year >= 2010 && item.year < 2020)
+        filtered = filtered.filter(item => (item.year ?? 0) >= 2010 && (item.year ?? 0) < 2020)
       } else if (filters.year === '2000s') {
-        filtered = filtered.filter(item => item.year >= 2000 && item.year < 2010)
+        filtered = filtered.filter(item => (item.year ?? 0) >= 2000 && (item.year ?? 0) < 2010)
       } else if (filters.year === '2020s') {
-        filtered = filtered.filter(item => item.year >= 2020)
+        filtered = filtered.filter(item => (item.year ?? 0) >= 2020)
       } else {
-        filtered = filtered.filter(item => item.year === parseInt(filters.year))
+        filtered = filtered.filter(item => (item.year ?? 0) === parseInt(filters.year))
       }
     }
 
@@ -81,7 +94,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     }
 
     return filtered
-  }, [filters])
+  }
 
   const fallbackData = [
     { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
@@ -109,17 +122,17 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     async function search() {
       try {
         const tmdbResults = await tmdbApi.searchMulti(debouncedQuery)
-        
+
         // Convert to SearchableItem format
-        const searchableItems = tmdbResults.map((item: any) => ({
+        const searchableItems: SearchableItem[] = tmdbResults.map((item: MovieSummary) => ({
           id: String(item.id),
           title: item.title,
-          type: item.type,
+          type: ((item.type ?? 'movie') as 'movie' | 'tv' | 'anime' | 'sports'),
           year: item.year,
           rating: item.rating,
           poster: item.poster,
-          genre: item.genre || [],
-          language: item.language,
+          genre: ((item as unknown) as { genres?: string[] }).genres || [],
+          language: ((item as unknown) as { language?: string }).language,
         }))
         
         // Apply fuzzy search for better matching
@@ -132,13 +145,15 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         const filteredResults = applyFilters(fuzzyResults)
         setResults(filteredResults)
       } catch (error) {
-        console.warn('TMDB search unavailable, using fallback search:', error)
+        if (import.meta.env.DEV) {
+          console.warn('TMDB search unavailable, using fallback search:', error)
+        }
         
         // Convert fallback data to SearchableItem format
-        const searchableFallback = fallbackData.map((item: any) => ({
+        const searchableFallback: SearchableItem[] = fallbackData.map((item) => ({
           id: String(item.id),
           title: item.title,
-          type: item.type,
+          type: item.type as 'movie' | 'tv' | 'anime' | 'sports',
           year: item.year,
           poster: item.poster,
         }))
@@ -156,7 +171,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     }
 
     search()
-  }, [debouncedQuery, filters, applyFilters])
+  }, [debouncedQuery, filters])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (results.length === 0) return
@@ -185,7 +200,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     }
   }
 
-  const handleResultClick = (item: any) => {
+  const handleResultClick = (item: SearchableItem) => {
     navigate(getRoute(item))
     onClose?.()
   }
@@ -220,7 +235,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     }
   }
 
-  const getRoute = (item: any) => {
+  const getRoute = (item: SearchableItem) => {
     switch (item.type) {
       case 'movie':
         return `/movie/${item.id}`

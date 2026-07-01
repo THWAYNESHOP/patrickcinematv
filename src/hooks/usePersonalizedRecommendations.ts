@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useWatchHistory } from './useWatchHistory'
 import { useMyList } from './useMyList'
+import type { MovieSummary } from '../api/tmdb'
 
-export function usePersonalizedRecommendations(allContent: any[]) {
+export function usePersonalizedRecommendations(allContent: MovieSummary[]) {
   const { watchHistory } = useWatchHistory()
   const { myList } = useMyList()
 
@@ -14,14 +15,13 @@ export function usePersonalizedRecommendations(allContent: any[]) {
     
     // Extract genres from watch history (simplified - in real app would have genre data)
     watchHistory.slice(0, 10).forEach(item => {
-      // In a real implementation, you'd have genre data in the item
-      // For now, we'll use the content type as a preference
-      userPreferences.add(item.type)
+      // For now, use the content type as a preference
+      userPreferences.add(item.type ?? '')
     })
 
     // Extract genres from my list
     myList.slice(0, 10).forEach(item => {
-      userPreferences.add(item.type)
+      userPreferences.add(item.type ?? '')
     })
 
     // Score content based on user preferences
@@ -29,18 +29,18 @@ export function usePersonalizedRecommendations(allContent: any[]) {
       let score = 0
 
       // Boost score if content matches user's preferred types
-      if (userPreferences.has(item.type)) {
+      if (userPreferences.has(item.type ?? '')) {
         score += 10
       }
 
       // Boost score if content is in my list (show similar items)
-      const isInMyList = myList.some(listItem => listItem.id === item.id)
+      const isInMyList = myList.some(listItem => String(listItem.id) === String(item.id))
       if (isInMyList) {
         score += 5
       }
 
       // Boost score if content was recently watched
-      const wasRecentlyWatched = watchHistory.some(historyItem => historyItem.id === item.id)
+      const wasRecentlyWatched = watchHistory.some(historyItem => String(historyItem.id) === String(item.id))
       if (wasRecentlyWatched) {
         score += 3
       }
@@ -62,7 +62,7 @@ export function usePersonalizedRecommendations(allContent: any[]) {
     return scoredContent
       .sort((a, b) => b.score - a.score)
       .slice(0, 20)
-      .map(({ _score, ...item }) => item)
+      .map(({ score: _score, ...item }) => item)
   }, [allContent, watchHistory, myList])
 
   return recommendations

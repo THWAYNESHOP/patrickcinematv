@@ -7,6 +7,7 @@ import { tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
+import { useToast } from '../hooks/useToast'
 import { RefreshCw } from 'lucide-react'
 import type { MovieSummary } from '../api/tmdb'
 
@@ -20,6 +21,31 @@ const fallbackTV = [
   { id: 119051, title: 'Test Series', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.3', year: 2021 },
   { id: 100088, title: 'The Last of Us', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', rating: '8.6', year: 2023 },
 ]
+
+function sortByRating(items: MovieSummary[]) {
+  return [...items].sort((a, b) => {
+    const ratingA = Number(a.rating) || 0
+    const ratingB = Number(b.rating) || 0
+    return ratingB - ratingA
+  })
+}
+
+interface HomePageCache {
+  featuredMovies: MovieSummary[]
+  trendingMovies: MovieSummary[]
+  popularTV: MovieSummary[]
+  teenRomance: MovieSummary[]
+  kDrama: MovieSummary[]
+  actionAdventure: MovieSummary[]
+  comedy: MovieSummary[]
+  anime: MovieSummary[]
+  netflixContent: MovieSummary[]
+  primeContent: MovieSummary[]
+  disneyContent: MovieSummary[]
+  appleContent: MovieSummary[]
+}
+
+let cachedHomeContent: HomePageCache | null = null
 
 function HeroSkeleton() {
   return (
@@ -46,23 +72,26 @@ function HeroSkeleton() {
 }
 
 export default function Home() {
-  const [featuredMovies, setFeaturedMovies] = useState<any[]>([])
-  const [trendingMovies, setTrendingMovies] = useState<any[]>([])
-  const [popularTV, setPopularTV] = useState<any[]>([])
-  const [teenRomance, setTeenRomance] = useState<any[]>([])
-  const [kDrama, setKDrama] = useState<any[]>([])
-  const [actionAdventure, setActionAdventure] = useState<any[]>([])
-  const [comedy, setComedy] = useState<any[]>([])
-  const [anime, setAnime] = useState<any[]>([])
-  const [netflixContent, setNetflixContent] = useState<any[]>([])
-  const [primeContent, setPrimeContent] = useState<any[]>([])
-  const [disneyContent, setDisneyContent] = useState<any[]>([])
-  const [appleContent, setAppleContent] = useState<any[]>([])
-  const [heroLoading, setHeroLoading] = useState(true)
-  const [primaryLoading, setPrimaryLoading] = useState(true)
-  const [catalogLoading, setCatalogLoading] = useState(true)
+  const cachedData = cachedHomeContent
+  const [featuredMovies, setFeaturedMovies] = useState<MovieSummary[]>(cachedData?.featuredMovies || [])
+  const [trendingMovies, setTrendingMovies] = useState<MovieSummary[]>(cachedData?.trendingMovies || [])
+  const [popularTV, setPopularTV] = useState<MovieSummary[]>(cachedData?.popularTV || [])
+  const [teenRomance, setTeenRomance] = useState<MovieSummary[]>(cachedData?.teenRomance || [])
+  const [kDrama, setKDrama] = useState<MovieSummary[]>(cachedData?.kDrama || [])
+  const [actionAdventure, setActionAdventure] = useState<MovieSummary[]>(cachedData?.actionAdventure || [])
+  const [comedy, setComedy] = useState<MovieSummary[]>(cachedData?.comedy || [])
+  const [anime, setAnime] = useState<MovieSummary[]>(cachedData?.anime || [])
+  const [netflixContent, setNetflixContent] = useState<MovieSummary[]>(cachedData?.netflixContent || [])
+  const [primeContent, setPrimeContent] = useState<MovieSummary[]>(cachedData?.primeContent || [])
+  const [disneyContent, setDisneyContent] = useState<MovieSummary[]>(cachedData?.disneyContent || [])
+  const [appleContent, setAppleContent] = useState<MovieSummary[]>(cachedData?.appleContent || [])
+  const [heroLoading, setHeroLoading] = useState(!cachedData)
+  const [primaryLoading, setPrimaryLoading] = useState(!cachedData)
+  const [catalogLoading, setCatalogLoading] = useState(!cachedData)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
+  const toast = useToast()
 
   const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
     onRefresh: async () => {
@@ -72,6 +101,7 @@ export default function Home() {
   })
 
   const fetchHomeContent = useCallback(async (isRefresh = false) => {
+    setFetchError(null)
     if (!isRefresh) {
       setHeroLoading(true)
       setPrimaryLoading(true)
@@ -80,6 +110,17 @@ export default function Home() {
 
     let trendingToday: MovieSummary[] = fallbackMovies
     let trendingTV: MovieSummary[] = fallbackTV
+    let heroMoviesToCache: MovieSummary[]
+    let popularTVToCache: MovieSummary[] = []
+    let teenRomanceToCache: MovieSummary[] = []
+    let kDramaToCache: MovieSummary[] = []
+    let actionAdventureToCache: MovieSummary[] = []
+    let comedyToCache: MovieSummary[] = []
+    let animeToCache: MovieSummary[] = []
+    let netflixContentToCache: MovieSummary[] = []
+    let primeContentToCache: MovieSummary[] = []
+    let disneyContentToCache: MovieSummary[] = []
+    let appleContentToCache: MovieSummary[] = []
 
     // Phase 1: hero + trending movies (2 calls — show hero ASAP)
     try {
@@ -89,10 +130,17 @@ export default function Home() {
       ])
       trendingToday = trendingMoviesData.length ? trendingMoviesData : fallbackMovies
       const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
-      setFeaturedMovies(heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies)
+      heroMoviesToCache = heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies
+      setFeaturedMovies(heroMoviesToCache)
       setTrendingMovies(trendingToday)
     } catch (error) {
-      console.warn('Home hero content unavailable, using fallback data:', error)
+      const message = error instanceof Error ? error.message : 'Unable to load hero content.'
+      if (import.meta.env.DEV) {
+        console.warn('Home hero content unavailable, using fallback data:', error)
+      }
+      setFetchError('Unable to load featured content. Showing fallback items.')
+      toast.error(`Home load failed: ${message}`)
+      heroMoviesToCache = fallbackMovies
       setFeaturedMovies(fallbackMovies)
       setTrendingMovies(fallbackMovies)
       trendingToday = fallbackMovies
@@ -106,8 +154,10 @@ export default function Home() {
         try {
           const tvData = await tmdbApi.getTrendingTVToday()
           trendingTV = tvData.length ? tvData : fallbackTV
+          popularTVToCache = trendingTV
           setPopularTV(trendingTV)
         } catch {
+          popularTVToCache = fallbackTV
           setPopularTV(fallbackTV)
         } finally {
           setPrimaryLoading(false)
@@ -117,6 +167,7 @@ export default function Home() {
         try {
           const [
             teenRomanceMovies,
+            teenRomanceTV,
             koreanDrama,
             actionAdventureMovies,
             comedyMovies,
@@ -127,6 +178,7 @@ export default function Home() {
             appleCatalog,
           ] = await Promise.all([
             tmdbApi.getMoviesByGenre(10749).catch(() => []),
+            tmdbApi.getTVByGenre(10749).catch(() => []),
             tmdbApi.getTVByOriginCountry('KR').catch(() => []),
             tmdbApi.getMoviesByGenre(28).catch(() => []),
             tmdbApi.getMoviesByGenre(35).catch(() => []),
@@ -137,22 +189,52 @@ export default function Home() {
             tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
           ])
 
-          setTeenRomance(teenRomanceMovies.length ? teenRomanceMovies : trendingToday.slice(0, 8))
-          setKDrama(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
-          setActionAdventure(actionAdventureMovies.length ? actionAdventureMovies : trendingToday.slice(0, 8))
-          setComedy(comedyMovies.length ? comedyMovies : trendingToday.slice(0, 8))
-          setAnime(animeContent.length ? animeContent : trendingTV.slice(0, 8))
-          setNetflixContent([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
-          setPrimeContent([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
-          setDisneyContent([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
-          setAppleContent([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
+          const combinedTeenRomance = [
+            ...(teenRomanceMovies.length ? teenRomanceMovies : []),
+            ...(teenRomanceTV.length ? teenRomanceTV : []),
+          ]
+
+          teenRomanceToCache = combinedTeenRomance.length ? combinedTeenRomance : trendingToday
+          kDramaToCache = koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8)
+          actionAdventureToCache = actionAdventureMovies.length ? actionAdventureMovies : trendingToday.slice(0, 8)
+          comedyToCache = comedyMovies.length ? comedyMovies : trendingToday.slice(0, 8)
+          animeToCache = animeContent.length ? animeContent : trendingTV.slice(0, 8)
+          netflixContentToCache = [...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)]
+          primeContentToCache = [...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)]
+          disneyContentToCache = [...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)]
+          appleContentToCache = [...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)]
+
+          setTeenRomance(sortByRating(teenRomanceToCache))
+          setKDrama(kDramaToCache)
+          setActionAdventure(actionAdventureToCache)
+          setComedy(comedyToCache)
+          setAnime(animeToCache)
+          setNetflixContent(netflixContentToCache)
+          setPrimeContent(primeContentToCache)
+          setDisneyContent(disneyContentToCache)
+          setAppleContent(appleContentToCache)
         } catch (error) {
-          console.warn('Home catalog content unavailable:', error)
-          setTeenRomance(trendingToday.slice(0, 8))
-          setKDrama(trendingTV.slice(0, 8))
-          setActionAdventure(trendingToday.slice(0, 8))
-          setComedy(trendingToday.slice(0, 8))
-          setAnime(trendingTV.slice(0, 8))
+          const message = error instanceof Error ? error.message : 'Unable to load home catalog content.'
+          if (import.meta.env.DEV) {
+            console.warn('Home catalog content unavailable:', error)
+          }
+          setFetchError('Some home categories failed to load. Showing partial content.')
+          toast.warning(`Home catalog load warning: ${message}`)
+          teenRomanceToCache = trendingToday
+          kDramaToCache = trendingTV.slice(0, 8)
+          actionAdventureToCache = trendingToday.slice(0, 8)
+          comedyToCache = trendingToday.slice(0, 8)
+          animeToCache = trendingTV.slice(0, 8)
+          netflixContentToCache = []
+          primeContentToCache = []
+          disneyContentToCache = []
+          appleContentToCache = []
+
+          setTeenRomance(sortByRating(teenRomanceToCache))
+          setKDrama(kDramaToCache)
+          setActionAdventure(actionAdventureToCache)
+          setComedy(comedyToCache)
+          setAnime(animeToCache)
           setNetflixContent([])
           setPrimeContent([])
           setDisneyContent([])
@@ -162,11 +244,28 @@ export default function Home() {
         }
       })(),
     ])
-  }, [])
+
+    cachedHomeContent = {
+      featuredMovies: heroMoviesToCache,
+      trendingMovies: trendingToday,
+      popularTV: popularTVToCache,
+      teenRomance: teenRomanceToCache,
+      kDrama: kDramaToCache,
+      actionAdventure: actionAdventureToCache,
+      comedy: comedyToCache,
+      anime: animeToCache,
+      netflixContent: netflixContentToCache,
+      primeContent: primeContentToCache,
+      disneyContent: disneyContentToCache,
+      appleContent: appleContentToCache,
+    }
+  }, [toast])
 
   useEffect(() => {
-    fetchHomeContent()
-  }, [fetchHomeContent])
+    if (!cachedData) {
+      fetchHomeContent()
+    }
+  }, [fetchHomeContent, cachedData])
 
   return (
     <div ref={containerRef} className="min-h-screen relative">
@@ -187,16 +286,35 @@ export default function Home() {
       {heroLoading ? <HeroSkeleton /> : <HeroSlider movies={featuredMovies} />}
 
       <div className="container mx-auto py-8 md:py-12 px-4 md:px-8">
+        {fetchError && (
+          <section className="mb-8">
+            <div className="rounded-3xl border border-primary/20 bg-primary/10 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-primary">Content load issue</p>
+                <p className="mt-1 text-sm text-gray-200">{fetchError}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchHomeContent(true)}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
+              >
+                Retry
+              </button>
+            </div>
+          </section>
+        )}
+
         {/* Continue Watching */}
         {continueWatching.length > 0 && (
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Continue Watching"
               items={continueWatching.map(item => ({
-                id: item.id,
+                id: Number(item.id),
                 title: item.title,
                 poster: item.poster,
                 type: item.type,
+                rating: '0',
                 progress: item.progress
               }))}
               type="movie"
@@ -254,8 +372,8 @@ export default function Home() {
         {/* Teen Romance */}
         <section className="mb-10 md:mb-12">
           <ContentCarousel
-            title="Teen Romance"
-            items={teenRomance}
+            title="Teen Romance — Top Rated Movies & Series"
+            items={sortByRating(teenRomance)}
             type="movie"
             loading={catalogLoading}
           />
@@ -315,7 +433,7 @@ export default function Home() {
         <section className="mb-10 md:mb-12">
           <ContentCarousel
             title="My List"
-            items={myList.length > 0 ? myList : trendingMovies.slice(0, 5)}
+            items={myList.length > 0 ? myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type })) : trendingMovies.slice(0, 5)}
             type="movie"
             loading={primaryLoading && myList.length === 0}
           />

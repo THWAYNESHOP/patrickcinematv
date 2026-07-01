@@ -23,7 +23,7 @@ export interface MovieSummary {
   overview?: string
   rating: string
   year?: number
-  type?: 'movie' | 'tv'
+  type?: 'movie' | 'tv' | 'anime' | 'sports'
 }
 
 export interface PlatformCatalog {

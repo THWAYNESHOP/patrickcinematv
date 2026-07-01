@@ -37,9 +37,9 @@ export async function retry<T>(
   throw lastError!
 }
 
-export function withRetry<T extends (...args: any[]) => Promise<any>>(
+export function withRetry<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   options?: Parameters<typeof retry>[1]
 ): T {
-  return ((...args: Parameters<T>) => retry(() => fn(...args), options)) as T
+  return ((...args: Parameters<T>) => retry(() => fn(...(args as unknown as Parameters<T>)), options)) as T
 }

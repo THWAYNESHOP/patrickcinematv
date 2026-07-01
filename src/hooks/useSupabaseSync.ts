@@ -3,11 +3,42 @@ import { useStore } from '../store/useStore';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { MyListItem, WatchHistoryItem } from '../store/useStore';
 
+const normalizeType = (input: unknown): 'movie' | 'tv' | 'sports' | 'anime' => {
+  const s = String(input || '')
+  if (s === 'tv' || s === 'sports' || s === 'anime') return s as 'tv' | 'sports' | 'anime'
+  return 'movie'
+}
+
+
+
+interface SupabaseFavoriteRow {
+  item_id: string
+  title?: string
+  poster?: string
+  type?: string
+  added_at?: string
+}
+
+interface SupabaseProgressRow {
+  item_id: string
+  progress: number
+}
+
+interface SupabaseHistoryRow {
+  item_id: string
+  title?: string
+  poster?: string
+  type?: string
+  timestamp?: string
+}
+
 export function useSupabaseSync() {
   const user = useStore((state) => state.user);
   const addToMyList = useStore((state) => state.addToMyList);
   const setWatchProgress = useStore((state) => state.setWatchProgress);
   const addToWatchHistory = useStore((state) => state.addToWatchHistory);
+
+
 
   useEffect(() => {
     if (!user || !isSupabaseConfigured || !supabase) return;
@@ -29,12 +60,12 @@ export function useSupabaseSync() {
       }
 
       if (data) {
-        const favorites = data.map((item): MyListItem => ({
+        const favorites = (data as SupabaseFavoriteRow[]).map((item): MyListItem => ({
           id: item.item_id,
-          title: item.title,
+          title: item.title || '',
           poster: item.poster || '',
-          type: item.type,
-          addedAt: new Date(item.added_at).getTime(),
+          type: normalizeType(item.type),
+          addedAt: item.added_at ? new Date(item.added_at).getTime() : Date.now(),
         }));
         // Clear and add all favorites
         favorites.forEach((item) => addToMyList(item));
@@ -55,7 +86,7 @@ export function useSupabaseSync() {
       }
 
       if (data) {
-        data.forEach((item) => {
+        ;(data as SupabaseProgressRow[]).forEach((item) => {
           setWatchProgress(item.item_id, item.progress);
         });
       }
@@ -77,12 +108,12 @@ export function useSupabaseSync() {
       }
 
       if (data) {
-        const history = data.map((item): WatchHistoryItem => ({
+        const history = (data as SupabaseHistoryRow[]).map((item): WatchHistoryItem => ({
           id: item.item_id,
-          title: item.title,
+          title: item.title || '',
           poster: item.poster || '',
-          type: item.type,
-          timestamp: item.timestamp,
+          type: normalizeType(item.type),
+          timestamp: item.timestamp ? Number(item.timestamp) : Date.now(),
         }));
         history.forEach((item) => addToWatchHistory(item));
       }
@@ -118,15 +149,15 @@ export function useSupabaseRealtime() {
         },
         async (payload) => {
           if (payload.eventType === 'INSERT') {
-            const newItem = payload.new as any;
+            const newItem = payload.new as SupabaseFavoriteRow;
             addToMyList({
               id: newItem.item_id,
-              title: newItem.title,
+              title: newItem.title || '',
               poster: newItem.poster || '',
-              type: newItem.type,
+              type: normalizeType(newItem.type),
             });
           } else if (payload.eventType === 'DELETE') {
-            const deletedItem = payload.old as any;
+            const deletedItem = payload.old as SupabaseFavoriteRow;
             removeFromMyList(deletedItem.item_id);
           }
         }
@@ -146,7 +177,7 @@ export function useSupabaseRealtime() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            const newItem = payload.new as any;
+            const newItem = payload.new as SupabaseProgressRow;
             setWatchProgress(newItem.item_id, newItem.progress);
           }
         }

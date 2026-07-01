@@ -124,6 +124,10 @@ export default function VidLinkPlayer({
 
   const vidLinkUrl = buildVidLinkUrl()
 
+  const vendorAttrs: Partial<React.IframeHTMLAttributes<HTMLIFrameElement>> = {
+    allowFullScreen: true,
+  }
+
   return (
     <div
       ref={containerRef}
@@ -201,7 +205,7 @@ export default function VidLinkPlayer({
           title="VidLink Player"
           name="vidlink-player"
           loading="eager"
-          {...({ webkitallowfullscreen: 'true', mozallowfullscreen: 'true', msallowfullscreen: 'true' } as any)}
+          {...(vendorAttrs)}
           onError={() => {
             if (import.meta.env.DEV) {
               console.error('[VidLink] Iframe failed to load:', vidLinkUrl)

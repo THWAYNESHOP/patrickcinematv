@@ -1,21 +1,23 @@
 import { Link } from 'react-router-dom'
 import { Play, Star } from 'lucide-react'
 
+import type { MovieSummary } from '../api/tmdb'
+
 interface VirtualCarouselProps {
-  items: any[]
+  items: MovieSummary[]
   type: 'movie' | 'tv' | 'anime'
   showProgress?: boolean
 }
 
 export default function VirtualCarousel({ items, type, showProgress }: VirtualCarouselProps) {
-  const itemWidth = 220 // w-44
+  const itemWidth = 176 // w-44
   const gap = 20 // gap-5
   const totalItemWidth = itemWidth + gap
 
   return (
     <div className="w-full overflow-x-auto scrollbar-hide">
       <div className="flex gap-5" style={{ width: `${items.length * totalItemWidth}px` }}>
-        {items.map((item) => (
+        {items.map((item: MovieSummary) => (
           <Link
             key={item.id}
             to={`/${type === 'tv' ? 'tv' : type === 'anime' ? 'anime' : 'movie'}/${item.id}`}
@@ -39,7 +41,7 @@ export default function VirtualCarousel({ items, type, showProgress }: VirtualCa
                   </div>
                 )}
               </div>
-              <div className="p-4">
+              <div className="p-3">
                 <h3 className="font-semibold text-base text-white truncate">{item.title}</h3>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex items-center gap-1">

@@ -118,10 +118,11 @@ export default function WatchHistory() {
                   return progress && progress > 0 && progress < 100
                 })
                 .map((item) => ({
-                  id: item.item_id,
+                  id: Number(item.item_id),
                   title: item.title,
                   poster: item.poster,
                   type: item.type,
+                  rating: '0',
                   progress: watchProgress[item.item_id] || 0,
                 }))}
               type="movie"

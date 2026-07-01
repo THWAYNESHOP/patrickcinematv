@@ -1,5 +1,5 @@
 // Simple API cache to reduce redundant requests
-const cache = new Map<string, { data: any; timestamp: number }>()
+const cache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export function getCached<T>(key: string): T | null {

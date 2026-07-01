@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import { tmdbApi } from '../api/tmdb'
+import type { MovieSummary } from '../api/tmdb'
+import { useToast } from '../hooks/useToast'
 
 const fallbackMovies = [
   {
@@ -55,15 +57,18 @@ const fallbackMovies = [
 ]
 
 export default function Movies() {
-  const [trending, setTrending] = useState<any[]>([])
-  const [nowPlaying, setNowPlaying] = useState<any[]>([])
-  const [popular, setPopular] = useState<any[]>([])
-  const [topRated, setTopRated] = useState<any[]>([])
+  const [trending, setTrending] = useState<MovieSummary[]>([])
+  const [nowPlaying, setNowPlaying] = useState<MovieSummary[]>([])
+  const [popular, setPopular] = useState<MovieSummary[]>([])
+  const [topRated, setTopRated] = useState<MovieSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const toast = useToast()
 
   useEffect(() => {
     async function fetchMovies() {
       try {
+        setFetchError(null)
         const [trendingData, nowPlayingData, popularData, topRatedData] = await Promise.all([
           tmdbApi.getTrendingMoviesToday().catch(() => []),
           tmdbApi.getNowPlayingMovies().catch(() => []),
@@ -76,7 +81,10 @@ export default function Movies() {
         setPopular(popularData.length ? popularData : fallbackMovies)
         setTopRated(topRatedData.length ? topRatedData : fallbackMovies)
       } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to load movies.'
         console.warn('Movie API unavailable, using fallback data:', error)
+        setFetchError('Unable to load movie lists. Showing fallback content.')
+        toast.error(`Movies load failed: ${message}`)
         setTrending(fallbackMovies)
         setNowPlaying(fallbackMovies)
         setPopular(fallbackMovies)
@@ -87,7 +95,7 @@ export default function Movies() {
     }
 
     fetchMovies()
-  }, [])
+  }, [toast])
 
   if (loading) {
     return (
@@ -106,6 +114,56 @@ export default function Movies() {
   return (
     <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16">
       <div className="container mx-auto">
+        {fetchError && (
+          <section className="mb-8">
+            <div className="rounded-3xl border border-primary/20 bg-primary/10 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-primary">Movie load issue</p>
+                <p className="mt-1 text-sm text-gray-200">{fetchError}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoading(true)
+                  setFetchError(null)
+                  setTrending([])
+                  setNowPlaying([])
+                  setPopular([])
+                  setTopRated([])
+                  const fetch = async () => {
+                    try {
+                      const [trendingData, nowPlayingData, popularData, topRatedData] = await Promise.all([
+                        tmdbApi.getTrendingMoviesToday().catch(() => []),
+                        tmdbApi.getNowPlayingMovies().catch(() => []),
+                        tmdbApi.getPopularMovies().catch(() => []),
+                        tmdbApi.getTopRatedMovies().catch(() => []),
+                      ])
+                      setTrending(trendingData.length ? trendingData : fallbackMovies)
+                      setNowPlaying(nowPlayingData.length ? nowPlayingData : fallbackMovies)
+                      setPopular(popularData.length ? popularData : fallbackMovies)
+                      setTopRated(topRatedData.length ? topRatedData : fallbackMovies)
+                    } catch (error) {
+                      const message = error instanceof Error ? error.message : 'Unable to load movies.'
+                      setFetchError('Unable to load movie lists. Showing fallback content.')
+                      toast.error(`Movies load failed: ${message}`)
+                      setTrending(fallbackMovies)
+                      setNowPlaying(fallbackMovies)
+                      setPopular(fallbackMovies)
+                      setTopRated(fallbackMovies)
+                    } finally {
+                      setLoading(false)
+                    }
+                  }
+                  void fetch()
+                }}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
+              >
+                Retry
+              </button>
+            </div>
+          </section>
+        )}
+
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">Movies</h1>
         <ContentCarousel title="Trending Today" items={trending} type="movie" />
         <ContentCarousel title="Now Playing" items={nowPlaying} type="movie" />
