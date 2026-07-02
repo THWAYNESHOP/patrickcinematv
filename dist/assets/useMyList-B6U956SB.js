@@ -1,0 +1,1 @@
+import{t}from"./index-BTEff1vo.js";function i(){return{myList:t(t=>t.myList),addToMyList:t(t=>t.addToMyList),removeFromMyList:t(t=>t.removeFromMyList),isInMyList:t(t=>t.isInMyList),clearMyList:t(t=>t.clearMyList)}}export{i as t};

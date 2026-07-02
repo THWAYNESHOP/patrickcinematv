@@ -19,7 +19,8 @@ export default function MobileNav() {
       <div className="flex items-stretch justify-around px-1 py-1.5">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = location.pathname === item.path
+          const isActive =
+            item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
           return (
             <Link
               key={item.path}
