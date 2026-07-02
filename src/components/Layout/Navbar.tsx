@@ -250,6 +250,28 @@ export default function Navbar({ isScrolled }: NavbarProps) {
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+
+            {/* Mobile Sign In / Profile (visible only on small screens) */}
+            {user ? (
+              <Link
+                to="/profile"
+                onClick={() => setIsMenuOpen(false)}
+                className="sm:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center tv-focusable tv-touch-target"
+                aria-label="Profile"
+                title="Profile"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="sm:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center tv-focusable tv-touch-target"
+                aria-label="Sign in"
+                title="Sign In"
+              >
+                <User className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 

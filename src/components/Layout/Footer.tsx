@@ -2,32 +2,32 @@ import { Link } from 'react-router-dom'
 
 export default function Footer() {
   return (
-    <footer className="bg-black/50 border-t border-white/10 mt-24">
-      <div className="container mx-auto px-6 md:px-12 lg:px-16 py-16 overflow-x-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+    <footer className="bg-black/50 border-t border-white/10 mt-16">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-16 py-8 md:py-16 overflow-x-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
           {/* Brand */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-3 group">
-              <span className="text-2xl font-extrabold text-white tracking-wider uppercase">
+              <span className="text-xl md:text-2xl font-extrabold text-white tracking-wider uppercase">
                 <span className="text-primary">NEXA</span>STREAM
               </span>
             </Link>
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-400 text-sm md:text-base leading-relaxed">
               Premium streaming experience with live sports, movies, TV series, and more.
             </p>
           </div>
 
           {/* Social */}
           <div>
-            <h3 className="text-white font-bold mb-6 text-lg">Follow Us</h3>
-            <div className="flex flex-wrap gap-4">
+            <h3 className="text-white font-bold mb-4 md:mb-6 text-sm md:text-lg">Follow Us</h3>
+            <div className="flex flex-wrap gap-2 md:gap-4">
               <a
                 href="https://www.facebook.com/share/1D3zdvyMBz/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
+                className="p-2 md:p-3 bg-darkSurface border border-white/10 rounded-full hover:bg-primary/20 hover:border-primary/30 transition-all duration-300 hover:scale-105 md:hover:scale-110 hover:shadow-lg hover:shadow-primary/20"
               >
-                <svg className="w-5 h-5 text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 hover:text-primary" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </a>
@@ -66,8 +66,8 @@ export default function Footer() {
         </div>
 
         {/* Legal Links */}
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="flex flex-wrap justify-center gap-8 text-base">
+        <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base">
             <Link to="/contact" className="text-gray-400 hover:text-white transition-colors duration-300 hover:text-shadow-sm font-medium">
               Contact Us
             </Link>
@@ -83,8 +83,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-10 text-center">
-          <p className="text-gray-400 text-base font-medium">
+        <div className="border-t border-white/10 mt-8 pt-6 text-center">
+          <p className="text-gray-400 text-sm md:text-base font-medium">
             © 2026 NEXASTREAM. All rights reserved.
           </p>
         </div>

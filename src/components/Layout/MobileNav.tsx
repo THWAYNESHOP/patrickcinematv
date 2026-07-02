@@ -36,6 +36,7 @@ export default function MobileNav() {
             </Link>
           )
         })}
+        {/* removed Sign In from bottom nav — moved to top-right menu */}
       </div>
     </nav>
   )
