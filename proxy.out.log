@@ -1,0 +1,2 @@
+Proxy server running on port 3001
+Stream proxy endpoint: http://localhost:3001/api/stream?url=<stream-url>
