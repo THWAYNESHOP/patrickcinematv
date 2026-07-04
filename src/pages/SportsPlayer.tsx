@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
-import { Radio, ArrowLeft, Minimize2, Crop, Maximize2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Radio, ArrowLeft, Minimize2, Maximize2 } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 import { useToast } from '../hooks/useToast'
-
-type FitMode = 'contain' | 'cover' | 'fill'
 
 export default function SportsPlayer() {
   if (import.meta.env.DEV) {
@@ -18,61 +16,10 @@ export default function SportsPlayer() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [directStream, setDirectStream] = useState<{ url: string; name: string } | null>(null)
-  const [fitMode, setFitMode] = useState<FitMode>('contain')
-  const [showStretchNotice, setShowStretchNotice] = useState(false)
-  const stretchNoticeTimeoutRef = useRef<number | null>(null)
   const toast = useToast()
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const isStretchMode = fitMode === 'fill'
-  const fitModes: Array<{ value: FitMode; label: string; icon: ReactNode }> = [
-    { value: 'contain', label: 'Fit', icon: <Minimize2 className="w-4 h-4" /> },
-    { value: 'cover', label: 'Fill', icon: <Crop className="w-4 h-4" /> },
-    { value: 'fill', label: 'Stretch', icon: <Maximize2 className="w-4 h-4" /> },
-  ]
-  const fitIndex = fitModes.findIndex((mode) => mode.value === fitMode)
-  const currentFitMode = fitModes[fitIndex] || fitModes[0]
-
-  const cycleFitMode = (step: number) => {
-    const nextIndex = (fitIndex + step + fitModes.length) % fitModes.length
-    const nextMode = fitModes[nextIndex].value
-    window.localStorage.setItem('sports-player-fit-mode', nextMode)
-    setFitMode(nextMode)
-
-    if (nextMode === 'fill') {
-      setShowStretchNotice(true)
-      if (stretchNoticeTimeoutRef.current) {
-        window.clearTimeout(stretchNoticeTimeoutRef.current)
-      }
-      stretchNoticeTimeoutRef.current = window.setTimeout(() => {
-        setShowStretchNotice(false)
-        stretchNoticeTimeoutRef.current = null
-      }, 3000)
-    } else {
-      setShowStretchNotice(false)
-      if (stretchNoticeTimeoutRef.current) {
-        window.clearTimeout(stretchNoticeTimeoutRef.current)
-        stretchNoticeTimeoutRef.current = null
-      }
-    }
-  }
-
-  useEffect(() => {
-    return () => {
-      if (stretchNoticeTimeoutRef.current) {
-        window.clearTimeout(stretchNoticeTimeoutRef.current)
-      }
-    }
-  }, [])
-
-  const syncFullscreenState = () => {
-    const fullscreenElement = document.fullscreenElement
-    setIsFullscreen(
-      fullscreenElement === playerContainerRef.current ||
-        (playerContainerRef.current?.contains(fullscreenElement as Element) ?? false)
-    )
-  }
 
   const lockScreenOrientation = async (orientation: 'landscape' | 'portrait') => {
     if ('orientation' in screen && typeof screen.orientation?.lock === 'function') {
@@ -85,14 +32,36 @@ export default function SportsPlayer() {
   }
 
   const requestPlayerFullscreen = async () => {
-    const element = playerContainerRef.current || iframeRef.current
-    if (!element) return
+    const container = playerContainerRef.current
+    const iframe = iframeRef.current
+    // Try making the player container fullscreen first
+    if (container && 'requestFullscreen' in container) {
+      try {
+        await container.requestFullscreen()
+        void lockScreenOrientation('landscape')
+        return
+      } catch (error) {
+        console.warn('Container fullscreen request failed:', error)
+      }
+    }
 
-    if ('requestFullscreen' in element) {
-      await element.requestFullscreen()
-      await lockScreenOrientation('landscape')
-    } else if ('webkitRequestFullscreen' in element) {
-      ;(element as any).webkitRequestFullscreen()
+    // Fallback: try requesting fullscreen on the iframe element itself
+    if (iframe && 'requestFullscreen' in iframe) {
+      try {
+        await iframe.requestFullscreen()
+        void lockScreenOrientation('landscape')
+        return
+      } catch (error) {
+        console.warn('Iframe fullscreen request failed:', error)
+      }
+    }
+
+    // Last resort: if the iframe exposes a postMessage API, ask it to enter fullscreen
+    try {
+      iframe?.contentWindow?.postMessage({ type: 'request-fullscreen' }, '*')
+      // orientation lock may be handled by the embedded player when it enters fullscreen
+    } catch (error) {
+      console.warn('Unable to postMessage to iframe for fullscreen:', error)
     }
   }
 
@@ -100,9 +69,17 @@ export default function SportsPlayer() {
     if (document.fullscreenElement) {
       await document.exitFullscreen()
       if ('orientation' in screen && typeof screen.orientation?.unlock === 'function') {
-        screen.orientation.unlock()
+        void screen.orientation.unlock()
       }
     }
+  }
+
+  const syncFullscreenState = () => {
+    const fullscreenElement = document.fullscreenElement
+    setIsFullscreen(
+      fullscreenElement === playerContainerRef.current ||
+        (playerContainerRef.current?.contains(fullscreenElement as Element) ?? false)
+    )
   }
 
   const toggleFullscreen = () => {
@@ -114,11 +91,6 @@ export default function SportsPlayer() {
   }
 
   useEffect(() => {
-    const savedFitMode = window.localStorage.getItem('sports-player-fit-mode') as FitMode | null
-    if (savedFitMode && ['contain', 'cover', 'fill'].includes(savedFitMode)) {
-      setFitMode(savedFitMode)
-    }
-
     document.addEventListener('fullscreenchange', syncFullscreenState)
     syncFullscreenState()
 
@@ -253,11 +225,13 @@ export default function SportsPlayer() {
           {/* Player Container */}
           <div
             ref={playerContainerRef}
-            className="overflow-hidden transition-all duration-200 glass-strong rounded-lg mb-6"
-            style={isStretchMode && !isFullscreen ? { minHeight: '70vh' } : undefined}
+            className={`overflow-hidden transition-all duration-200 glass-strong mb-6 ${
+              isFullscreen ? 'rounded-none w-screen h-screen' : 'rounded-lg'
+            }`}
+            style={isFullscreen ? { background: 'black' } : undefined}
           >
             {/* Player Wrapper */}
-            <div className={`relative bg-black ${isStretchMode ? 'h-[70vh] sm:h-[80vh]' : 'aspect-video'}`}>
+            <div className="relative bg-black aspect-video sm:aspect-[16/9]">
               {/* LIVE Indicator */}
               <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full pointer-events-none">
                 <div className="w-2 h-2 bg-red-50 rounded-full animate-pulse" />
@@ -273,49 +247,23 @@ export default function SportsPlayer() {
               </button>
 
 
-              {/* Stream iframe container with dynamic object-fit and rotation */}
+              {/* Stream iframe container with dynamic object-fit */}
               <div className="absolute inset-0 overflow-hidden">
                 <iframe
                   ref={iframeRef}
                   src={directStream ? directStream.url : currentStream.embedUrl}
                   className="absolute inset-0 w-full h-full"
                   style={{
-                    objectFit: fitMode,
+                    objectFit: 'cover',
+                    width: '100%',
+                    height: '100%',
+                    minWidth: '100%',
+                    minHeight: '100%'
                   }}
                   frameBorder="0"
                   allowFullScreen
                   allow="autoplay; encrypted-media; fullscreen"
                 />
-              </div>
-            </div>
-
-            <div className="absolute left-4 right-4 bottom-4 z-40 flex justify-center">
-              <div className="glass rounded-full px-2 py-1 shadow-lg shadow-black/40 backdrop-blur-xl flex items-center gap-1 max-w-[240px] w-full justify-center">
-                <button
-                  type="button"
-                  onClick={() => cycleFitMode(-1)}
-                  aria-label="Previous scale mode"
-                  className="rounded-full border border-white/15 bg-black/70 p-1.5 transition hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <ChevronLeft className="w-4 h-4 text-white" />
-                </button>
-                <div className="flex items-center gap-1 rounded-full bg-white/10 border border-white/10 px-2 py-1 text-xs font-semibold text-white transition-all duration-300">
-                  {currentFitMode.icon}
-                  <span>{currentFitMode.label}</span>
-                  {isStretchMode && showStretchNotice && (
-                    <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
-                      Stretch Active
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => cycleFitMode(1)}
-                  aria-label="Next scale mode"
-                  className="rounded-full border border-white/15 bg-black/70 p-1.5 transition hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <ChevronRight className="w-4 h-4 text-white" />
-                </button>
               </div>
             </div>
           </div>
