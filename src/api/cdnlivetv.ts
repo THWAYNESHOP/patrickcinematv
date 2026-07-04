@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCached, setCached } from '../utils/apiCache'
 
 const CDN_LIVE_TV_BASE = 'https://api.cdnlivetv.tv/api/v1'
 const CDN_LIVE_TV_USER = 'cdnlivetv'
@@ -58,12 +59,18 @@ export interface CDNSportsResponse {
 
 export const cdnLiveTvApi = {
   async getChannels(): Promise<CDNChannel[]> {
+    const cacheKey = 'cdnlivetv-channels'
+    const cached = getCached<CDNChannel[]>(cacheKey)
+    if (cached) return cached
+
     try {
       const response = await axios.get<CDNChannelsResponse>(
         `${CDN_LIVE_TV_BASE}/channels/?user=${CDN_LIVE_TV_USER}&plan=${CDN_LIVE_TV_PLAN}`,
         { timeout: 10000 }
       )
-      return response.data.channels || []
+      const result = response.data.channels || []
+      setCached(cacheKey, result)
+      return result
     } catch (error) {
       console.error('Error fetching CDN Live TV channels:', error)
       return []
@@ -71,12 +78,18 @@ export const cdnLiveTvApi = {
   },
 
   async getAllSports(): Promise<CDNSportsResponse> {
+    const cacheKey = 'cdnlivetv-sports'
+    const cached = getCached<CDNSportsResponse>(cacheKey)
+    if (cached) return cached
+
     try {
       const response = await axios.get<CDNSportsResponse>(
         `${CDN_LIVE_TV_BASE}/events/sports/?user=${CDN_LIVE_TV_USER}&plan=${CDN_LIVE_TV_PLAN}`,
         { timeout: 10000 }
       )
-      return response.data
+      const result = response.data
+      setCached(cacheKey, result)
+      return result
     } catch (error) {
       console.error('Error fetching CDN Live TV sports:', error)
       return {}

@@ -8,6 +8,7 @@ import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
 import { useToast } from '../hooks/useToast'
+import { usePageState } from '../hooks/usePageState'
 import { RefreshCw } from 'lucide-react'
 import type { MovieSummary } from '../api/tmdb'
 
@@ -92,6 +93,18 @@ export default function Home() {
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
   const toast = useToast()
+  const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Home')
+
+  const carouselId = (name: string) =>
+    `home-${name.replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase()}`
+
+  const carouselStateProps = {
+    getCarouselPosition,
+    setCarouselPosition,
+    getFocusedCardId,
+    setFocusedCardId,
+    onPrefetch: tmdbApi.prefetchMediaDetails,
+  }
 
   const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
     onRefresh: async () => {
@@ -319,6 +332,9 @@ export default function Home() {
               }))}
               type="movie"
               showProgress
+              carouselId={carouselId('Continue Watching')}
+              cached={Boolean(cachedHomeContent)}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -330,6 +346,9 @@ export default function Home() {
             items={trendingMovies}
             type="movie"
             loading={heroLoading}
+            carouselId={carouselId('Trending Today')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -340,6 +359,9 @@ export default function Home() {
             items={[...trendingMovies.slice(0, 5), ...popularTV.slice(0, 5)]}
             type="movie"
             loading={primaryLoading}
+            carouselId={carouselId('Recommended For You')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -376,6 +398,9 @@ export default function Home() {
             items={sortByRating(teenRomance)}
             type="movie"
             loading={catalogLoading}
+            carouselId={carouselId('Teen Romance')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -386,6 +411,9 @@ export default function Home() {
             items={kDrama}
             type="tv"
             loading={catalogLoading}
+            carouselId={carouselId('Korean Dramas')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -396,6 +424,9 @@ export default function Home() {
             items={actionAdventure}
             type="movie"
             loading={catalogLoading}
+            carouselId={carouselId('Action & Adventure')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -406,6 +437,9 @@ export default function Home() {
             items={comedy}
             type="movie"
             loading={catalogLoading}
+            carouselId={carouselId('Comedy')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -416,6 +450,9 @@ export default function Home() {
             items={anime}
             type="tv"
             loading={catalogLoading}
+            carouselId={carouselId('Anime')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -426,6 +463,9 @@ export default function Home() {
             items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
             type="movie"
             loading={primaryLoading}
+            carouselId={carouselId('Featured This Week')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -436,6 +476,9 @@ export default function Home() {
             items={myList.length > 0 ? myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type })) : trendingMovies.slice(0, 5)}
             type="movie"
             loading={primaryLoading && myList.length === 0}
+            carouselId={carouselId('My List')}
+            cached={Boolean(cachedHomeContent)}
+            {...carouselStateProps}
           />
         </section>
 
@@ -447,6 +490,9 @@ export default function Home() {
               items={netflixContent}
               type="movie"
               loading={catalogLoading}
+              carouselId={carouselId('Only on Netflix')}
+              cached={Boolean(cachedHomeContent)}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -459,6 +505,9 @@ export default function Home() {
               items={primeContent}
               type="movie"
               loading={catalogLoading}
+              carouselId={carouselId('Only on Prime Video')}
+              cached={Boolean(cachedHomeContent)}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -471,6 +520,9 @@ export default function Home() {
               items={disneyContent}
               type="movie"
               loading={catalogLoading}
+              carouselId={carouselId('Only on Disney+')}
+              cached={Boolean(cachedHomeContent)}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -483,6 +535,9 @@ export default function Home() {
               items={appleContent}
               type="movie"
               loading={catalogLoading}
+              carouselId={carouselId('Only on Apple TV+')}
+              cached={Boolean(cachedHomeContent)}
+              {...carouselStateProps}
             />
           </section>
         )}

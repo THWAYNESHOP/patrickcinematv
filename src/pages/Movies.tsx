@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import ContentCarousel from '../components/Home/ContentCarousel'
+import { getCached } from '../utils/apiCache'
 import { tmdbApi } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
+import { usePageState } from '../hooks/usePageState'
 
 const fallbackMovies = [
   {
@@ -57,15 +59,34 @@ const fallbackMovies = [
 ]
 
 export default function Movies() {
-  const [trending, setTrending] = useState<MovieSummary[]>([])
-  const [nowPlaying, setNowPlaying] = useState<MovieSummary[]>([])
-  const [popular, setPopular] = useState<MovieSummary[]>([])
-  const [topRated, setTopRated] = useState<MovieSummary[]>([])
-  const [loading, setLoading] = useState(true)
+  const cachedTrending = getCached<MovieSummary[]>('trending-movies-today')
+  const cachedNowPlaying = getCached<MovieSummary[]>('now-playing-movies')
+  const cachedPopular = getCached<MovieSummary[]>('popular-movies')
+  const cachedTopRated = getCached<MovieSummary[]>('top-rated-movies')
+
+  const [trending, setTrending] = useState<MovieSummary[]>(cachedTrending || [])
+  const [nowPlaying, setNowPlaying] = useState<MovieSummary[]>(cachedNowPlaying || [])
+  const [popular, setPopular] = useState<MovieSummary[]>(cachedPopular || [])
+  const [topRated, setTopRated] = useState<MovieSummary[]>(cachedTopRated || [])
+  const [loading, setLoading] = useState(
+    !cachedTrending && !cachedNowPlaying && !cachedPopular && !cachedTopRated
+  )
   const [fetchError, setFetchError] = useState<string | null>(null)
   const toast = useToast()
+  const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Movies')
+  const carouselStateProps = {
+    getCarouselPosition,
+    setCarouselPosition,
+    getFocusedCardId,
+    setFocusedCardId,
+    onPrefetch: tmdbApi.prefetchMediaDetails,
+  }
 
   useEffect(() => {
+    if (cachedTrending && cachedNowPlaying && cachedPopular && cachedTopRated) {
+      return
+    }
+
     async function fetchMovies() {
       try {
         setFetchError(null)
@@ -99,14 +120,14 @@ export default function Movies() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
-        <div className="relative mb-6">
-          <div className="animate-spin w-16 h-16 md:w-20 md:h-20 border-4 border-primary/30 border-t-primary rounded-full" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-full animate-pulse" />
-          </div>
+      <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-deepBlack">
+        <div className="container mx-auto space-y-12">
+          <div className="h-10 w-56 rounded-full bg-gray-800 animate-pulse" />
+          <ContentCarousel title="Trending Today" items={[]} type="movie" loading />
+          <ContentCarousel title="Now Playing" items={[]} type="movie" loading />
+          <ContentCarousel title="Popular" items={[]} type="movie" loading />
+          <ContentCarousel title="Top Rated" items={[]} type="movie" loading />
         </div>
-        <p className="text-white text-lg md:text-xl font-semibold animate-pulse">Loading Movies...</p>
       </div>
     )
   }
@@ -165,10 +186,10 @@ export default function Movies() {
         )}
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">Movies</h1>
-        <ContentCarousel title="Trending Today" items={trending} type="movie" />
-        <ContentCarousel title="Now Playing" items={nowPlaying} type="movie" />
-        <ContentCarousel title="Popular" items={popular} type="movie" />
-        <ContentCarousel title="Top Rated" items={topRated} type="movie" />
+        <ContentCarousel title="Trending Today" items={trending} type="movie" carouselId="movies-trending-today" {...carouselStateProps} />
+        <ContentCarousel title="Now Playing" items={nowPlaying} type="movie" carouselId="movies-now-playing" {...carouselStateProps} />
+        <ContentCarousel title="Popular" items={popular} type="movie" carouselId="movies-popular" {...carouselStateProps} />
+        <ContentCarousel title="Top Rated" items={topRated} type="movie" carouselId="movies-top-rated" {...carouselStateProps} />
       </div>
     </div>
   )

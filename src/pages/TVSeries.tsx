@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import ContentCarousel from '../components/Home/ContentCarousel'
+import { getCached } from '../utils/apiCache'
 import { tmdbApi } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
+import { usePageState } from '../hooks/usePageState'
 
 const fallbackSeries = [
   {
@@ -51,14 +53,32 @@ const fallbackSeries = [
 
 export default function TVSeries() {
 
-  const [trending, setTrending] = useState<MovieSummary[]>([])
-  const [popular, setPopular] = useState<MovieSummary[]>([])
-  const [topRated, setTopRated] = useState<MovieSummary[]>([])
-  const [loading, setLoading] = useState(true)
+  const cachedTrending = getCached<MovieSummary[]>('trending-tv-today')
+  const cachedPopular = getCached<MovieSummary[]>('popular-tv')
+  const cachedTopRated = getCached<MovieSummary[]>('top-rated-tv')
+
+  const [trending, setTrending] = useState<MovieSummary[]>(cachedTrending || [])
+  const [popular, setPopular] = useState<MovieSummary[]>(cachedPopular || [])
+  const [topRated, setTopRated] = useState<MovieSummary[]>(cachedTopRated || [])
+  const [loading, setLoading] = useState(
+    !cachedTrending && !cachedPopular && !cachedTopRated
+  )
   const [fetchError, setFetchError] = useState<string | null>(null)
   const toast = useToast()
+  const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('TVSeries')
+  const carouselStateProps = {
+    getCarouselPosition,
+    setCarouselPosition,
+    getFocusedCardId,
+    setFocusedCardId,
+    onPrefetch: tmdbApi.prefetchMediaDetails,
+  }
 
   useEffect(() => {
+    if (cachedTrending && cachedPopular && cachedTopRated) {
+      return
+    }
+
     async function fetchSeries() {
       try {
         setFetchError(null)
@@ -89,14 +109,13 @@ export default function TVSeries() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
-        <div className="relative mb-6">
-          <div className="animate-spin w-16 h-16 md:w-20 md:h-20 border-4 border-primary/30 border-t-primary rounded-full" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/20 rounded-full animate-pulse" />
-          </div>
+      <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-deepBlack">
+        <div className="container mx-auto space-y-12">
+          <div className="h-10 w-56 rounded-full bg-gray-800 animate-pulse" />
+          <ContentCarousel title="Trending Today" items={[]} type="tv" loading />
+          <ContentCarousel title="Popular" items={[]} type="tv" loading />
+          <ContentCarousel title="Top Rated" items={[]} type="tv" loading />
         </div>
-        <p className="text-white text-lg md:text-xl font-semibold animate-pulse">Loading TV Series...</p>
       </div>
     )
   }
@@ -151,9 +170,9 @@ export default function TVSeries() {
         )}
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">TV Series</h1>
-        <ContentCarousel title="Trending Today" items={trending} type="tv" />
-        <ContentCarousel title="Popular" items={popular} type="tv" />
-        <ContentCarousel title="Top Rated" items={topRated} type="tv" />
+        <ContentCarousel title="Trending Today" items={trending} type="tv" carouselId="tvseries-trending-today" {...carouselStateProps} />
+        <ContentCarousel title="Popular" items={popular} type="tv" carouselId="tvseries-popular" {...carouselStateProps} />
+        <ContentCarousel title="Top Rated" items={topRated} type="tv" carouselId="tvseries-top-rated" {...carouselStateProps} />
       </div>
     </div>
   )

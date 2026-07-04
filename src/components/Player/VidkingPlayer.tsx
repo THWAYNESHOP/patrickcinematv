@@ -21,93 +21,29 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   }
 
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Keyboard shortcuts for player
-      switch (e.key) {
-        case ' ':
-        case 'k':
-          e.preventDefault()
-          // Toggle play/pause (placeholder)
-          break
-        case 'ArrowLeft':
-          e.preventDefault()
-          // Seek backward 10 seconds
-          break
-        case 'ArrowRight':
-          e.preventDefault()
-          // Seek forward 10 seconds
-          break
-        case 'ArrowUp':
-          e.preventDefault()
-          // Volume up
-          break
-        case 'ArrowDown':
-          e.preventDefault()
-          // Volume down
-          break
-        case 'm':
-          e.preventDefault()
-          // Toggle mute (placeholder)
-          break
-        case 'f':
-          e.preventDefault()
-          // Toggle fullscreen
-          toggleFullscreen()
-          break
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
-
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('[Vidking Player] Mounting with src:', src)
-      console.log('[Vidking Player] Current URL being loaded:', src)
-      console.log('[Vidking Player] Iframe ref:', iframeRef.current)
-      console.log('[Vidking Player] Window location:', window.location.href)
-    }
-
     if (!onProgress) return
 
     const cleanup = vidkingApi.setupProgressTracking((data) => {
       onProgress(data)
     })
 
-    return () => {
-      if (import.meta.env.DEV) {
-        console.log('[Vidking Player] Unmounting, cleaning up event listeners')
-      }
-      cleanup()
-    }
-  }, [onProgress, src])
+    return () => cleanup()
+  }, [onProgress])
 
   useEffect(() => {
     const iframe = iframeRef.current
     if (!iframe) return
 
-    if (import.meta.env.DEV) {
-      console.log('[Vidking Player] Setting iframe src:', src)
-      console.log('[Vidking Player] Iframe element:', iframe)
-      console.log('[Vidking Player] Current iframe src before setting:', iframe.src)
-    }
     setIframeLoaded(false)
     setIframeError(false)
 
-    // TV browsers may need longer delay for iframe loading
     const delay = isTV ? 200 : 100
-    setTimeout(() => {
+    const timer = window.setTimeout(() => {
       iframe.src = src
-      if (import.meta.env.DEV) {
-        console.log('[Vidking Player] Iframe src set to:', iframe.src)
-      }
     }, delay)
 
     return () => {
-      if (import.meta.env.DEV) {
-        console.log('[Vidking Player] Cleaning up iframe, clearing src')
-      }
+      window.clearTimeout(timer)
       iframe.src = ''
     }
   }, [src, isTV])
@@ -124,54 +60,6 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
   }, [])
 
 
-  const toggleFullscreen = async () => {
-    const container = containerRef.current
-    if (!container) return
-
-    try {
-        if (!document.fullscreenElement) {
-        // Request fullscreen with cross-browser support for Android Chrome
-        if (container.requestFullscreen) {
-          await container.requestFullscreen()
-        } else {
-          const vendorElem = container as unknown as {
-            webkitRequestFullscreen?: () => Promise<void>
-            mozRequestFullScreen?: () => Promise<void>
-            msRequestFullscreen?: () => Promise<void>
-          }
-          if (vendorElem.webkitRequestFullscreen) {
-            await vendorElem.webkitRequestFullscreen()
-          } else if (vendorElem.mozRequestFullScreen) {
-            await vendorElem.mozRequestFullScreen()
-          } else if (vendorElem.msRequestFullscreen) {
-            await vendorElem.msRequestFullscreen()
-          }
-        }
-      } else {
-        // Exit fullscreen with cross-browser support
-        if (document.exitFullscreen) {
-          await document.exitFullscreen()
-        } else {
-          const vendorDoc = document as unknown as {
-            webkitExitFullscreen?: () => Promise<void>
-            mozCancelFullScreen?: () => Promise<void>
-            msExitFullscreen?: () => Promise<void>
-          }
-          if (vendorDoc.webkitExitFullscreen) {
-            await vendorDoc.webkitExitFullscreen()
-          } else if (vendorDoc.mozCancelFullScreen) {
-            await vendorDoc.mozCancelFullScreen()
-          } else if (vendorDoc.msExitFullscreen) {
-            await vendorDoc.msExitFullscreen()
-          }
-        }
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Fullscreen error:', error)
-      }
-    }
-  }
 
   return (
     <div

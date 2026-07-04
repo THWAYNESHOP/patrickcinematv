@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import MobileNav from './MobileNav'
@@ -9,13 +9,21 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [isScrolled, setIsScrolled] = useState(false)
+  const tickingRef = useRef(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      if (tickingRef.current) return
+      tickingRef.current = true
+
+      window.requestAnimationFrame(() => {
+        const nextScrolled = window.scrollY > 50
+        setIsScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled))
+        tickingRef.current = false
+      })
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
       window.removeEventListener('scroll', handleScroll)

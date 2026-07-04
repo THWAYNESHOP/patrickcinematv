@@ -164,7 +164,9 @@ export const sportsApi = {
       const response = await axios.get(`${SPORTS_API_BASE}/stream/${source}/${id}`, {
         timeout: 10000,
       })
-      console.log('Streams response:', response.data)
+      if (import.meta.env.DEV) {
+        console.log('Streams response:', response.data)
+      }
       return response.data
     } catch (error) {
       console.error('Error fetching streams:', error)

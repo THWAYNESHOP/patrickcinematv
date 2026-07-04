@@ -65,8 +65,10 @@ export function useTVDetection() {
       setIsTV(detected)
       
       if (detected) {
-        console.log('[TV Detection] TV device detected:', userAgent)
-        // Add TV class to body for CSS targeting
+        // Add TV class to body for CSS targeting. Avoid logging user agent in production.
+        if (import.meta.env.DEV) {
+          console.log('[TV Detection] TV device detected')
+        }
         document.body.classList.add('is-tv-device')
       }
     }

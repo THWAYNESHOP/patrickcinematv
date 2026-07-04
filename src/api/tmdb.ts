@@ -162,6 +162,10 @@ export const tmdbApi = {
   },
 
   async getNowPlayingMovies(): Promise<MovieSummary[]> {
+    const cacheKey = 'now-playing-movies'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -176,9 +180,12 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
       : []
+
+    setCached(cacheKey, result)
+    return result
   },
 
   async getTrendingMoviesToday(): Promise<MovieSummary[]> {
@@ -310,6 +317,10 @@ export const tmdbApi = {
   },
 
   async getMovieDetails(id: string): Promise<MediaDetails> {
+    const cacheKey = `details-movie-${id}`
+    const cached = getCached<MediaDetails>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -323,7 +334,9 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return toMediaDetails(response.data, 'movie')
+    const result = toMediaDetails(response.data, 'movie')
+    setCached(cacheKey, result)
+    return result
   },
 
   async getMovieRecommendations(id: string): Promise<MovieSummary[]> {
@@ -346,6 +359,10 @@ export const tmdbApi = {
   },
 
   async getTVDetails(id: string): Promise<MediaDetails> {
+    const cacheKey = `details-tv-${id}`
+    const cached = getCached<MediaDetails>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -359,7 +376,21 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return toMediaDetails(response.data, 'tv')
+    const result = toMediaDetails(response.data, 'tv')
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async prefetchMediaDetails(item: MovieSummary): Promise<void> {
+    if (item.type === 'tv' || item.type === 'anime') {
+      await tmdbApi.getTVDetails(String(item.id))
+      return
+    }
+
+    if (item.type === 'movie') {
+      await tmdbApi.getMovieDetails(String(item.id))
+      return
+    }
   },
 
   async getTVRecommendations(id: string): Promise<MovieSummary[]> {
@@ -405,6 +436,10 @@ export const tmdbApi = {
   },
 
   async getPlatformCatalog(platform: string): Promise<PlatformCatalog> {
+    const cacheKey = `platform-catalog-${platform.toLowerCase()}`
+    const cached = getCached<PlatformCatalog>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -435,7 +470,7 @@ export const tmdbApi = {
         }),
       ])
 
-      return {
+      const result = {
         movies: Array.isArray(moviesResponse.data?.results)
           ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
           : [],
@@ -443,6 +478,9 @@ export const tmdbApi = {
           ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
           : [],
       }
+
+      setCached(cacheKey, result)
+      return result
     }
 
     const [moviesResponse, tvResponse] = await Promise.all([
@@ -470,7 +508,7 @@ export const tmdbApi = {
       }),
     ])
 
-    return {
+    const result = {
       movies: Array.isArray(moviesResponse.data?.results)
         ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
         : [],
@@ -478,9 +516,16 @@ export const tmdbApi = {
         ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
         : [],
     }
+
+    setCached(cacheKey, result)
+    return result
   },
 
   async getMoviesByGenre(genreId: number): Promise<MovieSummary[]> {
+    const cacheKey = `movies-genre-${genreId}`
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -496,12 +541,19 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
       : []
+
+    setCached(cacheKey, result)
+    return result
   },
 
   async getTVByOriginCountry(country: string): Promise<MovieSummary[]> {
+    const cacheKey = `tv-origin-${country}`
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -517,9 +569,12 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
+
+    setCached(cacheKey, result)
+    return result
   },
 
   async getNewReleases(): Promise<MovieSummary[]> {
@@ -563,6 +618,10 @@ export const tmdbApi = {
   },
 
   async getTVByGenre(genreId: number): Promise<MovieSummary[]> {
+    const cacheKey = `tv-genre-${genreId}`
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
     if (!TMDB_API_KEY) {
       throw new Error('Missing VITE_TMDB_API_KEY')
     }
@@ -578,9 +637,12 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
-    return Array.isArray(response.data?.results)
+    const result = Array.isArray(response.data?.results)
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
+
+    setCached(cacheKey, result)
+    return result
   },
 
   async getMovieVideos(id: string): Promise<TmdbVideo[]> {

@@ -3,6 +3,7 @@ import ContentCarousel from '../components/Home/ContentCarousel'
 import { getCached } from '../utils/apiCache'
 import { tmdbApi } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
+import { usePageState } from '../hooks/usePageState'
 
 import type { MovieSummary } from '../api/tmdb'
 
@@ -21,6 +22,14 @@ export default function Trending() {
   const [loading, setLoading] = useState(!cachedTrending)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const toast = useToast()
+  const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Trending')
+  const carouselStateProps = {
+    getCarouselPosition,
+    setCarouselPosition,
+    getFocusedCardId,
+    setFocusedCardId,
+    onPrefetch: tmdbApi.prefetchMediaDetails,
+  }
 
   useEffect(() => {
     if (cachedTrending) {
@@ -48,8 +57,11 @@ export default function Trending() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
+      <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-deepBlack">
+        <div className="container mx-auto space-y-12">
+          <div className="h-10 w-56 rounded-full bg-gray-800 animate-pulse" />
+          <ContentCarousel title="Trending Movies Today" items={[]} type="movie" loading />
+        </div>
       </div>
     )
   }
@@ -93,7 +105,7 @@ export default function Trending() {
         )}
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 md:mb-12 text-white tracking-tight">Trending</h1>
-        <ContentCarousel title="Trending Movies Today" items={trending} type="movie" />
+        <ContentCarousel title="Trending Movies Today" items={trending} type="movie" carouselId="trending-today" {...carouselStateProps} />
       </div>
     </div>
   )

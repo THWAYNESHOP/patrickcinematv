@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { STREAMING_PROVIDERS } from '../../lib/streamingProviders'
 import { useTVDetection } from '../../hooks/useTVDetection'
+import { useNetworkStatus } from '../../hooks/useNetworkStatus'
+import { getPlayerRetryDecision } from './playerRetry'
 
 interface StreamingPlayerProps {
   src: string
@@ -23,7 +25,10 @@ export default function StreamingPlayer({
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
   const [loadTimeout, setLoadTimeout] = useState(false)
+  const [retryAttempt, setRetryAttempt] = useState(0)
+  const [isRetrying, setIsRetrying] = useState(false)
   const isTV = useTVDetection()
+  const { isOnline } = useNetworkStatus()
 
   const provider = STREAMING_PROVIDERS[providerId]
 
@@ -39,13 +44,13 @@ export default function StreamingPlayer({
 
   // Handle postMessage events from all providers for progress tracking
   useEffect(() => {
+    const allowedOrigins = Object.values(STREAMING_PROVIDERS)
+      .map((p) => p.origin)
+      .filter(Boolean)
+
     const handleMessage = (event: MessageEvent) => {
       // Verify origin if provider has one defined
       if (provider?.origin && event.origin !== provider.origin) {
-        // Still allow messages from known providers
-        const allowedOrigins = Object.values(STREAMING_PROVIDERS)
-          .map(p => p.origin)
-          .filter(Boolean)
         if (!allowedOrigins.includes(event.origin)) {
           return
         }
@@ -66,10 +71,7 @@ export default function StreamingPlayer({
 
       // Handle PLAYER_EVENT events (VidLink style)
       if (event.data?.type === 'PLAYER_EVENT') {
-        const { event: eventType, currentTime, duration } = event.data.data
-        if (import.meta.env.DEV) {
-          console.log(`[${providerId}] Player ${eventType} at ${currentTime}s of ${duration}s`)
-        }
+        // Minimal runtime handling for player events; skip logging in production.
       }
 
       // Handle VidKing style progress events
@@ -90,22 +92,47 @@ export default function StreamingPlayer({
     return () => window.removeEventListener('message', handleMessage)
   }, [providerId, provider, onProgress])
 
-  // Set timeout to detect if content is unavailable
   useEffect(() => {
-    // TV browsers may be slower, so increase timeout
-    const timeoutDuration = isTV ? 30000 : 15000
-    const timeout = setTimeout(() => {
-      if (!iframeLoaded) {
-        if (import.meta.env.DEV) {
-          console.warn(`[${providerId}] Content may be unavailable - timeout reached`)
-        }
+    if (!iframeLoaded && !iframeError) {
+      const timeoutDuration = isTV ? 30000 : 15000
+      const timeout = window.setTimeout(() => {
         setLoadTimeout(true)
         onError?.()
-      }
-    }, timeoutDuration)
+      }, timeoutDuration)
 
-    return () => clearTimeout(timeout)
-  }, [iframeLoaded, onError, providerId, isTV])
+      return () => window.clearTimeout(timeout)
+    }
+
+    return undefined
+  }, [iframeLoaded, iframeError, onError, providerId, isTV])
+
+  useEffect(() => {
+    if (isOnline && iframeError && !isRetrying) {
+      const decision = getPlayerRetryDecision(retryAttempt, isOnline)
+      if (!decision.canRetry) {
+        return
+      }
+
+      setIsRetrying(true)
+      const timeout = window.setTimeout(() => {
+        setRetryAttempt((prev) => prev + 1)
+        setIframeError(false)
+        setLoadTimeout(false)
+        setIframeLoaded(false)
+        setIsRetrying(false)
+      }, decision.delayMs)
+
+      return () => window.clearTimeout(timeout)
+    }
+  }, [iframeError, isOnline, isRetrying, retryAttempt])
+
+  useEffect(() => {
+    setIframeError(false)
+    setLoadTimeout(false)
+    setIframeLoaded(false)
+    setRetryAttempt(0)
+    setIsRetrying(false)
+  }, [src, providerId])
 
   const vidLinkUrl = src
 
@@ -140,11 +167,11 @@ export default function StreamingPlayer({
           <div className="absolute inset-0 flex items-center justify-center bg-black">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-              <p className="text-gray-400">Loading player...</p>
+              <p className="text-gray-400">{isRetrying ? 'Retrying player...' : 'Loading player...'}</p>
             </div>
           </div>
         )}
-        {(iframeError || loadTimeout) && (
+        {(iframeError || loadTimeout) && !isRetrying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
             <div className="text-center p-6 max-w-md">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">

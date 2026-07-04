@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from '../components/PageTransition'
+import PageFallback from '../components/PageFallback'
 
 // Lazy load all pages for code splitting
 const Home = lazy(() => import('./Home'))
@@ -22,21 +23,12 @@ const Terms = lazy(() => import('./Terms'))
 const Dmca = lazy(() => import('./Dmca'))
 const NotFound = lazy(() => import('./NotFound'))
 
-// Loading component for Suspense
-function PageLoader() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-deepBlack">
-      <div className="animate-spin w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full" />
-    </div>
-  )
-}
-
 export default function AppRoutes() {
   const location = useLocation()
 
   return (
-    <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
+    <AnimatePresence mode="wait" initial={false}>
+      <Suspense fallback={<PageFallback />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageTransition><Home /></PageTransition>} />
           <Route path="/movies" element={<PageTransition><Movies /></PageTransition>} />

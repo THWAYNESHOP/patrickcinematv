@@ -27,6 +27,9 @@ if ('serviceWorker' in navigator) {
 // Prefetch trending data in the background for faster navigation
 prefetchTrendingData()
 void import('./pages/Trending')
+void import('./pages/Movies')
+void import('./pages/TVSeries')
+void import('./pages/IPTVPlayer')
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

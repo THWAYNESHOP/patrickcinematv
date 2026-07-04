@@ -10,8 +10,10 @@ import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 import { useKeyboardHandler } from './hooks/useKeyboardHandler'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import TVGuideOverlay from './components/TVGuideOverlay'
+import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { useAuthBridge } from './hooks/useAuthBridge'
 import { useFirestoreSync, useFirestoreRealtime } from './hooks/useFirestoreSync'
+import { useNetworkStatus } from './hooks/useNetworkStatus'
 import EmailVerificationBanner from './components/Auth/EmailVerificationBanner'
 
 const MISSING_CONFIG_KEYS = [
@@ -29,7 +31,8 @@ function AppContent() {
   const navigate = useNavigate()
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false)
   const [isTVGuideOpen, setIsTVGuideOpen] = useState(false)
-  const [isOnline, setIsOnline] = useState(() => navigator.onLine)
+  const [hasShownOfflineNotice, setHasShownOfflineNotice] = useState(false)
+  const { isOnline, isSlowConnection, effectiveConnectionType } = useNetworkStatus()
   const missingConfigKeys = useMemo(() => getMissingConfigKeys(), [])
   const { registerHandler } = useKeyboardHandler()
 
@@ -54,12 +57,6 @@ function AppContent() {
   // Register keyboard handlers using centralized system
   useEffect(() => {
     const unregister: (() => void)[] = []
-
-    // Online/offline state tracking
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
 
     // Open/Close shortcuts modal
     unregister.push(
@@ -109,29 +106,36 @@ function AppContent() {
 
     return () => {
       unregister.forEach(fn => fn())
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
     }
   }, [navigate, isShortcutsModalOpen, isTVGuideOpen, registerHandler])
 
+  useEffect(() => {
+    if (isOnline && hasShownOfflineNotice) {
+      setHasShownOfflineNotice(false)
+      window.location.reload()
+    }
+  }, [isOnline, hasShownOfflineNotice])
+
   const globalErrorMessage = missingConfigKeys.length
     ? `Missing configuration: ${missingConfigKeys.join(', ')}. Some features may not work.`
-    : isOnline
-    ? null
-    : 'You appear to be offline. Some content may not load until connectivity is restored.'
+    : !isOnline
+    ? 'You appear to be offline. Some content may not load until connectivity is restored.'
+    : isSlowConnection
+    ? `Your connection looks slow (${effectiveConnectionType}). Streaming may buffer more than usual.`
+    : null
+
+  useEffect(() => {
+    if (!isOnline) {
+      setHasShownOfflineNotice(true)
+    }
+  }, [isOnline])
 
   return (
     <>
-      {globalErrorMessage && (
-        <div className="fixed inset-x-0 top-0 z-50 bg-red-500 text-white px-4 py-3 text-sm md:text-base font-semibold shadow-lg">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <span>{globalErrorMessage}</span>
-            {missingConfigKeys.length > 0 && (
-              <span className="text-xs text-white/80">Please set environment variables before deploying.</span>
-            )}
-          </div>
-        </div>
-      )}
+      <NetworkStatusBanner
+        message={globalErrorMessage}
+        onRetry={isOnline ? undefined : () => window.location.reload()}
+      />
       <div className={globalErrorMessage ? 'pt-16' : ''}>
         <Layout>
           <EmailVerificationBanner />

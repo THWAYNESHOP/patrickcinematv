@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
@@ -9,58 +9,86 @@ interface HeroSliderProps {
   movies: MovieSummary[]
 }
 
+const AUTOPLAY_INTERVAL = 6000
+
 export default function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  const heroRef = useRef<HTMLDivElement>(null)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
 
+  const currentMovie = useMemo(
+    () => movies[currentIndex] || movies[0],
+    [currentIndex, movies],
+  )
+
   useEffect(() => {
-    // Disable auto-rotation on TV to prevent hanging
-    if (isTV) {
-      return
-    }
-    
-    const timer = setInterval(() => {
+    const element = heroRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting)
+      },
+      { threshold: 0.25 },
+    )
+
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (isTV || !isVisible || movies.length <= 1) return
+
+    const id = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % movies.length)
-    }, 6000)
-    return () => clearInterval(timer)
-  }, [movies.length, isTV])
+    }, AUTOPLAY_INTERVAL)
 
-  const nextSlide = () => {
-    triggerHaptic('light')
-    setCurrentIndex((prev) => (prev + 1) % movies.length)
+    return () => window.clearInterval(id)
+  }, [isTV, isVisible, movies.length])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible')
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  const changeSlide = useCallback(
+    (direction: 'next' | 'prev') => {
+      triggerHaptic('light')
+      setCurrentIndex((prev) =>
+        direction === 'next'
+          ? (prev + 1) % movies.length
+          : (prev - 1 + movies.length) % movies.length,
+      )
+    },
+    [triggerHaptic, movies.length],
+  )
+
+  const backgroundImage = useMemo(() => {
+    if (!currentMovie) return undefined
+    return currentMovie.backdrop?.replace('w500', 'w1280') || currentMovie.backdrop
+  }, [currentMovie])
+
+  if (!currentMovie) {
+    return null
   }
-
-  const prevSlide = () => {
-    triggerHaptic('light')
-    setCurrentIndex((prev) => (prev - 1 + movies.length) % movies.length)
-  }
-
-  const currentMovie = movies[currentIndex]
 
   return (
-    <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
-      {movies.map((movie, index) => (
-        <div
-          key={movie.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentIndex ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* Background Image with Optimized Quality for TV */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${movie.backdrop?.replace('w500', 'w1280') || movie.backdrop})`,
-              imageRendering: 'auto',
-            } as React.CSSProperties}
-          />
-          
-          {/* Gradient Overlays for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-        </div>
-      ))}
+    <div ref={heroRef} className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
+      <img
+        src={backgroundImage}
+        alt={currentMovie.title}
+        className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        decoding="async"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
 
       <div className="absolute inset-0 flex items-end pb-12 md:pb-16 lg:pb-20">
         <div className="container mx-auto px-4 md:px-8 lg:px-12">
@@ -95,20 +123,18 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
         </div>
       </div>
 
-      {/* Navigation Buttons */}
       <button
-        onClick={prevSlide}
+        onClick={() => changeSlide('prev')}
         className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
         <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
       <button
-        onClick={nextSlide}
+        onClick={() => changeSlide('next')}
         className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
         <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
-
     </div>
   )
 }

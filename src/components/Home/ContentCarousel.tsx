@@ -1,27 +1,176 @@
-import { useRef, useState, useCallback, useMemo, useEffect } from 'react'
+import { memo, useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Play, Star, Plus, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Star, Plus, Check, WifiOff } from 'lucide-react'
 import { CardSkeleton } from '../Skeleton'
 import type { MovieSummary } from '../../api/tmdb'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useMyList } from '../../hooks/useMyList'
+import { useStore } from '../../store/useStore'
 
 interface ContentCarouselProps {
   title: string
   items: MovieSummary[]
-  type: 'movie' | 'tv' | 'anime'
+  type: 'movie' | 'tv' | 'anime' | 'sports'
   showProgress?: boolean
   loading?: boolean
+  carouselId?: string
+  cached?: boolean
+  getCarouselPosition?: (carouselId: string) => number
+  setCarouselPosition?: (carouselId: string, scrollLeft: number) => void
+  getFocusedCardId?: (carouselId: string) => string | null
+  setFocusedCardId?: (carouselId: string, cardId: string) => void
+  onPrefetch?: (item: MovieSummary) => void
 }
 
-export default function ContentCarousel({ title, items, type, showProgress = false, loading = false }: ContentCarouselProps) {
+interface CarouselCardProps {
+  item: MovieSummary
+  itemType: 'movie' | 'tv' | 'anime' | 'sports'
+  showProgress: boolean
+  onToggleMyList: (item: MovieSummary, inMyList: boolean) => void
+  onPrefetch?: (item: MovieSummary) => void
+  carouselId?: string
+  setFocusedCardId?: (carouselId: string, cardId: string) => void
+}
+
+const CarouselCard = function CarouselCard({
+  item,
+  itemType,
+  showProgress,
+  onToggleMyList,
+  onPrefetch,
+  carouselId,
+  setFocusedCardId,
+}: CarouselCardProps) {
+  const inMyList = useStore((state) => state.isInMyList(String(item.id)))
+
+  const handleMyList = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+      onToggleMyList(item, inMyList)
+    },
+    [item, inMyList, onToggleMyList],
+  )
+
+  const handleMouseEnter = useCallback(() => {
+    onPrefetch?.(item)
+  }, [item, onPrefetch])
+
+  const handleFocus = useCallback(() => {
+    if (carouselId) {
+      setFocusedCardId?.(carouselId, String(item.id))
+    }
+    onPrefetch?.(item)
+  }, [carouselId, item, onPrefetch, setFocusedCardId])
+
+  return (
+    <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
+      <Link
+        to={`/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`}
+        className="block"
+        onMouseEnter={handleMouseEnter}
+        onFocus={handleFocus}
+        onTouchStart={handleMouseEnter}
+        onClick={() => {
+          if (carouselId) {
+            setFocusedCardId?.(carouselId, String(item.id))
+          }
+        }}
+      >
+        <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
+          <div className="relative aspect-[2/3]">
+            <img
+              src={item.poster}
+              srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
+              sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
+              alt={item.title}
+              width={192}
+              height={288}
+              decoding="async"
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
+            </div>
+            {showProgress && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+                <div className="h-full bg-primary" style={{ width: '45%' }} />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleMyList}
+              className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
+            >
+              {inMyList ? (
+                <Check className="w-4 h-4 text-white" />
+              ) : (
+                <Plus className="w-4 h-4 text-white" />
+              )}
+            </button>
+          </div>
+          <div className="p-2 md:p-3">
+            <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
+                <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
+                <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
+              </div>
+              {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
+              {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
+            </div>
+          </div>
+        </div>
+      </Link>
+    </div>
+  )
+}
+
+const MemoizedCarouselCard = memo(CarouselCard)
+
+export default function ContentCarousel({
+  title,
+  items,
+  type,
+  showProgress = false,
+  loading = false,
+  carouselId,
+  getCarouselPosition,
+  setCarouselPosition,
+  getFocusedCardId,
+  setFocusedCardId,
+  onPrefetch,
+  cached = false,
+}: ContentCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollRAFRef = useRef<number | null>(null)
+  const touchStartRef = useRef(0)
+  const touchEndRef = useRef(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
-  const { addToMyList, removeFromMyList, isInMyList } = useMyList()
+  const { addToMyList, removeFromMyList } = useMyList()
+
+  const toggleMyList = useCallback(
+    (item: MovieSummary, inMyList: boolean) => {
+      const itemId = String(item.id)
+      if (inMyList) {
+        removeFromMyList(itemId)
+        return
+      }
+
+      addToMyList({
+        id: itemId,
+        title: item.title,
+        poster: item.poster,
+        rating: item.rating,
+        year: item.year,
+        type: item.type || type,
+      })
+    },
+    [addToMyList, removeFromMyList, type],
+  )
 
   const scroll = useCallback((direction: 'left' | 'right') => {
     triggerHaptic('light')
@@ -35,126 +184,118 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
     }
   }, [triggerHaptic])
 
-  const handleScroll = useCallback(() => {
-    if (scrollRef.current) {
-      setCanScrollLeft(scrollRef.current.scrollLeft > 0)
-      setCanScrollRight(
-        scrollRef.current.scrollLeft <
-          scrollRef.current.scrollWidth - scrollRef.current.clientWidth
-      )
+  useEffect(() => {
+    if (!loading && carouselId && getCarouselPosition && scrollRef.current) {
+      const saved = getCarouselPosition(carouselId)
+      if (saved && scrollRef.current) {
+        scrollRef.current.scrollLeft = saved
+      }
     }
+
+    if (!loading && carouselId && getFocusedCardId && scrollRef.current) {
+      const focused = getFocusedCardId(carouselId)
+      if (!focused) return
+      const card = scrollRef.current.querySelector<HTMLElement>(`[data-carousel-card-id="${focused}"]`)
+      if (card) {
+        card.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' })
+      }
+    }
+  }, [carouselId, getCarouselPosition, getFocusedCardId, loading])
+
+  const handleScrollPosition = useCallback(() => {
+    if (!carouselId || !setCarouselPosition || !scrollRef.current) return
+    setCarouselPosition(carouselId, scrollRef.current.scrollLeft)
+  }, [carouselId, setCarouselPosition])
+
+  const updateScrollState = useCallback(() => {
+    const node = scrollRef.current
+    if (!node) return
+
+    const canLeft = node.scrollLeft > 0
+    const canRight = node.scrollLeft < node.scrollWidth - node.clientWidth - 1
+
+    setCanScrollLeft((prev) => (prev === canLeft ? prev : canLeft))
+    setCanScrollRight((prev) => (prev === canRight ? prev : canRight))
   }, [])
 
+  const handleScroll = useCallback(() => {
+    if (scrollRAFRef.current !== null) return
+    scrollRAFRef.current = window.requestAnimationFrame(() => {
+      updateScrollState()
+      handleScrollPosition()
+      scrollRAFRef.current = null
+    })
+  }, [handleScrollPosition, updateScrollState])
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    setTouchEnd(0)
-    setTouchStart(e.targetTouches[0].clientX)
+    touchEndRef.current = 0
+    touchStartRef.current = e.targetTouches[0].clientX
   }, [])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    touchEndRef.current = e.targetTouches[0].clientX
   }, [])
 
   const handleTouchEnd = useCallback(() => {
+    const touchStart = touchStartRef.current
+    const touchEnd = touchEndRef.current
     if (!touchStart || !touchEnd) return
-    
+
     const distance = touchStart - touchEnd
     const minSwipeDistance = 50
-    
+
     if (distance > minSwipeDistance) {
       scroll('right')
     } else if (distance < -minSwipeDistance) {
       scroll('left')
     }
-  }, [touchStart, touchEnd, scroll])
+
+    touchStartRef.current = 0
+    touchEndRef.current = 0
+  }, [scroll])
 
   useEffect(() => {
     if (!loading) {
-      handleScroll()
+      updateScrollState()
     }
-  }, [handleScroll, items.length, loading])
+  }, [updateScrollState, items.length, loading])
 
-  const carouselItems = useMemo(() => {
-    return items.map((item: MovieSummary) => {
-      const itemId = String(item.id)
-      const inMyList = isInMyList(itemId)
-      const itemType = item.type || type
-
-      const handleMyList = (e: React.MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-
-        if (inMyList) {
-          removeFromMyList(itemId)
-          return
-        }
-
-        addToMyList({
-          id: itemId,
-          title: item.title,
-          poster: item.poster,
-          rating: item.rating,
-          year: item.year,
-          type: itemType,
-        })
+  useEffect(() => {
+    return () => {
+      if (scrollRAFRef.current !== null) {
+        window.cancelAnimationFrame(scrollRAFRef.current)
       }
+    }
+  }, [])
 
-      return (
-        <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card">
-          <Link
-            to={`/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`}
-            className="block"
-          >
-            <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
-              <div className="relative aspect-[2/3]">
-                <img
-                  src={item.poster}
-                  srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
-                  sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
-                </div>
-                {showProgress && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
-                    <div className="h-full bg-primary" style={{ width: '45%' }} />
-                  </div>
-                )}
-                {/* Add to List Button */}
-                <button
-                  onClick={handleMyList}
-                  className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
-                >
-                  {inMyList ? (
-                    <Check className="w-4 h-4 text-white" />
-                  ) : (
-                    <Plus className="w-4 h-4 text-white" />
-                  )}
-                </button>
-              </div>
-              <div className="p-2 md:p-3">
-                <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
-                    <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
-                    <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
-                  </div>
-                  {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
-                  {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )
-    })
-  }, [items, type, showProgress, addToMyList, removeFromMyList, isInMyList])
+  const carouselItems = useMemo(
+    () =>
+      items.map((item: MovieSummary) => (
+        <MemoizedCarouselCard
+          key={item.id}
+          item={item}
+          itemType={item.type || type}
+          showProgress={showProgress}
+          onToggleMyList={toggleMyList}
+          carouselId={carouselId}
+          setFocusedCardId={setFocusedCardId}
+          onPrefetch={onPrefetch}
+        />
+      )),
+    [items, type, showProgress, toggleMyList, carouselId, onPrefetch, setFocusedCardId],
+  )
 
   return (
     <div className="mb-12 md:mb-16">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-white tracking-tight">{title}</h2>
+      <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3">
+        <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h2>
+        {cached && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-gray-300">
+            <WifiOff className="h-3.5 w-3.5" />
+            Cached
+          </span>
+        )}
+      </div>
       <div className="relative group">
         {loading ? (
           <div className="flex gap-4 md:gap-5 overflow-x-auto scrollbar-hide pb-4">
@@ -168,9 +309,9 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
           </div>
         ) : (
           <>
-            {/* Left Button */}
             {canScrollLeft && (
               <button
+                type="button"
                 onClick={() => scroll('left')}
                 className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 -translate-x-2 md:-translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
@@ -178,7 +319,6 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
               </button>
             )}
 
-            {/* Carousel */}
             <div
               ref={scrollRef}
               onScroll={handleScroll}
@@ -190,9 +330,9 @@ export default function ContentCarousel({ title, items, type, showProgress = fal
               {carouselItems}
             </div>
 
-            {/* Right Button */}
             {canScrollRight && (
               <button
+                type="button"
                 onClick={() => scroll('right')}
                 className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-x-2 md:translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
               >

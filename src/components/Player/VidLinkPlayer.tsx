@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTVDetection } from '../../hooks/useTVDetection'
 
 interface VidLinkPlayerProps {
@@ -38,12 +38,11 @@ export default function VidLinkPlayer({
   const [loadTimeout, setLoadTimeout] = useState(false)
   const isTV = useTVDetection()
 
-  // Build VidLink URL
-  const buildVidLinkUrl = () => {
+  const vidLinkUrl = useMemo(() => {
     const baseUrl = type === 'movie'
       ? `https://vidlink.pro/movie/${tmdbId}`
       : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`
-    
+
     const params = new URLSearchParams({
       primaryColor,
       secondaryColor,
@@ -55,13 +54,13 @@ export default function VidLinkPlayer({
       autoplay: autoplay ? 'true' : 'false',
       nextbutton: 'false',
     })
-    
+
     if (startAt > 0) {
       params.append('startAt', startAt.toString())
     }
-    
+
     return `${baseUrl}?${params.toString()}`
-  }
+  }, [tmdbId, type, season, episode, primaryColor, secondaryColor, iconColor, autoplay, startAt])
 
   // Handle fullscreen changes
   useEffect(() => {
@@ -94,10 +93,7 @@ export default function VidLinkPlayer({
 
       // Handle PLAYER_EVENT events
       if (event.data?.type === 'PLAYER_EVENT') {
-        const { event: eventType, currentTime, duration } = event.data.data
-        if (import.meta.env.DEV) {
-          console.log(`[VidLink] Player ${eventType} at ${currentTime}s of ${duration}s`)
-        }
+        // No-op logging for runtime.
       }
     }
 
@@ -111,9 +107,6 @@ export default function VidLinkPlayer({
     const timeoutDuration = isTV ? 30000 : 15000
     const timeout = setTimeout(() => {
       if (!iframeLoaded) {
-        if (import.meta.env.DEV) {
-          console.warn('[VidLink] Content may be unavailable - timeout reached')
-        }
         setLoadTimeout(true)
         onError?.()
       }
@@ -121,8 +114,6 @@ export default function VidLinkPlayer({
 
     return () => clearTimeout(timeout)
   }, [iframeLoaded, onError, isTV])
-
-  const vidLinkUrl = buildVidLinkUrl()
 
   const vendorAttrs: Partial<React.IframeHTMLAttributes<HTMLIFrameElement>> = {
     allowFullScreen: true,

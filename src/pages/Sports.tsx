@@ -1,9 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LiveMatches from '../components/Sports/LiveMatches'
 import SportsFilters from '../components/Sports/SportsFilters'
 
+let cachedSportsSelection = 'all'
+
 export default function Sports() {
-  const [selectedSport, setSelectedSport] = useState('all')
+  const [selectedSport, setSelectedSport] = useState(cachedSportsSelection)
+
+  useEffect(() => {
+    cachedSportsSelection = selectedSport
+  }, [selectedSport])
 
   return (
     <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-deepBlack">
