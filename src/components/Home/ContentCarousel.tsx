@@ -1,6 +1,6 @@
 import { memo, useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Play, Star, Plus, Check, WifiOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Star, Plus, Check } from 'lucide-react'
 import { CardSkeleton } from '../Skeleton'
 import type { MovieSummary } from '../../api/tmdb'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
@@ -14,7 +14,6 @@ interface ContentCarouselProps {
   showProgress?: boolean
   loading?: boolean
   carouselId?: string
-  cached?: boolean
   getCarouselPosition?: (carouselId: string) => number
   setCarouselPosition?: (carouselId: string, scrollLeft: number) => void
   getFocusedCardId?: (carouselId: string) => string | null
@@ -141,7 +140,6 @@ export default function ContentCarousel({
   getFocusedCardId,
   setFocusedCardId,
   onPrefetch,
-  cached = false,
 }: ContentCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollRAFRef = useRef<number | null>(null)
@@ -289,12 +287,6 @@ export default function ContentCarousel({
     <div className="mb-12 md:mb-16">
       <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3">
         <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h2>
-        {cached && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-gray-300">
-            <WifiOff className="h-3.5 w-3.5" />
-            Cached
-          </span>
-        )}
       </div>
       <div className="relative group">
         {loading ? (
