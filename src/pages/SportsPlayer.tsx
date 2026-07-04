@@ -74,14 +74,24 @@ export default function SportsPlayer() {
     )
   }
 
+  const lockScreenOrientation = async (orientation: 'landscape' | 'portrait') => {
+    if ('orientation' in screen && typeof screen.orientation?.lock === 'function') {
+      try {
+        await screen.orientation.lock(orientation)
+      } catch (error) {
+        console.warn('Unable to lock orientation:', error)
+      }
+    }
+  }
+
   const requestPlayerFullscreen = async () => {
     const element = playerContainerRef.current || iframeRef.current
     if (!element) return
 
     if ('requestFullscreen' in element) {
       await element.requestFullscreen()
+      await lockScreenOrientation('landscape')
     } else if ('webkitRequestFullscreen' in element) {
-      // Safari fallback
       ;(element as any).webkitRequestFullscreen()
     }
   }
@@ -89,6 +99,9 @@ export default function SportsPlayer() {
   const exitPlayerFullscreen = async () => {
     if (document.fullscreenElement) {
       await document.exitFullscreen()
+      if ('orientation' in screen && typeof screen.orientation?.unlock === 'function') {
+        screen.orientation.unlock()
+      }
     }
   }
 
@@ -240,11 +253,11 @@ export default function SportsPlayer() {
           {/* Player Container */}
           <div
             ref={playerContainerRef}
-            className={`overflow-hidden transition-all duration-200 glass-strong rounded-lg mb-6 ${isStretchMode ? 'fixed inset-0 z-50 rounded-none' : ''}`}
-            style={isStretchMode ? { margin: 0, width: '100%', height: '100%' } : undefined}
+            className="overflow-hidden transition-all duration-200 glass-strong rounded-lg mb-6"
+            style={isStretchMode && !isFullscreen ? { minHeight: '70vh' } : undefined}
           >
             {/* Player Wrapper */}
-            <div className={`relative bg-black ${isStretchMode ? 'h-full' : 'aspect-video'}`}>
+            <div className={`relative bg-black ${isStretchMode ? 'h-[70vh] sm:h-[80vh]' : 'aspect-video'}`}>
               {/* LIVE Indicator */}
               <div className="absolute top-3 left-3 z-50 flex items-center gap-2 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full pointer-events-none">
                 <div className="w-2 h-2 bg-red-50 rounded-full animate-pulse" />
@@ -261,25 +274,13 @@ export default function SportsPlayer() {
 
 
               {/* Stream iframe container with dynamic object-fit and rotation */}
-              <div
-                className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              <div className="absolute inset-0 overflow-hidden">
                 <iframe
                   ref={iframeRef}
                   src={directStream ? directStream.url : currentStream.embedUrl}
-                  className="min-w-full min-h-full"
+                  className="absolute inset-0 w-full h-full"
                   style={{
                     objectFit: fitMode,
-                    position: isStretchMode ? 'absolute' : 'relative',
-                    inset: isStretchMode ? 0 : undefined,
-                    width: isStretchMode ? '100%' : '100%',
-                    height: isStretchMode ? '100%' : '100%',
-                    transform: isStretchMode ? 'scale(1.01)' : undefined,
                   }}
                   frameBorder="0"
                   allowFullScreen
