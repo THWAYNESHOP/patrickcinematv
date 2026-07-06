@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth'
 
 interface NavbarProps {
   isScrolled: boolean
+  isPlayerPage?: boolean
 }
 
 interface NavItem {
@@ -86,7 +87,7 @@ function NavDropdown({ label, items, isActive, onNavigate }: NavDropdownProps) {
   )
 }
 
-export default function Navbar({ isScrolled }: NavbarProps) {
+export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
@@ -148,15 +149,17 @@ export default function Navbar({ isScrolled }: NavbarProps) {
 
   const userLabel = user?.displayName || user?.email?.split('@')[0] || 'Account'
 
-  return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top ${
+  const navClass = isPlayerPage
+    ? 'fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-2'
+    : `fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top ${
         isScrolled
           ? 'bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-3 shadow-lg'
           : 'bg-gradient-to-b from-deepBlack/95 via-deepBlack/80 to-transparent py-4 md:py-5'
-      }`}
-    >
-      <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
+      }`
+
+  return (
+    <nav className={navClass}>
+      <div className={`container mx-auto ${isPlayerPage ? 'px-3' : 'px-4'} sm:px-6 md:px-12 lg:px-16`}>
         <div className="flex items-center justify-between gap-4">
           {/* Left — logo + desktop nav */}
           <div className="flex items-center gap-6 lg:gap-10 min-w-0">

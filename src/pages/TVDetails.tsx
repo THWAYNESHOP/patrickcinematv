@@ -274,13 +274,13 @@ export default function TVDetails() {
       </DetailHero>
 
       {/* Content */}
-      <div className="container mx-auto py-8 md:py-12 px-4 md:px-8">
+      <div className="container mx-auto py-4 px-3 sm:px-4 md:py-8 md:px-8">
         {/* Video Player + info */}
-        <section id="player" className="scroll-mt-24 mb-10 md:mb-12">
-          <div className="grid lg:grid-cols-3 gap-5 md:gap-6">
+        <section id="player" className="scroll-mt-24 mb-8 md:mb-12">
+          <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
             <div className="lg:col-span-2">
-              <div className="overflow-hidden border border-white/5 bg-darkSurface rounded-2xl">
-                <div className="p-4 border-b border-white/5">
+              <div className="overflow-hidden rounded-2xl border border-white/5 bg-darkSurface">
+                <div className="border-b border-white/5 p-3 sm:p-4">
                   <ServerSelector
                     selectedProviderId={selectedProviderId}
                     onProviderChange={handleProviderChange}
@@ -297,7 +297,7 @@ export default function TVDetails() {
               </div>
             </div>
             <aside className="space-y-4">
-              <div className="glass rounded-2xl p-5">
+              <div className="glass rounded-2xl p-4 sm:p-5">
                 <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-1">Now Playing</p>
                 <p className="text-lg font-bold text-white mb-3">Season {selectedSeason} · Episode {selectedEpisode}</p>
                 <dl className="space-y-2.5 text-sm">
@@ -325,7 +325,7 @@ export default function TVDetails() {
                   )}
                 </dl>
               </div>
-              <div className="rounded-2xl p-5 border border-white/5 bg-darkSurface">
+              <div className="rounded-2xl p-4 sm:p-5 border border-white/5 bg-darkSurface">
                 <h3 className="font-semibold mb-2 text-white text-sm">
                   {playerError ? 'Episode unavailable' : 'No sources for this episode?'}
                 </h3>

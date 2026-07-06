@@ -468,6 +468,79 @@ export default function IPTVPlayer() {
                 {/* Trending Live Carousel */}
                 <TrendingCarousel channels={trendingChannels} onChannelClick={handleChannelClick} />
 
+                {/* Creative Grouping Prototype */}
+                <section className="space-y-6">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <h3 className="text-lg font-semibold text-white mb-3">Quick Picks</h3>
+                    <div className="flex gap-3 overflow-x-auto pb-2">
+                      {channels
+                        .slice()
+                        .sort((a, b) => b.viewers - a.viewers)
+                        .slice(0, 8)
+                        .map((ch, i) => (
+                          <button
+                            key={`qp-${ch.name}-${i}`}
+                            onClick={() => handleChannelClick(ch)}
+                            className="min-w-[220px] shrink-0 rounded-xl border border-white/10 bg-black/20 p-3 flex items-center gap-3"
+                          >
+                            <ChannelLogo channel={ch} size="md" />
+                            <div className="text-left">
+                              <div className="text-sm font-semibold text-white truncate">{ch.name}</div>
+                              <div className="text-xs text-gray-400">{cdnLiveTvApi.getCountryName(ch.code)} · {ch.viewers.toLocaleString()} watching</div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Smart Group: Trending (top channels) */}
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">Trending Now</h4>
+                          <p className="text-xs text-gray-400">Top live feeds by viewers</p>
+                        </div>
+                        <div className="text-gray-300 text-sm">Top</div>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {trendingChannels.slice(0, 6).map((ch, i) => (
+                          <ChannelCard key={`tr-${ch.name}-${i}`} channel={ch} onClick={() => handleChannelClick(ch)} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Smart Group: Language-first */}
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div>
+                        <h4 className="text-sm font-semibold text-white">Provider Picks</h4>
+                        <p className="text-xs text-gray-400">Top channels grouped by provider host</p>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {(() => {
+                          const byHost = new Map<string, CDNChannel[]>()
+                          channels.forEach((c) => {
+                            let host = 'unknown'
+                            try {
+                              const u = new URL(c.url)
+                              host = u.host
+                            } catch (e) {
+                              host = 'external'
+                            }
+                            if (!byHost.has(host)) byHost.set(host, [])
+                            byHost.get(host)!.push(c)
+                          })
+                          const top = Array.from(byHost.entries()).sort((a, b) => b[1].length - a[1].length)[0]
+                          if (!top) return null
+                          return top[1].slice(0, 6).map((ch, i) => (
+                            <ChannelCard key={`prov-${top[0]}-${ch.name}-${i}`} channel={ch} onClick={() => handleChannelClick(ch)} />
+                          ))
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
                 {/* Category Sections */}
                 {activeCategory === 'all' ? (
                   <>

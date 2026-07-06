@@ -11,17 +11,25 @@ const NAV_ITEMS = [
   { name: 'Live', path: '/live-tv', icon: Radio },
 ]
 
-function MobileNav() {
+interface MobileNavProps {
+  isPlayerPage?: boolean
+}
+
+function MobileNav({ isPlayerPage = false }: MobileNavProps) {
   const location = useLocation()
   const { triggerHaptic } = useHapticFeedback()
 
   const handleClick = useCallback(() => triggerHaptic('light'), [triggerHaptic])
 
+  if (isPlayerPage) {
+    return null
+  }
+
   return (
     <nav
       role="navigation"
       aria-label="Primary"
-      className="fixed bottom-0 left-0 right-0 bg-deepBlack/95 backdrop-blur-xl border-t border-white/5 z-40 md:hidden pb-safe-bottom"
+      className="fixed bottom-0 left-0 right-0 bg-deepBlack/95 backdrop-blur-xl border-t border-white/5 z-40 md:hidden pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
     >
       <div className="flex items-stretch justify-around px-1 py-1.5">
         {NAV_ITEMS.map((item) => {

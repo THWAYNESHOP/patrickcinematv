@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 
 export default function Footer() {
   return (
-    <footer className="bg-black/50 border-t border-white/10 mt-16">
-      <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-16 py-8 md:py-16 overflow-x-hidden">
+    <footer className="bg-black/50 border-t border-white/10 mt-4">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-16 py-4 md:py-6 overflow-x-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
           {/* Brand */}
           <div className="space-y-4">
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
 
         {/* Legal Links */}
-        <div className="mt-8 pt-6 border-t border-white/10">
+        <div className="mt-4 pt-3 border-t border-white/10">
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base">
             <Link to="/contact" className="text-gray-400 hover:text-white transition-colors duration-300 hover:text-shadow-sm font-medium">
               Contact Us
@@ -83,7 +83,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-8 pt-6 text-center">
+        <div className="border-t border-white/10 mt-4 pt-3 text-center">
           <p className="text-gray-400 text-sm md:text-base font-medium">
             © 2026 NEXASTREAM. All rights reserved.
           </p>

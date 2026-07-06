@@ -144,14 +144,16 @@ export default function StreamingPlayer({
   return (
     <div
       ref={containerRef}
-      className={`relative bg-black overflow-hidden ${
+      className={`relative isolate overflow-hidden bg-black ${
         isFullscreen
-          ? 'fixed inset-0 z-50'
-          : 'w-full aspect-video'
+          ? 'fixed inset-0 z-[60] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'
+          : 'w-full aspect-video max-w-none'
       }`}
       style={{
         width: isFullscreen ? '100vw' : undefined,
         height: isFullscreen ? '100dvh' : undefined,
+        paddingTop: isFullscreen ? 'env(safe-area-inset-top)' : undefined,
+        paddingBottom: isFullscreen ? 'env(safe-area-inset-bottom)' : undefined,
       }}
     >
       <div
@@ -161,6 +163,7 @@ export default function StreamingPlayer({
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
+          minHeight: 0,
         }}
       >
         {!iframeLoaded && !iframeError && (
