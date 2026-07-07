@@ -12,6 +12,18 @@ export interface StreamingProvider {
 }
 
 export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
+  vixsrc: {
+    id: 'vixsrc',
+    name: 'vixsrc',
+    displayName: 'VixSrc',
+    movieUrlTemplate: 'https://vixsrc.to/movie/{tmdbId}',
+    tvUrlTemplate: 'https://vixsrc.to/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: true,
+    supportsNextEpisode: true,
+    supportsEpisodeSelector: true,
+    supportedParams: ['autoplay', 'startAt', 'lang', 'primaryColor', 'secondaryColor'],
+    origin: 'https://vixsrc.to',
+  },
   vidking: {
     id: 'vidking',
     name: 'vidking',
@@ -21,6 +33,7 @@ export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
     supportsAutoplay: true,
     supportsNextEpisode: true,
     supportsEpisodeSelector: true,
+    supportedParams: ['autoplay', 'quality'],
     origin: 'https://www.vidking.net',
   },
   vidlink: {
@@ -32,7 +45,7 @@ export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
     supportsAutoplay: true,
     supportsNextEpisode: true,
     supportsEpisodeSelector: true,
-    supportedParams: ['primaryColor', 'secondaryColor', 'iconColor', 'icons', 'player', 'title', 'poster', 'autoplay', 'nextbutton', 'startAt'],
+    supportedParams: ['primaryColor', 'secondaryColor', 'iconColor', 'icons', 'player', 'title', 'poster', 'autoplay', 'nextbutton', 'startAt', 'quality'],
     origin: 'https://vidlink.pro',
   },
   vidfast: {
@@ -44,12 +57,13 @@ export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
     supportsAutoplay: true,
     supportsNextEpisode: true,
     supportsEpisodeSelector: true,
+    supportedParams: ['autoplay', 'quality'],
     origin: 'https://vidfast.pro',
   },
 }
 
-export const DEFAULT_PROVIDER = 'vidlink'
-export const PROVIDER_ORDER = ['vidking', 'vidlink', 'vidfast']
+export const DEFAULT_PROVIDER = 'vixsrc'
+export const PROVIDER_ORDER = ['vixsrc', 'vidking', 'vidlink', 'vidfast']
 
 export function getProviderUrl(
   providerId: string,

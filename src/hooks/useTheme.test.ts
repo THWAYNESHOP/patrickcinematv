@@ -23,7 +23,7 @@ describe('useTheme', () => {
     expect(result.current.theme).toBe('dark')
   })
 
-  it('should toggle theme between dark and light', () => {
+  it('should toggle theme through dark, light, and system modes', () => {
     const { result } = renderHook(() => useTheme())
     
     expect(result.current.theme).toBe('dark')
@@ -32,6 +32,11 @@ describe('useTheme', () => {
       result.current.toggleTheme()
     })
     expect(result.current.theme).toBe('light')
+
+    act(() => {
+      result.current.toggleTheme()
+    })
+    expect(result.current.theme).toBe('system')
 
     act(() => {
       result.current.toggleTheme()
@@ -46,6 +51,11 @@ describe('useTheme', () => {
       result.current.setThemeMode('light')
     })
     expect(result.current.theme).toBe('light')
+
+    act(() => {
+      result.current.setThemeMode('system')
+    })
+    expect(result.current.theme).toBe('system')
 
     act(() => {
       result.current.setThemeMode('dark')

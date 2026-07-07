@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useToast } from '../hooks/useToast'
 import { useAuth } from '../hooks/useAuth'
@@ -12,6 +13,15 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'progress'>('favorites')
 
   const toast = useToast()
+  const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
+  const [settingsTourSeen, setSettingsTourSeen] = useState(() => window.localStorage.getItem(SETTINGS_TOUR_KEY) === 'seen')
+
+  useEffect(() => {
+    const seen = window.localStorage.getItem(SETTINGS_TOUR_KEY) === 'seen'
+    if (seen !== settingsTourSeen) {
+      setSettingsTourSeen(seen)
+    }
+  }, [settingsTourSeen])
 
   const handleSignOut = async () => {
     try {
@@ -49,13 +59,31 @@ export default function Profile() {
                 {user.email}
               </p>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <Link
+                to="/settings"
+                onClick={() => {
+                  window.localStorage.setItem(SETTINGS_TOUR_KEY, 'seen')
+                  setSettingsTourSeen(true)
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 text-white font-semibold transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Settings
+                {!settingsTourSeen && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white">
+                    New
+                  </span>
+                )}
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
 

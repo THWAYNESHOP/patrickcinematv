@@ -14,6 +14,7 @@ const Anime = lazy(() => import('./Anime'))
 const Trending = lazy(() => import('./Trending'))
 const MyList = lazy(() => import('./MyList'))
 const Profile = lazy(() => import('./Profile'))
+const Settings = lazy(() => import('./Settings'))
 const MovieDetails = lazy(() => import('./MovieDetails'))
 const TVDetails = lazy(() => import('./TVDetails'))
 const SportsPlayer = lazy(() => import('./SportsPlayer'))
@@ -39,6 +40,7 @@ export default function AppRoutes() {
           <Route path="/trending" element={<PageTransition><Trending /></PageTransition>} />
           <Route path="/my-list" element={<PageTransition><MyList /></PageTransition>} />
           <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+          <Route path="/settings" element={<PageTransition><Settings /></PageTransition>} />
           <Route path="/movie/:id" element={<PageTransition><MovieDetails /></PageTransition>} />
           <Route path="/tv/:id" element={<PageTransition><TVDetails /></PageTransition>} />
           <Route path="/sports/:source/:id" element={<PageTransition><SportsPlayer /></PageTransition>} />

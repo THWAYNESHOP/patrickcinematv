@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Search, Menu, X, Sun, Moon, User, LogOut, ChevronDown } from 'lucide-react'
+import { Search, Menu, X, Sun, Moon, Laptop, User, LogOut, ChevronDown } from 'lucide-react'
 import SearchBar from '../Search/SearchBar'
 import AuthModal from '../Auth/AuthModal'
 import { useTheme } from '../../hooks/useTheme'
@@ -91,9 +91,15 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const [settingsTourSeen, setSettingsTourSeen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
   const { user, signOut } = useAuth()
+
+  useEffect(() => {
+    const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
+    setSettingsTourSeen(window.localStorage.getItem(SETTINGS_TOUR_KEY) === 'seen')
+  }, [location.pathname])
 
   const browseItems: NavItem[] = [
     { name: 'Movies', path: '/movies' },
@@ -148,6 +154,9 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   }
 
   const userLabel = user?.displayName || user?.email?.split('@')[0] || 'Account'
+  const themeLabel = theme === 'dark' ? 'Dark mode' : theme === 'light' ? 'Light mode' : 'System mode'
+  const themeIcon = theme === 'dark' ? <Sun className="w-5 h-5" /> : theme === 'light' ? <Moon className="w-5 h-5" /> : <Laptop className="w-5 h-5" />
+  const showSettingsBadge = !settingsTourSeen
 
   const navClass = isPlayerPage
     ? 'fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-2'
@@ -190,6 +199,16 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               </Link>
               <Link to="/my-list" className={navLinkClass('/my-list')}>
                 My List
+              </Link>
+              <Link to="/settings" className={navLinkClass('/settings')}>
+                <span className="inline-flex items-center gap-2">
+                  Settings
+                  {showSettingsBadge && (
+                    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+                      New
+                    </span>
+                  )}
+                </span>
               </Link>
             </div>
           </div>
@@ -241,9 +260,10 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
             <button
               onClick={toggleTheme}
               className="hidden sm:flex p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
-              aria-label="Toggle theme"
+              aria-label={`Switch theme mode. Current mode: ${themeLabel}`}
+              title={themeLabel}
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {themeIcon}
             </button>
 
             <button
@@ -311,7 +331,25 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
             ))}
 
             <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
-              <button
+              <Link
+              to="/settings"
+              onClick={() => setIsMenuOpen(false)}
+              className={`block w-full py-3 px-3 rounded-lg transition-all duration-300 min-h-[44px] tv-focusable tv-touch-target ${
+                isActive('/settings')
+                  ? 'bg-primary/10 text-white font-semibold'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span className="inline-flex items-center justify-between w-full gap-3">
+                <span>Settings</span>
+                {showSettingsBadge && (
+                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+                    New
+                  </span>
+                )}
+              </span>
+            </Link>
+            <button
                 onClick={() => {
                   setIsMenuOpen(false)
                   setIsSearchOpen(true)
@@ -325,8 +363,8 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
                 onClick={toggleTheme}
                 className="w-full flex items-center gap-3 py-3 px-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target sm:hidden"
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                {themeIcon}
+                {theme === 'dark' ? 'Light mode' : theme === 'light' ? 'System mode' : 'Dark mode'}
               </button>
               {user ? (
                 <button

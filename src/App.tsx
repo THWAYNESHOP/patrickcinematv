@@ -4,7 +4,7 @@ import Layout from './components/Layout/Layout'
 import AppRoutes from './pages/Routes'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import ToastContainer from './components/ToastContainer'
-import { ToastProvider } from './hooks/useToast'
+import { ToastProvider, useToast } from './hooks/useToast'
 import { useWebVitals } from './hooks/useWebVitals'
 import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 import { useKeyboardHandler } from './hooks/useKeyboardHandler'
@@ -115,6 +115,23 @@ function AppContent() {
       window.location.reload()
     }
   }, [isOnline, hasShownOfflineNotice])
+
+  const toast = useToast()
+
+  useEffect(() => {
+    const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
+    const SETTINGS_ANNOUNCE_KEY = 'nexastream-settings-announced'
+    const hasSeenSettingsTour = window.localStorage.getItem(SETTINGS_TOUR_KEY) === 'seen'
+    const hasAnnouncedSettings = window.localStorage.getItem(SETTINGS_ANNOUNCE_KEY) === 'true'
+
+    if (!hasAnnouncedSettings && !hasSeenSettingsTour) {
+      toast.info(
+        'New Settings page available! Open Profile → Settings to customize theme and playback preferences.',
+        8000
+      )
+      window.localStorage.setItem(SETTINGS_ANNOUNCE_KEY, 'true')
+    }
+  }, [toast])
 
   const globalErrorMessage = missingConfigKeys.length
     ? `Missing configuration: ${missingConfigKeys.join(', ')}. Some features may not work.`

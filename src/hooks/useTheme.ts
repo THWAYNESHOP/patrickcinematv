@@ -24,7 +24,7 @@ export function useTheme() {
 
   useEffect(() => {
     const root = document.documentElement
-    
+
     if (resolvedTheme === 'light') {
       root.classList.add('light')
       root.classList.remove('dark')
@@ -32,9 +32,18 @@ export function useTheme() {
       root.classList.add('dark')
       root.classList.remove('light')
     }
-    
+
     localStorage.setItem(THEME_KEY, theme)
   }, [theme, resolvedTheme])
+
+  useEffect(() => {
+    if (theme === 'system') {
+      setResolvedTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      return
+    }
+
+    setResolvedTheme(theme)
+  }, [theme])
 
   // Listen for system theme changes when using 'system' theme
   useEffect(() => {
@@ -50,7 +59,11 @@ export function useTheme() {
   }, [theme])
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+    setTheme((prev) => {
+      if (prev === 'dark') return 'light'
+      if (prev === 'light') return 'system'
+      return 'dark'
+    })
   }
 
   const setThemeMode = (newTheme: Theme) => {

@@ -43,6 +43,14 @@ interface AppState {
   getWatchProgress: (itemId: string) => number;
   clearWatchProgress: (itemId: string) => void;
 
+  // Playback Preferences
+  playbackPreferences: {
+    autoplay: boolean;
+    lowDataMode: boolean;
+    defaultQuality: 'auto' | 'low' | 'medium' | 'high';
+  };
+  setPlaybackPreferences: (preferences: AppState['playbackPreferences']) => void;
+
   // Continue Watching
   continueWatching: ContinueWatchingItem[];
   addToContinueWatching: (item: Omit<ContinueWatchingItem, 'lastWatched'>) => void;
@@ -119,6 +127,16 @@ export const useStore = create<AppState>()(
           delete newProgress[itemId];
           return { watchProgress: newProgress };
         });
+      },
+
+      // Playback Preferences
+      playbackPreferences: {
+        autoplay: true,
+        lowDataMode: false,
+        defaultQuality: 'auto',
+      },
+      setPlaybackPreferences: (preferences) => {
+        set({ playbackPreferences: { ...get().playbackPreferences, ...preferences } });
       },
 
       // Continue Watching
@@ -274,6 +292,7 @@ export const useStore = create<AppState>()(
         watchHistory: state.watchHistory,
         user: state.user,
         notificationPreferences: state.notificationPreferences,
+        playbackPreferences: state.playbackPreferences,
       }),
     }
   )

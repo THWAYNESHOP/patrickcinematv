@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Play } from 'lucide-react'
+import { useStore } from '../store/useStore'
 
 interface ContentPreviewProps {
   children: React.ReactNode
@@ -9,6 +10,7 @@ interface ContentPreviewProps {
 }
 
 export default function ContentPreview({ children, previewUrl, onHover, onLeave }: ContentPreviewProps) {
+  const playbackPreferences = useStore((state) => state.playbackPreferences)
   const [isHovered, setIsHovered] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const timeoutRef = useRef<number | undefined>(undefined)
@@ -52,7 +54,7 @@ export default function ContentPreview({ children, previewUrl, onHover, onLeave 
               className="w-full h-full object-cover rounded-lg"
               muted
               loop
-              autoPlay
+              autoPlay={playbackPreferences.autoplay}
               playsInline
             />
           ) : (

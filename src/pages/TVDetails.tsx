@@ -31,6 +31,7 @@ export default function TVDetails() {
   const [retryCount, setRetryCount] = useState(0)
   const toast = useToast()
   const { selectedProviderId, setProvider, getEmbedUrl } = useStreamingProvider()
+  const { playbackPreferences } = useStore()
   const [trailer, setTrailer] = useState<{ key: string; embedUrl: string } | null>(null)
   const [showTrailer, setShowTrailer] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -104,17 +105,19 @@ export default function TVDetails() {
         const selectedTrailer = officialTrailer || trailer || teaser
 
         if (selectedTrailer) {
-          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=${playbackPreferences.autoplay ? 1 : 0}&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
           if (import.meta.env.DEV) {
             console.log("Selected Trailer:", selectedTrailer)
             console.log("Trailer Embed URL:", embedUrl)
           }
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
-          // Show trailer after 2 seconds
-          setTimeout(() => {
-            setShowTrailer(true)
-          }, 2000)
+          if (playbackPreferences.autoplay) {
+            // Show trailer after 2 seconds only when autoplay is enabled
+            setTimeout(() => {
+              setShowTrailer(true)
+            }, 2000)
+          }
         } else {
           if (import.meta.env.DEV) {
             console.warn("No suitable trailer found")
@@ -173,7 +176,8 @@ export default function TVDetails() {
     primaryColor: 'e50914',
     secondaryColor: '170000',
     iconColor: 'ffffff',
-    autoplay: true,
+    autoplay: playbackPreferences.autoplay,
+    quality: playbackPreferences.lowDataMode ? 'low' : playbackPreferences.defaultQuality,
     nextbutton: true,
     startAt: startProgressSeconds,
   })
