@@ -10,6 +10,7 @@ export interface Stream {
   embedUrl: string
   source: string
   thumbnail?: string
+  healthScore?: number
 }
 
 export interface MatchSource {

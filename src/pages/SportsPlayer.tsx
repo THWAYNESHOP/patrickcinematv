@@ -27,7 +27,7 @@ export default function SportsPlayer() {
   const [preferExplicitHealthOnly, setPreferExplicitHealthOnly] = useState(true)
 
   const computeHealthScore = (s: Stream) => {
-    const explicit = (s as any).healthScore
+    const explicit = s.healthScore
     if (typeof explicit === 'number') return explicit
     if (preferExplicitHealthOnly) return 0
     const hdScore = s.hd ? 100 : 50
@@ -555,7 +555,7 @@ export default function SportsPlayer() {
                     {currentStream.hd ? 'HD' : 'SD'}
                   </span>
                   <span className="text-xs text-gray-400">Score: {computeHealthScore(currentStream)}</span>
-                  {(currentStream as any).healthScore !== undefined && (
+                  {currentStream.healthScore !== undefined && (
                     <span className="ml-2 text-[11px] text-gray-300">(server)</span>
                   )}
                 </div>
