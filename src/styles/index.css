@@ -87,6 +87,12 @@
   }
 }
 
+/* Improve contrast for muted gray text on dark theme (low-risk adjustments) */
+.text-gray-200 { color: rgba(255,255,255,0.90); }
+.text-gray-300 { color: rgba(255,255,255,0.78); }
+.text-gray-400 { color: rgba(255,255,255,0.66); }
+.text-gray-500 { color: rgba(255,255,255,0.54); }
+
 /* Light theme — overrides theme tokens + common utility classes */
 html.light {
   color-scheme: light;

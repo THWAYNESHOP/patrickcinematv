@@ -23,7 +23,7 @@ export default function ErrorState({
       {onRetry && (
         <button
           onClick={onRetry}
-          className="flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+          className="flex items-center gap-2 px-6 py-2 rounded-full bg-primary/10 hover:bg-primary/20 text-white font-medium transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Try Again

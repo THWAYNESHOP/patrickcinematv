@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Play, Monitor, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp } from 'lucide-react';
+import { Search, Play, Monitor, Trophy, Globe, Users, Zap, Star, Clock, ChevronRight, TrendingUp, CalendarDays } from 'lucide-react';
 import { cdnLiveTvApi, CDNChannel, CDNSportEvent } from '../api/cdnlivetv';
 import { iptvChannels } from '../data/iptvChannels';
 import { useToast } from '../hooks/useToast';
@@ -28,6 +28,64 @@ const CATEGORY_INFO: Record<string, { description: string }> = {
   recent: { description: 'Newly added channels to our streaming lineup.' },
   all: { description: 'Browse our complete collection of live TV channels.' },
 };
+
+interface GroupedSportsSection {
+  id: 'live' | 'upcoming' | 'other'
+  title: string
+  description: string
+  groups: Array<{
+    label: string
+    events: CDNSportEvent[]
+  }>
+}
+
+const SPORTS_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'football', label: 'Football' },
+  { id: 'nba', label: 'NBA' },
+  { id: 'nfl', label: 'NFL' },
+  { id: 'f1', label: 'F1' },
+]
+
+function groupSportsEvents(events: CDNSportEvent[]): GroupedSportsSection[] {
+  const statusOrder: Array<GroupedSportsSection['id']> = ['live', 'upcoming', 'other']
+
+  const sections: Record<GroupedSportsSection['id'], GroupedSportsSection> = {
+    live: { id: 'live', title: 'Live Now', description: 'Matches currently airing', groups: [] },
+    upcoming: { id: 'upcoming', title: 'Upcoming', description: 'Matches starting soon', groups: [] },
+    other: { id: 'other', title: 'Later Today', description: 'Matches to keep an eye on', groups: [] },
+  }
+
+  const normalizedEvents = [...events].sort((a, b) => {
+    const timeA = a.start || a.time || ''
+    const timeB = b.start || b.time || ''
+    return timeA.localeCompare(timeB)
+  })
+
+  normalizedEvents.forEach((event) => {
+    const status = (event.status || '').toLowerCase()
+    const sectionId = status === 'live' ? 'live' : status === 'upcoming' ? 'upcoming' : 'other'
+    const section = sections[sectionId]
+
+    const label = event.tournament?.trim() || 'Other Events'
+    let group = section.groups.find((item) => item.label === label)
+
+    if (!group) {
+      group = { label, events: [] }
+      section.groups.push(group)
+    }
+
+    group.events.push(event)
+  })
+
+  return statusOrder
+    .map((id) => {
+      const section = sections[id]
+      section.groups.sort((a, b) => a.label.localeCompare(b.label))
+      return section
+    })
+    .filter((section) => section.groups.length > 0)
+}
 
 function ChannelLogo({ channel, size = 'lg' }: { channel: CDNChannel; size?: 'md' | 'lg' | 'xl' }) {
   const [errored, setErrored] = useState(false);
@@ -190,6 +248,7 @@ export default function IPTVPlayer() {
   const [retryCount, setRetryCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'channels' | 'sports'>('channels');
+  const [activeSportsFilter, setActiveSportsFilter] = useState<string>('all');
   const toast = useToast();
 
   useEffect(() => {
@@ -326,6 +385,34 @@ export default function IPTVPlayer() {
     
     return categorizedChannels[activeCategory] || [];
   }, [channels, activeCategory, searchQuery, categorizedChannels]);
+
+  const groupedSportsEvents = useMemo(() => groupSportsEvents(sportsEvents), [sportsEvents]);
+
+  const filteredSportsEvents = useMemo(() => {
+    if (activeSportsFilter === 'all') return groupedSportsEvents;
+
+    const normalizedFilter = activeSportsFilter.toLowerCase();
+
+    return groupedSportsEvents
+      .map((section) => ({
+        ...section,
+        groups: section.groups
+          .map((group) => ({
+            ...group,
+            events: group.events.filter((event) => {
+              const tournament = (event.tournament || '').toLowerCase();
+              return (
+                (normalizedFilter === 'football' && /football|soccer|premier|la liga|champions|serie|bundesliga|league/i.test(tournament)) ||
+                (normalizedFilter === 'nba' && /nba/i.test(tournament)) ||
+                (normalizedFilter === 'nfl' && /nfl/i.test(tournament)) ||
+                (normalizedFilter === 'f1' && /f1|formula/i.test(tournament))
+              );
+            }),
+          }))
+          .filter((group) => group.events.length > 0),
+      }))
+      .filter((section) => section.groups.length > 0);
+  }, [activeSportsFilter, groupedSportsEvents]);
 
   const handleChannelClick = (channel: CDNChannel) => {
     navigate(`/sports/cdn/${channel.name}`, {
@@ -468,79 +555,6 @@ export default function IPTVPlayer() {
                 {/* Trending Live Carousel */}
                 <TrendingCarousel channels={trendingChannels} onChannelClick={handleChannelClick} />
 
-                {/* Creative Grouping Prototype */}
-                <section className="space-y-6">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <h3 className="text-lg font-semibold text-white mb-3">Quick Picks</h3>
-                    <div className="flex gap-3 overflow-x-auto pb-2">
-                      {channels
-                        .slice()
-                        .sort((a, b) => b.viewers - a.viewers)
-                        .slice(0, 8)
-                        .map((ch, i) => (
-                          <button
-                            key={`qp-${ch.name}-${i}`}
-                            onClick={() => handleChannelClick(ch)}
-                            className="min-w-[220px] shrink-0 rounded-xl border border-white/10 bg-black/20 p-3 flex items-center gap-3"
-                          >
-                            <ChannelLogo channel={ch} size="md" />
-                            <div className="text-left">
-                              <div className="text-sm font-semibold text-white truncate">{ch.name}</div>
-                              <div className="text-xs text-gray-400">{cdnLiveTvApi.getCountryName(ch.code)} · {ch.viewers.toLocaleString()} watching</div>
-                            </div>
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Smart Group: Trending (top channels) */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-sm font-semibold text-white">Trending Now</h4>
-                          <p className="text-xs text-gray-400">Top live feeds by viewers</p>
-                        </div>
-                        <div className="text-gray-300 text-sm">Top</div>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        {trendingChannels.slice(0, 6).map((ch, i) => (
-                          <ChannelCard key={`tr-${ch.name}-${i}`} channel={ch} onClick={() => handleChannelClick(ch)} />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Smart Group: Language-first */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                      <div>
-                        <h4 className="text-sm font-semibold text-white">Provider Picks</h4>
-                        <p className="text-xs text-gray-400">Top channels grouped by provider host</p>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        {(() => {
-                          const byHost = new Map<string, CDNChannel[]>()
-                          channels.forEach((c) => {
-                            let host = 'unknown'
-                            try {
-                              const u = new URL(c.url)
-                              host = u.host
-                            } catch (e) {
-                              host = 'external'
-                            }
-                            if (!byHost.has(host)) byHost.set(host, [])
-                            byHost.get(host)!.push(c)
-                          })
-                          const top = Array.from(byHost.entries()).sort((a, b) => b[1].length - a[1].length)[0]
-                          if (!top) return null
-                          return top[1].slice(0, 6).map((ch, i) => (
-                            <ChannelCard key={`prov-${top[0]}-${ch.name}-${i}`} channel={ch} onClick={() => handleChannelClick(ch)} />
-                          ))
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
                 {/* Category Sections */}
                 {activeCategory === 'all' ? (
                   <>
@@ -600,66 +614,125 @@ export default function IPTVPlayer() {
 
         {/* Sports Tab */}
         {activeTab === 'sports' && (
-          <div className="space-y-4">
-            {sportsEvents.map((event) => (
-              <div key={event.gameID} className="bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-primary/30 transition-all">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
-                        event.status === 'live' ? 'bg-red-500/20 text-red-400' :
-                        event.status === 'upcoming' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-gray-500/20 text-gray-400'
-                      }`}>
-                        {event.status.toUpperCase()}
-                      </span>
-                      <span className="text-sm text-gray-400 truncate">{event.tournament}</span>
-                    </div>
-                    <span className="text-sm text-gray-400 shrink-0">{event.time}</span>
-                  </div>
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-2">
+              {SPORTS_FILTERS.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveSportsFilter(filter.id)}
+                  className={`rounded-full px-3 py-2 text-sm font-medium transition-all ${
+                    activeSportsFilter === filter.id
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
 
-                  <div className="flex items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <img src={event.homeTeamIMG} alt={event.homeTeam} className="w-14 h-14 rounded-xl object-cover shrink-0 bg-black/30" />
-                      <div className="min-w-0">
-                        <p className="text-white font-semibold text-lg truncate">{event.homeTeam}</p>
-                        <p className="text-xs text-gray-400">Home</p>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-bold text-primary shrink-0">vs</div>
-                    <div className="flex items-center gap-4 min-w-0 flex-1 justify-end">
-                      <div className="text-right min-w-0">
-                        <p className="text-white font-semibold text-lg truncate">{event.awayTeam}</p>
-                        <p className="text-xs text-gray-400">Away</p>
-                      </div>
-                      <img src={event.awayTeamIMG} alt={event.awayTeam} className="w-14 h-14 rounded-xl object-cover shrink-0 bg-black/30" />
-                    </div>
+            {filteredSportsEvents.map((section) => (
+              <section key={section.id} className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+                    <CalendarDays className="w-5 h-5 text-primary" />
                   </div>
-
-                  {event.channels && event.channels.length > 0 && (
-                    <div className="border-t border-white/10 pt-5">
-                      <p className="text-sm text-gray-400 mb-3 font-medium">Available Channels:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {event.channels.map((channel, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleSportClick(event, channel.url)}
-                            className="flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-primary/20 rounded-xl transition-all group"
-                          >
-                            <img src={channel.image} alt={channel.channel_name} className="w-8 h-8 rounded-lg bg-black/30" />
-                            <span className="text-sm text-white group-hover:text-primary transition-colors font-medium">
-                              {channel.channel_name}
-                            </span>
-                            {parseInt(channel.viewers) > 0 && (
-                              <span className="text-xs text-gray-400">({channel.viewers})</span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div>
+                    <h3 className="text-xl font-semibold text-white">{section.title}</h3>
+                    <p className="text-sm text-gray-400">{section.description}</p>
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-4">
+                  {section.groups.map((group) => (
+                    <div key={`${section.id}-${group.label}`} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">{group.label}</h4>
+                          <p className="text-xs text-gray-400">{group.events.length} match{group.events.length === 1 ? '' : 'es'}</p>
+                        </div>
+                        <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-gray-400">{group.events[0]?.time || 'TBD'}</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {group.events.map((event) => {
+                          const firstChannel = event.channels?.[0]
+                          return (
+                            <div
+                              key={event.gameID}
+                              className="bg-white/5 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-primary/30 transition-all"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => firstChannel ? handleSportClick(event, firstChannel.url) : undefined}
+                                className="w-full text-left p-4 sm:p-5 transition-all hover:bg-white/[0.03]"
+                              >
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold shrink-0 ${
+                                      event.status === 'live' ? 'bg-red-500/20 text-red-400' :
+                                      event.status === 'upcoming' ? 'bg-blue-500/20 text-blue-400' :
+                                      'bg-gray-500/20 text-gray-400'
+                                    }`}>
+                                      {event.status.toUpperCase()}
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="text-white font-semibold truncate">{event.homeTeam} vs {event.awayTeam}</p>
+                                      <p className="text-xs text-gray-400 truncate">{event.time}</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-sm text-gray-400 shrink-0">{event.tournament}</div>
+                                </div>
+
+                                <div className="mt-4 flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <img src={event.homeTeamIMG} alt={event.homeTeam} className="w-10 h-10 rounded-xl object-cover shrink-0 bg-black/30" />
+                                    <div className="min-w-0">
+                                      <p className="text-white font-medium truncate">{event.homeTeam}</p>
+                                      <p className="text-[11px] text-gray-400">Home</p>
+                                    </div>
+                                  </div>
+                                  <div className="text-xl font-bold text-primary shrink-0">vs</div>
+                                  <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
+                                    <div className="text-right min-w-0">
+                                      <p className="text-white font-medium truncate">{event.awayTeam}</p>
+                                      <p className="text-[11px] text-gray-400">Away</p>
+                                    </div>
+                                    <img src={event.awayTeamIMG} alt={event.awayTeam} className="w-10 h-10 rounded-xl object-cover shrink-0 bg-black/30" />
+                                  </div>
+                                </div>
+                              </button>
+
+                              {event.channels && event.channels.length > 0 && (
+                                <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                                  <p className="text-xs text-gray-400 mb-2 font-medium">Available Channels</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {event.channels.map((channel, idx) => (
+                                      <button
+                                        key={idx}
+                                        onClick={() => handleSportClick(event, channel.url)}
+                                        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-primary/20 rounded-xl transition-all group"
+                                      >
+                                        <img src={channel.image} alt={channel.channel_name} className="w-7 h-7 rounded-lg bg-black/30" />
+                                        <span className="text-sm text-white group-hover:text-primary transition-colors font-medium">
+                                          {channel.channel_name}
+                                        </span>
+                                        {parseInt(channel.viewers) > 0 && (
+                                          <span className="text-[11px] text-gray-400">({channel.viewers})</span>
+                                        )}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             ))}
             {sportsEvents.length === 0 && (
               <div className="text-center py-16">

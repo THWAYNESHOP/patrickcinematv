@@ -193,7 +193,7 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
               </div>
 
               {/* CTA Button */}
-              <button className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 text-primary py-2.5 rounded-lg transition-colors duration-200 font-bold text-sm">
+              <button className="w-full flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 text-white py-2.5 rounded-lg transition-colors duration-200 font-bold text-sm">
                 <Play className="w-4 h-4 flex-shrink-0" />
                 {isLive ? 'Watch' : 'Details'}
               </button>

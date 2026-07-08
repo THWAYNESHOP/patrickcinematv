@@ -3,8 +3,9 @@ import { useEffect, useCallback, useRef } from 'react'
 type KeyboardHandler = (event: KeyboardEvent) => boolean | void
 
 /**
- * Centralized keyboard event handler to prevent conflicts and improve performance
- * especially on TV devices where multiple listeners can cause hanging
+ * Centralized keyboard event handler to prevent conflicts and improve performance.
+ * TV browsers use a simplified path to avoid the remote-control input loops that
+ * can make the app feel hung.
  */
 export function useKeyboardHandler() {
   const handlersRef = useRef<Map<string, KeyboardHandler>>(new Map())
@@ -13,8 +14,8 @@ export function useKeyboardHandler() {
   // Detect TV once
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase()
-    const tvPatterns = ['tv', 'smart-tv', 'tizen', 'webos', 'hbbtv', 'netcast']
-    isTVRef.current = tvPatterns.some(pattern => userAgent.includes(pattern))
+    const tvPatterns = ['tv', 'smart-tv', 'smarttv', 'tizen', 'webos', 'hbbtv', 'netcast', 'android tv', 'firetv', 'roku', 'googletv']
+    isTVRef.current = tvPatterns.some((pattern) => userAgent.includes(pattern))
   }, [])
 
   const registerHandler = useCallback((key: string, handler: KeyboardHandler) => {
@@ -55,6 +56,10 @@ export function useKeyboardHandler() {
   }, [])
 
   useEffect(() => {
+    if (isTVRef.current) {
+      return undefined
+    }
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])

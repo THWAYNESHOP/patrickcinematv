@@ -17,6 +17,7 @@ interface DetailHeroProps {
   overview: string
   trailer: { key: string; embedUrl: string } | null
   showTrailer: boolean
+  topBadges?: string[]
   children: ReactNode
 }
 
@@ -30,12 +31,13 @@ export default function DetailHero({
   overview,
   trailer,
   showTrailer,
+  topBadges = [],
   children,
 }: DetailHeroProps) {
   const heroRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!heroRef.current) return
+    if (!heroRef.current || typeof IntersectionObserver === 'undefined') return
     const observer = new IntersectionObserver(() => {}, { threshold: 0.5 })
     observer.observe(heroRef.current)
     return () => observer.disconnect()
@@ -89,6 +91,19 @@ export default function DetailHero({
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-3 md:mb-5 text-white tracking-tight text-shadow-lg leading-[1.05]">
                 {title}
               </h1>
+
+              {topBadges.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {topBadges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-xs md:text-sm font-semibold text-white"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center gap-2 md:gap-2.5 mb-4 md:mb-5">
                 <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/20 text-primary text-xs md:text-sm font-bold">

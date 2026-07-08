@@ -8,6 +8,7 @@ interface FocusableElement extends HTMLElement {
 
 export function useSpatialNavigation() {
   const lastKeyTimeRef = useRef(0)
+  const isTVRef = useRef(false)
   const KEY_THROTTLE_MS = 100 // Throttle key presses to prevent spamming
 
   const getFocusableElements = useCallback((): FocusableElement[] => {
@@ -114,6 +115,16 @@ export function useSpatialNavigation() {
   )
 
   useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase()
+    const tvPatterns = ['tv', 'smart-tv', 'smarttv', 'tizen', 'webos', 'hbbtv', 'netcast', 'android tv', 'firetv', 'roku', 'googletv']
+    isTVRef.current = tvPatterns.some((pattern) => userAgent.includes(pattern))
+  }, [])
+
+  useEffect(() => {
+    if (isTVRef.current) {
+      return undefined
+    }
+
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])

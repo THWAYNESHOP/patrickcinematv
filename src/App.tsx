@@ -14,6 +14,7 @@ import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { useAuthBridge } from './hooks/useAuthBridge'
 import { useFirestoreSync, useFirestoreRealtime } from './hooks/useFirestoreSync'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
+import { useTVDetection } from './hooks/useTVDetection'
 import EmailVerificationBanner from './components/Auth/EmailVerificationBanner'
 
 const MISSING_CONFIG_KEYS = [
@@ -38,6 +39,7 @@ function AppContent() {
 
   useWebVitals()
   useSpatialNavigation()
+  useTVDetection()
   useAuthBridge()
   useFirestoreSync()
   useFirestoreRealtime()

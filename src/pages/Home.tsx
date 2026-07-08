@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { Play, Star } from 'lucide-react'
+import { getOrderedKenyanSeriesItems } from '../data/kenyanSeries'
 import HeroSlider from '../components/Home/HeroSlider'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import LiveMatches from '../components/Sports/LiveMatches'
@@ -337,6 +339,48 @@ export default function Home() {
           </section>
         )}
 
+        {/* Kenyan Series spotlight */}
+        <section className="mb-10 md:mb-12">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white md:text-3xl">Kenyan Series</h2>
+            <Link to="/kenyan-series" className="text-sm font-semibold text-white transition-colors hover:text-white">
+              View All
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-3 sm:gap-4">
+            {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => (
+              <Link
+                key={item.id}
+                to={`/kenyan-series/${item.id}-${item.id}`}
+                className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48"
+              >
+                <div className="relative aspect-[2/3] overflow-hidden">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100">
+                    <Play className="h-10 w-10 text-primary sm:h-12 sm:w-12" fill="white" />
+                  </div>
+                </div>
+                <div className="p-2.5 sm:p-3">
+                  <h3 className="truncate text-sm font-semibold text-white sm:text-base">{item.title}</h3>
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <div className="flex items-center gap-1 rounded-md border border-accent/30 bg-accent/20 px-2 py-0.5">
+                      <Star className="h-3 w-3 fill-accent text-accent" />
+                      <span className="text-[11px] font-bold text-accent">8.5</span>
+                    </div>
+                    {item.year && <span className="text-[11px] text-gray-500">•</span>}
+                    {item.year && <span className="text-[11px] text-gray-500">{item.year}</span>}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-400">Tap to open</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* Trending Today */}
         <section className="mb-10 md:mb-12">
           <ContentCarousel
@@ -363,7 +407,7 @@ export default function Home() {
         <section className="mb-10 md:mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-white">Live Sports</h2>
-            <Link to="/sports" className="text-primary hover:text-white transition-colors text-sm font-semibold">
+            <Link to="/sports" className="text-white hover:text-white transition-colors text-sm font-semibold">
               View All
             </Link>
           </div>
@@ -376,7 +420,7 @@ export default function Home() {
         <section className="mb-10 md:mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl md:text-3xl font-bold text-white">Upcoming Matches</h2>
-            <Link to="/sports" className="text-primary hover:text-white transition-colors text-sm font-semibold">
+            <Link to="/sports" className="text-white hover:text-white transition-colors text-sm font-semibold">
               View All
             </Link>
           </div>

@@ -6,9 +6,10 @@ interface MediaRailProps {
   title: string
   items: MovieSummary[]
   type: 'movie' | 'tv'
+  basePath?: string
 }
 
-export default function MediaRail({ title, items, type }: MediaRailProps) {
+export default function MediaRail({ title, items, type, basePath }: MediaRailProps) {
   if (!items.length) return null
 
   return (
@@ -18,7 +19,7 @@ export default function MediaRail({ title, items, type }: MediaRailProps) {
         {items.slice(0, 12).map((item) => (
           <Link
             key={item.id}
-            to={`/${type}/${item.id}`}
+            to={`${basePath ?? `/${type}`}/${item.id}`}
             className="group flex-shrink-0 w-28 sm:w-32 md:w-40 snap-start"
           >
             <div className="relative rounded-xl overflow-hidden border border-white/5 group-hover:border-primary/40 transition-all duration-300 group-hover:-translate-y-1 shadow-lg group-hover:shadow-glow">

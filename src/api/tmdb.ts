@@ -16,7 +16,7 @@ function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w1
 }
 
 export interface MovieSummary {
-  id: number
+  id: string | number
   title: string
   poster: string
   backdrop?: string

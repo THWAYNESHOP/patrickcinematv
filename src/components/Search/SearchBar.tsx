@@ -270,6 +270,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               <button
                 onClick={() => setQuery('')}
                 className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors hover:scale-110 p-1"
+                aria-label="Clear search"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -299,6 +300,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             className={`p-3 rounded-full transition-all duration-300 hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center ${
               showFilters ? 'bg-primary text-white' : 'bg-white/10 text-white hover:bg-white/20'
             }`}
+            aria-label={showFilters ? 'Close filters' : 'Open filters'}
           >
             <Filter className="w-5 h-5" />
           </button>
@@ -306,6 +308,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             <button
               onClick={onClose}
               className="p-3 hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+              aria-label="Close search"
             >
               <X className="w-6 h-6" />
             </button>

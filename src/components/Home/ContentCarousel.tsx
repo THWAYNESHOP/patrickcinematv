@@ -101,6 +101,7 @@ const CarouselCard = function CarouselCard({
               type="button"
               onClick={handleMyList}
               className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
+              aria-label={inMyList ? `Remove ${item.title} from My List` : `Add ${item.title} to My List`}
             >
               {inMyList ? (
                 <Check className="w-4 h-4 text-white" />
@@ -306,6 +307,7 @@ export default function ContentCarousel({
                 type="button"
                 onClick={() => scroll('left')}
                 className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 -translate-x-2 md:-translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Scroll carousel left"
               >
                 <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </button>
@@ -327,6 +329,7 @@ export default function ContentCarousel({
                 type="button"
                 onClick={() => scroll('right')}
                 className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-x-2 md:translate-x-2 md:group-hover:translate-x-0 border border-white/10 hover:border-white/20 min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+                aria-label="Scroll carousel right"
               >
                 <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </button>

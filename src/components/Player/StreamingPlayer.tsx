@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { STREAMING_PROVIDERS } from '../../lib/streamingProviders'
 import { useTVDetection } from '../../hooks/useTVDetection'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
@@ -22,6 +23,7 @@ export default function StreamingPlayer({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isStretched, setIsStretched] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
   const [loadTimeout, setLoadTimeout] = useState(false)
@@ -166,6 +168,17 @@ export default function StreamingPlayer({
           minHeight: 0,
         }}
       >
+        <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsStretched((prev) => !prev)}
+            aria-label={isStretched ? 'Fit video' : 'Stretch video'}
+            title={isStretched ? 'Fit video' : 'Stretch video'}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10"
+          >
+            {isStretched ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+        </div>
         {!iframeLoaded && !iframeError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
             <div className="text-center">
@@ -205,7 +218,7 @@ export default function StreamingPlayer({
           src={vidLinkUrl}
           className="w-full h-full"
           style={{
-            objectFit: 'contain',
+            objectFit: isStretched ? 'cover' : 'contain',
             backgroundColor: '#000',
             visibility: 'visible',
             display: 'block',

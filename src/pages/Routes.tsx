@@ -11,6 +11,8 @@ const TVSeries = lazy(() => import('./TVSeries'))
 const Sports = lazy(() => import('./Sports'))
 const LiveTV = lazy(() => import('./LiveTV'))
 const Anime = lazy(() => import('./Anime'))
+const KenyanSeries = lazy(() => import('./KenyanSeries'))
+const KenyanSeriesDetails = lazy(() => import('./KenyanSeriesDetails'))
 const Trending = lazy(() => import('./Trending'))
 const MyList = lazy(() => import('./MyList'))
 const Profile = lazy(() => import('./Profile'))
@@ -37,6 +39,8 @@ export default function AppRoutes() {
           <Route path="/sports" element={<PageTransition><Sports /></PageTransition>} />
           <Route path="/live-tv" element={<PageTransition><LiveTV /></PageTransition>} />
           <Route path="/anime" element={<PageTransition><Anime /></PageTransition>} />
+          <Route path="/kenyan-series" element={<PageTransition><KenyanSeries /></PageTransition>} />
+          <Route path="/kenyan-series/:id" element={<PageTransition><KenyanSeriesDetails /></PageTransition>} />
           <Route path="/trending" element={<PageTransition><Trending /></PageTransition>} />
           <Route path="/my-list" element={<PageTransition><MyList /></PageTransition>} />
           <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />

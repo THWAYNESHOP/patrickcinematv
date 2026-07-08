@@ -104,6 +104,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   const browseItems: NavItem[] = [
     { name: 'Movies', path: '/movies' },
     { name: 'TV Series', path: '/tv' },
+    { name: 'Kenyan Series', path: '/kenyan-series' },
     { name: 'Anime', path: '/anime' },
   ]
 
@@ -168,6 +169,12 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
 
   return (
     <nav className={navClass}>
+      <a
+        href="#main-content"
+        className="absolute left-4 -top-10 focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:text-black px-3 py-2 rounded transition-all"
+      >
+        Skip to content
+      </a>
       <div className={`container mx-auto ${isPlayerPage ? 'px-3' : 'px-4'} sm:px-6 md:px-12 lg:px-16`}>
         <div className="flex items-center justify-between gap-4">
           {/* Left — logo + desktop nav */}

@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { name: 'Home', path: '/', icon: Home },
   { name: 'Movies', path: '/movies', icon: Film },
   { name: 'TV', path: '/tv', icon: Monitor },
+  { name: 'Kenyan', path: '/kenyan-series', icon: Monitor },
   { name: 'Sports', path: '/sports', icon: Trophy },
   { name: 'Live', path: '/live-tv', icon: Radio },
 ]

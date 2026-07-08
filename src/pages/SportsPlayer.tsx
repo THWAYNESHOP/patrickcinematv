@@ -20,6 +20,7 @@ export default function SportsPlayer() {
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isStretched, setIsStretched] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
   // Toggle: when true prefer server-provided `healthScore` when available
@@ -302,15 +303,26 @@ export default function SportsPlayer() {
                 <div className="h-2 w-2 animate-pulse rounded-full bg-red-500 sm:h-2.5 sm:w-2.5" />
                 Live
               </div>
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
-                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-              >
-                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsStretched((prev) => !prev)}
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
+                  aria-label={isStretched ? 'Fit video' : 'Stretch video'}
+                >
+                  {isStretched ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  <span className="hidden sm:inline">{isStretched ? 'Fit' : 'Stretch'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleFullscreen}
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
+                  aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                >
+                  {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="absolute inset-0 overflow-hidden">

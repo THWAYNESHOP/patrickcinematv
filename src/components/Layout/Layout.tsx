@@ -37,7 +37,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className={`min-h-screen bg-deepBlack ${isPlayerPage ? 'pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-0' : 'pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0'}`}>
       <Navbar isScrolled={isScrolled} isPlayerPage={isPlayerPage} />
-      <main className={`pt-14 sm:pt-16 md:pt-20 ${isPlayerPage ? 'pb-2 sm:pb-4 md:pb-8' : ''}`}>{children}</main>
+      <main id="main-content" className={`pt-14 sm:pt-16 md:pt-20 ${isPlayerPage ? 'pb-2 sm:pb-4 md:pb-8' : ''}`}>{children}</main>
       <Footer />
       <MobileNav isPlayerPage={isPlayerPage} />
     </div>
