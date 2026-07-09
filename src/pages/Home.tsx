@@ -347,7 +347,7 @@ export default function Home() {
               View All
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-3 sm:gap-4">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-3 sm:gap-4">
             {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => (
               <Link
                 key={item.id}

@@ -18,7 +18,7 @@ export default function KenyanSeries() {
           </div>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-3 sm:gap-4">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-3 sm:gap-4">
           {getOrderedKenyanSeriesItems().map((item) => (
             <Link
               key={item.id}
