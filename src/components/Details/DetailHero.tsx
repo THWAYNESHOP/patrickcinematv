@@ -85,7 +85,7 @@ export default function DetailHero({
             <img
               src={poster}
               alt={title}
-              className="hidden sm:block w-36 md:w-56 lg:w-64 rounded-2xl shadow-2xl ring-1 ring-white/15 shrink-0"
+              className="w-28 self-center rounded-2xl shadow-2xl ring-1 ring-white/15 shrink-0 sm:self-auto sm:w-36 md:w-56 lg:w-64"
             />
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-3 md:mb-5 text-white tracking-tight text-shadow-lg leading-[1.05]">

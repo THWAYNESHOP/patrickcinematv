@@ -52,6 +52,20 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getByRole('button', { name: /play episode/i })).toBeInTheDocument()
   })
 
+  it('shows the latest Lazizi Wednesday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lazizi']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/8TH WEDNESDAY/i).length).toBeGreaterThan(0)
+  })
+
   it('launches the episode player unmuted and with fullscreen support', () => {
     render(
       <ToastProvider>

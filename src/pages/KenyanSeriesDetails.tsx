@@ -39,6 +39,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 2,
   },
+  {
+    id: 'part-3',
+    title: 'AYANA | Citizen TV | Wednesday 8th July | Part 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/DrBuNQ6i_Js?si=rAcqADFUmn-vSthK',
+    date: '2026-07-08',
+    runtime: '45 min',
+    part: 3,
+  },
+  {
+    id: 'part-4',
+    title: 'AYANA | Citizen TV | Wednesday 8th July | Part 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/_f-5yeYh8Wc?si=ha5g3Tr7Neylt7Az',
+    date: '2026-07-08',
+    runtime: '45 min',
+    part: 4,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -58,6 +76,14 @@ const luluEpisodes: AyanaEpisode[] = [
     date: '2026-07-07',
     runtime: '27 min',
   },
+  {
+    id: 'episode-14',
+    title: '8TH WEDNESDAY',
+    thumbnail: '/lulu.jpg',
+    youtubeUrl: 'https://youtu.be/lJh-NpxFFxE?si=c9CHnlDgBndRti_B',
+    date: '2026-07-08',
+    runtime: '27 min',
+  },
 ]
 
 const laziziEpisodes: AyanaEpisode[] = [
@@ -75,6 +101,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     thumbnail: '/lazizi.jpg',
     youtubeUrl: 'https://youtu.be/ejlgwFm4Kqo?si=BiCk8vS7-F8UA0WB',
     date: '2026-07-07',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-15',
+    title: '8TH WEDNESDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://youtu.be/F9gThLhicBw?si=6eZOTz2_DJzkLrnr',
+    date: '2026-07-08',
     runtime: '27 min',
   },
 ]
@@ -139,6 +173,7 @@ export default function KenyanSeriesDetails() {
 
     return () => window.clearTimeout(timer)
   }, [id])
+
   const getYoutubeEmbedUrl = (youtubeUrl?: string, disableSubtitles = false) => {
     if (!youtubeUrl) return ''
 
@@ -186,7 +221,7 @@ export default function KenyanSeriesDetails() {
       <div className="min-h-screen bg-deepBlack px-4 py-16 text-white">
         <div className="mx-auto flex max-w-4xl flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-8">
           <p className="text-lg font-semibold">Series not found</p>
-          <p className="text-sm text-gray-400">The Kenyan series you’re looking for isn’t available yet.</p>
+          <p className="text-sm text-gray-400">The Kenyan series you&apos;re looking for isn&apos;t available yet.</p>
           <Link to="/kenyan-series" className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
             <ArrowLeft className="h-4 w-4" /> Back to Kenyan Series
           </Link>
@@ -298,23 +333,17 @@ export default function KenyanSeriesDetails() {
                     allowFullScreen
                     className="h-full w-full"
                   />
-                  <div className="absolute left-0 right-0 top-0 flex items-center justify-between border-b border-white/10 bg-gradient-to-b from-black/80 to-transparent px-4 py-3 backdrop-blur">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Now Playing</p>
-                      <p className="text-sm font-semibold text-white">{selectedEpisode?.title}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPlayerActive(false)
-                        setIsPlayerExpanded(false)
-                      }}
-                      className="rounded-full border border-white/10 bg-white/10 p-2 text-white transition hover:bg-white/20"
-                      aria-label="Close player"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPlayerActive(false)
+                      setIsPlayerExpanded(false)
+                    }}
+                    className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/10 p-2 text-white transition hover:bg-white/20"
+                    aria-label="Close player"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-black via-black/90 to-primary/20 p-4">

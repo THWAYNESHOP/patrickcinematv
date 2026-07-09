@@ -8,7 +8,7 @@ if (import.meta.env.PROD) {
       Sentry.replayIntegration(),
     ],
     tracesSampleRate: 1.0,
-    tracePropagationTargets: ["localhost", /^https:\/\/yourdomain\.com/],
+    tracePropagationTargets: ["localhost", /^https:\/\/.+/],
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     environment: import.meta.env.MODE,

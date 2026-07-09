@@ -13,15 +13,22 @@ const firebaseConfig = {
 };
 
 // Validate required Firebase config
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  throw new Error('Missing required Firebase configuration. Please set VITE_FIREBASE_API_KEY and VITE_FIREBASE_PROJECT_ID environment variables.')
+let app: ReturnType<typeof initializeApp> | null = null
+let db: ReturnType<typeof getFirestore> | null = null
+
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+  try {
+    // Initialize Firebase
+    app = initializeApp(firebaseConfig);
+
+    // Initialize Firestore
+    db = getFirestore(app);
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error)
+  }
+} else {
+  console.warn('Missing required Firebase configuration. Firebase features will be disabled.')
 }
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Firestore
-const db = getFirestore(app);
 
 // Analytics will be initialized separately to avoid Vite dev mode issues
 export { app, db };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Star } from 'lucide-react'
 import { getOrderedKenyanSeriesItems } from '../data/kenyanSeries'
@@ -137,7 +137,7 @@ export default function Home() {
     let disneyContentToCache: MovieSummary[] = []
     let appleContentToCache: MovieSummary[] = []
 
-    // Phase 1: hero + trending movies (2 calls — show hero ASAP)
+    // Phase 1: hero + trending movies (2 calls - show hero ASAP)
     try {
       const [latestMovies, trendingMoviesData] = await Promise.all([
         tmdbApi.getNowPlayingMovies(),
@@ -432,7 +432,7 @@ export default function Home() {
         {/* Teen Romance */}
         <section className="mb-10 md:mb-12">
           <ContentCarousel
-            title="Teen Romance — Top Rated Movies & Series"
+            title="Teen Romance - Top Rated Movies & Series"
             items={sortByRating(teenRomance)}
             type="movie"
             loading={catalogLoading}
