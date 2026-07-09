@@ -13,14 +13,16 @@ export function useFirestoreSync() {
   const toast = useToast();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
+
+    const firestoreDb = db;
 
     // Sync favorites from Firestore
     async function syncFavorites() {
       if (!user) return;
       try {
         const q = query(
-          collection(db, 'users', user.id, 'favorites'),
+          collection(firestoreDb, 'users', user.id, 'favorites'),
           orderBy('addedAt', 'desc')
         );
         const querySnapshot = await getDocs(q);
@@ -49,7 +51,7 @@ export function useFirestoreSync() {
     async function syncWatchProgress() {
       if (!user) return;
       try {
-        const q = query(collection(db, 'users', user.id, 'watchProgress'));
+        const q = query(collection(firestoreDb, 'users', user.id, 'watchProgress'));
         const querySnapshot = await getDocs(q);
         
         querySnapshot.forEach((doc) => {
@@ -67,7 +69,7 @@ export function useFirestoreSync() {
       if (!user) return;
       try {
         const q = query(
-          collection(db, 'users', user.id, 'watchHistory'),
+          collection(firestoreDb, 'users', user.id, 'watchHistory'),
           orderBy('timestamp', 'desc'),
           limit(50)
         );
@@ -106,11 +108,13 @@ export function useFirestoreRealtime() {
   const toast = useToast();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
+
+    const firestoreDb = db;
 
     // Subscribe to favorites changes
     const favoritesUnsubscribe = onSnapshot(
-      query(collection(db, 'users', user.id, 'favorites')),
+      query(collection(firestoreDb, 'users', user.id, 'favorites')),
       (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           if (change.type === 'added') {
@@ -135,7 +139,7 @@ export function useFirestoreRealtime() {
 
     // Subscribe to watch progress changes
     const progressUnsubscribe = onSnapshot(
-      query(collection(db, 'users', user.id, 'watchProgress')),
+      query(collection(firestoreDb, 'users', user.id, 'watchProgress')),
       (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           if (change.type === 'added' || change.type === 'modified') {
@@ -159,15 +163,19 @@ export function useFirestoreRealtime() {
 
 // Helper functions to sync data to Firestore
 export async function syncFavoriteToFirestore(userId: string, item: MyListItem) {
+  if (!db) return;
+
+  const firestoreDb = db;
+
   try {
     const q = query(
-      collection(db, 'users', userId, 'favorites'),
+      collection(firestoreDb, 'users', userId, 'favorites'),
       where('itemId', '==', item.id)
     );
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-      await addDoc(collection(db, 'users', userId, 'favorites'), {
+      await addDoc(collection(firestoreDb, 'users', userId, 'favorites'), {
         itemId: item.id,
         title: item.title,
         poster: item.poster,
@@ -181,9 +189,13 @@ export async function syncFavoriteToFirestore(userId: string, item: MyListItem) 
 }
 
 export async function removeFavoriteFromFirestore(userId: string, itemId: string) {
+  if (!db) return;
+
+  const firestoreDb = db;
+
   try {
     const q = query(
-      collection(db, 'users', userId, 'favorites'),
+      collection(firestoreDb, 'users', userId, 'favorites'),
       where('itemId', '==', itemId)
     );
     const querySnapshot = await getDocs(q);
@@ -197,15 +209,19 @@ export async function removeFavoriteFromFirestore(userId: string, itemId: string
 }
 
 export async function syncWatchProgressToFirestore(userId: string, itemId: string, progress: number) {
+  if (!db) return;
+
+  const firestoreDb = db;
+
   try {
     const q = query(
-      collection(db, 'users', userId, 'watchProgress'),
+      collection(firestoreDb, 'users', userId, 'watchProgress'),
       where('itemId', '==', itemId)
     );
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-      await addDoc(collection(db, 'users', userId, 'watchProgress'), {
+      await addDoc(collection(firestoreDb, 'users', userId, 'watchProgress'), {
         itemId,
         progress,
         updatedAt: new Date(),
@@ -223,8 +239,12 @@ export async function syncWatchProgressToFirestore(userId: string, itemId: strin
 }
 
 export async function syncWatchHistoryToFirestore(userId: string, item: WatchHistoryItem) {
+  if (!db) return;
+
+  const firestoreDb = db;
+
   try {
-    await addDoc(collection(db, 'users', userId, 'watchHistory'), {
+    await addDoc(collection(firestoreDb, 'users', userId, 'watchHistory'), {
       itemId: item.id,
       title: item.title,
       poster: item.poster,
