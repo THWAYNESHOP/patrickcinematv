@@ -346,8 +346,62 @@ export default function Home() {
               }))}
               type="movie"
               showProgress
-              carouselId={carouselId('Continue Watching')}              {...carouselStateProps}
+              carouselId={carouselId('Continue Watching')}
+              {...carouselStateProps}
             />
+          </section>
+        )}
+
+        {(continueWatching.length > 0 || featuredMovies.length > 0) && (
+          <section className="mb-10 md:mb-12">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white md:text-3xl">Recommended for you</h2>
+              <span className="text-sm text-gray-400">Based on your recent picks</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(() => {
+                const recommendedItems = [
+                  ...(continueWatching.length > 0 ? continueWatching.slice(0, 2).map((item) => ({
+                    id: item.id,
+                    title: item.title,
+                    poster: item.poster,
+                    type: item.type,
+                    rating: '8.5',
+                    year: 2026,
+                    progress: item.progress,
+                  })) : []),
+                  ...featuredMovies.slice(0, 3).map((item) => ({
+                    id: item.id,
+                    title: item.title,
+                    poster: item.poster,
+                    rating: item.rating,
+                    year: item.year,
+                    type: item.type ?? 'movie' as const,
+                  })),
+                ].slice(0, 3)
+
+                return recommendedItems.map((item) => (
+                  <Link
+                    key={`${item.id}-${item.title}`}
+                    to={item.type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`}
+                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-darkSurface/80 p-3 transition hover:border-primary/40 hover:bg-white/5"
+                  >
+                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl">
+                      <img src={item.poster} alt={item.title} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-white">{item.title}</p>
+                      <p className="mt-1 text-sm text-gray-400">{item.type === 'tv' ? 'Series' : 'Movie'}</p>
+                      {typeof item.progress === 'number' && (
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(item.progress, 100)}%` }} />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))
+              })()}
+            </div>
           </section>
         )}
 
