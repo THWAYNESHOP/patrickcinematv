@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import StreamingPlayer from './StreamingPlayer'
 
 vi.mock('../../hooks/useTVDetection', () => ({
@@ -25,5 +25,35 @@ describe('StreamingPlayer', () => {
 
     expect(screen.getByText('Loading player...')).toBeInTheDocument()
     expect(screen.getByTitle('VidLink Player')).toHaveAttribute('src', 'https://example.com/embed')
+  })
+
+  it('toggles stretch mode when the stretch button is pressed', () => {
+    render(<StreamingPlayer src="https://example.com/embed" providerId="vidlink" />)
+
+    const button = screen.getByRole('button', { name: /stretch video/i })
+    const iframe = screen.getByTitle('VidLink Player')
+
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(button)
+
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+    expect(iframe).toHaveStyle({ transform: 'scale(1.2)' })
+  })
+
+  it('disables stretch while the player is fullscreen', () => {
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      value: document.body,
+    })
+
+    render(<StreamingPlayer src="https://example.com/embed" providerId="vidlink" />)
+
+    const button = screen.getByRole('button', { name: /stretch video/i })
+    const iframe = screen.getByTitle('VidLink Player')
+
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(button)
+    expect(iframe).toHaveStyle({ transform: 'scale(1)' })
   })
 })

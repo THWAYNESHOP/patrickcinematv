@@ -1,21 +1,20 @@
 import { BrowserRouter as Router, useNavigate } from 'react-router-dom'
-import { useMemo, useState, useEffect } from 'react'
+import { lazy, Suspense, useMemo, useState, useEffect } from 'react'
 import Layout from './components/Layout/Layout'
 import AppRoutes from './pages/Routes'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import ToastContainer from './components/ToastContainer'
-import { ToastProvider, useToast } from './hooks/useToast'
+import { ToastProvider } from './hooks/useToast'
 import { useWebVitals } from './hooks/useWebVitals'
 import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 import { useKeyboardHandler } from './hooks/useKeyboardHandler'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import TVGuideOverlay from './components/TVGuideOverlay'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
-import { useAuthBridge } from './hooks/useAuthBridge'
-import { useFirestoreSync, useFirestoreRealtime } from './hooks/useFirestoreSync'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
 import { useTVDetection } from './hooks/useTVDetection'
-import EmailVerificationBanner from './components/Auth/EmailVerificationBanner'
+
+const AuthRuntime = lazy(() => import('./components/Auth/AuthRuntime'))
 
 const MISSING_CONFIG_KEYS = [
   'VITE_TMDB_API_KEY',
@@ -33,16 +32,19 @@ function AppContent() {
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false)
   const [isTVGuideOpen, setIsTVGuideOpen] = useState(false)
   const [hasShownOfflineNotice, setHasShownOfflineNotice] = useState(false)
+  const [shouldLoadAuthRuntime, setShouldLoadAuthRuntime] = useState(false)
   const { isOnline, isSlowConnection, effectiveConnectionType } = useNetworkStatus()
   const missingConfigKeys = useMemo(() => getMissingConfigKeys(), [])
   const { registerHandler } = useKeyboardHandler()
+  const isTV = useTVDetection()
 
   useWebVitals()
   useSpatialNavigation()
-  useTVDetection()
-  useAuthBridge()
-  useFirestoreSync()
-  useFirestoreRealtime()
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setShouldLoadAuthRuntime(true), isTV ? 5000 : 1200)
+    return () => window.clearTimeout(id)
+  }, [isTV])
 
   // Nav items for quick jump
   const navItems = [
@@ -118,23 +120,6 @@ function AppContent() {
     }
   }, [isOnline, hasShownOfflineNotice])
 
-  const toast = useToast()
-
-  useEffect(() => {
-    const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
-    const SETTINGS_ANNOUNCE_KEY = 'nexastream-settings-announced'
-    const hasSeenSettingsTour = window.localStorage.getItem(SETTINGS_TOUR_KEY) === 'seen'
-    const hasAnnouncedSettings = window.localStorage.getItem(SETTINGS_ANNOUNCE_KEY) === 'true'
-
-    if (!hasAnnouncedSettings && !hasSeenSettingsTour) {
-      toast.info(
-        'New Settings page available! Open Profile → Settings to customize theme and playback preferences.',
-        8000
-      )
-      window.localStorage.setItem(SETTINGS_ANNOUNCE_KEY, 'true')
-    }
-  }, [toast])
-
   const globalErrorMessage = missingConfigKeys.length
     ? `Missing configuration: ${missingConfigKeys.join(', ')}. Some features may not work.`
     : !isOnline
@@ -157,7 +142,11 @@ function AppContent() {
       />
       <div className={globalErrorMessage ? 'pt-16' : ''}>
         <Layout>
-          <EmailVerificationBanner />
+          {shouldLoadAuthRuntime && (
+            <Suspense fallback={null}>
+              <AuthRuntime />
+            </Suspense>
+          )}
           <AppRoutes />
           <ToastContainer />
         </Layout>

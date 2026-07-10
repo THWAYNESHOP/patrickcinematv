@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Search, Menu, X, Sun, Moon, Laptop, User, LogOut, ChevronDown } from 'lucide-react'
 import SearchBar from '../Search/SearchBar'
-import AuthModal from '../Auth/AuthModal'
 import { useTheme } from '../../hooks/useTheme'
-import { useAuth } from '../../hooks/useAuth'
+import { useStore } from '../../store/useStore'
+
+const AuthModal = lazy(() => import('../Auth/AuthModal'))
 
 interface NavbarProps {
   isScrolled: boolean
@@ -94,7 +95,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   const [settingsTourSeen, setSettingsTourSeen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
-  const { user, signOut } = useAuth()
+  const user = useStore((state) => state.user)
 
   useEffect(() => {
     const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
@@ -148,13 +149,22 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
 
   const handleSignOut = async () => {
     try {
-      await signOut()
+      const [{ app }, { getAuth, signOut }] = await Promise.all([
+        import('../../firebase'),
+        import('firebase/auth'),
+      ])
+
+      if (app) {
+        await signOut(getAuth(app))
+      }
+
+      useStore.getState().setUser(null)
     } catch (error) {
       console.error('Sign out failed:', error)
     }
   }
 
-  const userLabel = user?.displayName || user?.email?.split('@')[0] || 'Account'
+  const userLabel = user?.name || user?.email?.split('@')[0] || 'Account'
   const themeLabel = theme === 'dark' ? 'Dark mode' : theme === 'light' ? 'Light mode' : 'System mode'
   const themeIcon = theme === 'dark' ? <Sun className="w-5 h-5" /> : theme === 'light' ? <Moon className="w-5 h-5" /> : <Laptop className="w-5 h-5" />
   const showSettingsBadge = !settingsTourSeen
@@ -177,7 +187,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       </a>
       <div className={`container mx-auto ${isPlayerPage ? 'px-3' : 'px-4'} sm:px-6 md:px-12 lg:px-16`}>
         <div className="flex items-center justify-between gap-4">
-          {/* Left — logo + desktop nav */}
+          {/* Left: logo + desktop nav */}
           <div className="flex items-center gap-6 lg:gap-10 min-w-0">
             <Link to="/" className="flex shrink-0 items-center group tv-focusable tv-touch-target">
               <span className="text-xl md:text-2xl font-extrabold text-white tracking-wider uppercase transition-all duration-300 group-hover:tracking-[0.12em]">
@@ -220,7 +230,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
             </div>
           </div>
 
-          {/* Right — account + utilities */}
+          {/* Right: account + utilities */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {user ? (
               <>
@@ -402,7 +412,11 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       </div>
 
       {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
-      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+      {isAuthOpen && (
+        <Suspense fallback={null}>
+          <AuthModal onClose={() => setIsAuthOpen(false)} />
+        </Suspense>
+      )}
     </nav>
   )
 }

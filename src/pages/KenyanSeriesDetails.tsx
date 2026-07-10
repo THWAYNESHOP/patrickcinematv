@@ -57,6 +57,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 4,
   },
+  {
+    id: 'part-5',
+    title: '10TH FRIDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/5Rl21geGprw?si=onGv5wCUVhGaPkwu',
+    date: '2026-07-10',
+    runtime: '45 min',
+    part: 5,
+  },
+  {
+    id: 'part-6',
+    title: '10TH FRIDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/ekVv8BqxSJk?si=HIsDLLlOWdWo6KDZ',
+    date: '2026-07-10',
+    runtime: '45 min',
+    part: 6,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -84,6 +102,14 @@ const luluEpisodes: AyanaEpisode[] = [
     date: '2026-07-08',
     runtime: '27 min',
   },
+  {
+    id: 'episode-15',
+    title: '9TH THURSDAY',
+    thumbnail: '/lulu.jpg',
+    youtubeUrl: 'https://youtu.be/mV8pR3Rj_7c?si=GjWJZr212Ww6S5tB',
+    date: '2026-07-09',
+    runtime: '27 min',
+  },
 ]
 
 const laziziEpisodes: AyanaEpisode[] = [
@@ -109,6 +135,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     thumbnail: '/lazizi.jpg',
     youtubeUrl: 'https://youtu.be/F9gThLhicBw?si=6eZOTz2_DJzkLrnr',
     date: '2026-07-08',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-16',
+    title: '9TH THURSDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://youtu.be/Q9fHx3WjctU?si=ZAMd7wCEXe5dWIrb',
+    date: '2026-07-09',
     runtime: '27 min',
   },
 ]
@@ -174,7 +208,7 @@ export default function KenyanSeriesDetails() {
     return () => window.clearTimeout(timer)
   }, [id])
 
-  const getYoutubeEmbedUrl = (youtubeUrl?: string, disableSubtitles = false) => {
+  const getYoutubeEmbedUrl = (youtubeUrl?: string, disableSubtitles = false, shouldMute = false) => {
     if (!youtubeUrl) return ''
 
     const youtubeMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/)
@@ -182,7 +216,7 @@ export default function KenyanSeriesDetails() {
 
     const params = new URLSearchParams()
     params.set('autoplay', '1')
-    params.set('mute', '0')
+    params.set('mute', shouldMute ? '1' : '0')
     params.set('controls', '1')
     params.set('rel', '0')
     params.set('modestbranding', '1')
@@ -204,11 +238,11 @@ export default function KenyanSeriesDetails() {
 
   const trailerSrc = useMemo(() => {
     if (!item) return ''
-    return getYoutubeEmbedUrl(item.youtubeUrl, item.id === 'lazizi')
+    return getYoutubeEmbedUrl(item.youtubeUrl, item.id === 'lazizi', true)
   }, [item])
 
   const selectedEpisodeEmbedUrl = useMemo(() => {
-    return getYoutubeEmbedUrl(selectedEpisode?.youtubeUrl, item?.id === 'lazizi')
+    return getYoutubeEmbedUrl(selectedEpisode?.youtubeUrl, item?.id === 'lazizi', false)
   }, [selectedEpisode?.youtubeUrl, item?.id])
 
   const trailer = trailerSrc ? { key: `${item?.id ?? 'series'}-trailer`, embedUrl: trailerSrc } : null

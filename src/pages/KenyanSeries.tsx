@@ -22,7 +22,7 @@ export default function KenyanSeries() {
           {getOrderedKenyanSeriesItems().map((item) => (
             <Link
               key={item.id}
-              to={`/kenyan-series/${item.id}-${item.id}`}
+              to={`/kenyan-series/${item.id}`}
               className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48 xl:w-52"
             >
               <div className="relative aspect-[2/3] overflow-hidden">

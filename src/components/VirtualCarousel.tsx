@@ -48,7 +48,7 @@ export default function VirtualCarousel({ items, type, showProgress }: VirtualCa
                     <Star className="w-3.5 h-3.5 text-primary fill-primary" />
                     <span className="text-sm text-gray-400">{item.rating}</span>
                   </div>
-                  {item.year && <span className="text-sm text-gray-500">•</span>}
+                  {item.year && <span className="text-sm text-gray-500">|</span>}
                   {item.year && <span className="text-sm text-gray-500">{item.year}</span>}
                 </div>
               </div>

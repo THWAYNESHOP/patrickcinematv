@@ -22,6 +22,20 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/AYANA \| Citizen TV \| Wednesday 8th July \| Part 1/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Ayana Friday Part 2 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/10TH FRIDAY PART 2/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the Lulu page without Ayana branding', () => {
     render(
       <ToastProvider>
@@ -52,7 +66,7 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getByRole('button', { name: /play episode/i })).toBeInTheDocument()
   })
 
-  it('shows the latest Lazizi Wednesday episode', () => {
+  it('shows the latest Lazizi Thursday episode', () => {
     render(
       <ToastProvider>
         <MemoryRouter initialEntries={['/kenyan-series/lazizi']}>
@@ -63,7 +77,7 @@ describe('KenyanSeriesDetails', () => {
       </ToastProvider>
     )
 
-    expect(screen.getAllByText(/8TH WEDNESDAY/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/9TH THURSDAY/i).length).toBeGreaterThan(0)
   })
 
   it('launches the episode player unmuted and with fullscreen support', () => {

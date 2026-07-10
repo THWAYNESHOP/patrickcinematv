@@ -19,6 +19,7 @@ interface ContentCarouselProps {
   getFocusedCardId?: (carouselId: string) => string | null
   setFocusedCardId?: (carouselId: string, cardId: string) => void
   onPrefetch?: (item: MovieSummary) => void
+  performanceMode?: boolean
 }
 
 interface CarouselCardProps {
@@ -29,6 +30,7 @@ interface CarouselCardProps {
   onPrefetch?: (item: MovieSummary) => void
   carouselId?: string
   setFocusedCardId?: (carouselId: string, cardId: string) => void
+  performanceMode?: boolean
 }
 
 const CarouselCard = function CarouselCard({
@@ -39,6 +41,7 @@ const CarouselCard = function CarouselCard({
   onPrefetch,
   carouselId,
   setFocusedCardId,
+  performanceMode = false,
 }: CarouselCardProps) {
   const inMyList = useStore((state) => state.isInMyList(String(item.id)))
 
@@ -52,15 +55,17 @@ const CarouselCard = function CarouselCard({
   )
 
   const handleMouseEnter = useCallback(() => {
+    if (performanceMode) return
     onPrefetch?.(item)
-  }, [item, onPrefetch])
+  }, [item, onPrefetch, performanceMode])
 
   const handleFocus = useCallback(() => {
     if (carouselId) {
       setFocusedCardId?.(carouselId, String(item.id))
     }
+    if (performanceMode) return
     onPrefetch?.(item)
-  }, [carouselId, item, onPrefetch, setFocusedCardId])
+  }, [carouselId, item, onPrefetch, performanceMode, setFocusedCardId])
 
   return (
     <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
@@ -69,14 +74,18 @@ const CarouselCard = function CarouselCard({
         className="block"
         onMouseEnter={handleMouseEnter}
         onFocus={handleFocus}
-        onTouchStart={handleMouseEnter}
+        onTouchStart={performanceMode ? undefined : handleMouseEnter}
         onClick={() => {
           if (carouselId) {
             setFocusedCardId?.(carouselId, String(item.id))
           }
         }}
       >
-        <div className="bg-darkSurface rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow border border-white/5 hover:border-white/10">
+        <div className={`bg-darkSurface rounded-xl overflow-hidden border border-white/5 hover:border-white/10 ${
+          performanceMode
+            ? 'transition-none'
+            : 'transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow'
+        }`}>
           <div className="relative aspect-[2/3]">
             <img
               src={item.poster}
@@ -89,7 +98,9 @@ const CarouselCard = function CarouselCard({
               loading="lazy"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className={`absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 flex items-center justify-center ${
+              performanceMode ? 'transition-none' : 'transition-opacity duration-300'
+            }`}>
               <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
             </div>
             {showProgress && (
@@ -141,6 +152,7 @@ export default function ContentCarousel({
   getFocusedCardId,
   setFocusedCardId,
   onPrefetch,
+  performanceMode = false,
 }: ContentCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollRAFRef = useRef<number | null>(null)
@@ -179,9 +191,9 @@ export default function ContentCarousel({
         direction === 'left'
           ? scrollRef.current.scrollLeft - scrollAmount
           : scrollRef.current.scrollLeft + scrollAmount
-      scrollRef.current.scrollTo({ left: newScrollLeft, behavior: 'smooth' })
+      scrollRef.current.scrollTo({ left: newScrollLeft, behavior: performanceMode ? 'auto' : 'smooth' })
     }
-  }, [triggerHaptic])
+  }, [performanceMode, triggerHaptic])
 
   useEffect(() => {
     if (!loading && carouselId && getCarouselPosition && scrollRef.current) {
@@ -278,10 +290,11 @@ export default function ContentCarousel({
           onToggleMyList={toggleMyList}
           carouselId={carouselId}
           setFocusedCardId={setFocusedCardId}
-          onPrefetch={onPrefetch}
+          onPrefetch={performanceMode ? undefined : onPrefetch}
+          performanceMode={performanceMode}
         />
       )),
-    [items, type, showProgress, toggleMyList, carouselId, onPrefetch, setFocusedCardId],
+    [items, type, showProgress, toggleMyList, carouselId, onPrefetch, performanceMode, setFocusedCardId],
   )
 
   return (
@@ -319,7 +332,7 @@ export default function ContentCarousel({
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className="flex gap-5 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+              className={`flex gap-5 overflow-x-auto scrollbar-hide pb-4 ${performanceMode ? '' : 'scroll-smooth'}`}
             >
               {carouselItems}
             </div>

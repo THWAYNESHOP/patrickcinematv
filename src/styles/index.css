@@ -427,6 +427,61 @@ body.is-tv-device {
   }
 }
 
+html.tv-performance-mode {
+  scroll-behavior: auto !important;
+}
+
+body.tv-performance-mode *,
+body.is-tv-device * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.08s !important;
+  scroll-behavior: auto !important;
+}
+
+body.tv-performance-mode .animate-glow,
+body.tv-performance-mode .animate-pulse-slow,
+body.tv-performance-mode .animate-float,
+body.tv-performance-mode .animate-skeleton-pulse,
+body.tv-performance-mode .animate-shimmer,
+body.tv-performance-mode .skeleton,
+body.is-tv-device .animate-glow,
+body.is-tv-device .animate-pulse-slow,
+body.is-tv-device .animate-float,
+body.is-tv-device .animate-skeleton-pulse,
+body.is-tv-device .animate-shimmer,
+body.is-tv-device .skeleton {
+  animation: none !important;
+}
+
+body.tv-performance-mode .glass,
+body.tv-performance-mode .glass-strong,
+body.is-tv-device .glass,
+body.is-tv-device .glass-strong {
+  backdrop-filter: none !important;
+}
+
+body.tv-performance-mode .hover\:scale-105:hover,
+body.tv-performance-mode .hover\:shadow-card-hover:hover,
+body.tv-performance-mode .hover\:shadow-glow:hover,
+body.is-tv-device .hover\:scale-105:hover,
+body.is-tv-device .hover\:shadow-card-hover:hover,
+body.is-tv-device .hover\:shadow-glow:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Mobile-specific optimizations */
 @media (max-width: 768px) {
   /* Reduce animation complexity on mobile */

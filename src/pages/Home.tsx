@@ -11,6 +11,7 @@ import { useContinueWatching } from '../hooks/useContinueWatching'
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
 import { useToast } from '../hooks/useToast'
 import { usePageState } from '../hooks/usePageState'
+import { useTVDetection } from '../hooks/useTVDetection'
 import { RefreshCw } from 'lucide-react'
 import type { MovieSummary } from '../api/tmdb'
 
@@ -75,6 +76,7 @@ function HeroSkeleton() {
 }
 
 export default function Home() {
+  const isTVPerformanceMode = useTVDetection()
   const cachedData = cachedHomeContent
   const [featuredMovies, setFeaturedMovies] = useState<MovieSummary[]>(cachedData?.featuredMovies || [])
   const [trendingMovies, setTrendingMovies] = useState<MovieSummary[]>(cachedData?.trendingMovies || [])
@@ -96,6 +98,15 @@ export default function Home() {
   const { continueWatching } = useContinueWatching()
   const toast = useToast()
   const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Home')
+  const maxCarouselItems = isTVPerformanceMode ? 8 : 20
+  const maxHeroItems = isTVPerformanceMode ? 3 : 5
+  const liveMatchLimit = isTVPerformanceMode ? 2 : 4
+
+  const limitItems = useCallback(
+    (items: MovieSummary[], limit = maxCarouselItems) =>
+      isTVPerformanceMode ? items.slice(0, limit) : items,
+    [isTVPerformanceMode, maxCarouselItems],
+  )
 
   const carouselId = (name: string) =>
     `home-${name.replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase()}`
@@ -105,7 +116,8 @@ export default function Home() {
     setCarouselPosition,
     getFocusedCardId,
     setFocusedCardId,
-    onPrefetch: tmdbApi.prefetchMediaDetails,
+    onPrefetch: isTVPerformanceMode ? undefined : tmdbApi.prefetchMediaDetails,
+    performanceMode: isTVPerformanceMode,
   }
 
   const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
@@ -143,9 +155,9 @@ export default function Home() {
         tmdbApi.getNowPlayingMovies(),
         tmdbApi.getTrendingMoviesToday(),
       ])
-      trendingToday = trendingMoviesData.length ? trendingMoviesData : fallbackMovies
+      trendingToday = limitItems(trendingMoviesData.length ? trendingMoviesData : fallbackMovies, 10)
       const heroMovies = (latestMovies.length ? latestMovies : trendingToday).filter((movie) => movie.backdrop)
-      heroMoviesToCache = heroMovies.length ? heroMovies.slice(0, 5) : fallbackMovies
+      heroMoviesToCache = heroMovies.length ? heroMovies.slice(0, maxHeroItems) : fallbackMovies.slice(0, maxHeroItems)
       setFeaturedMovies(heroMoviesToCache)
       setTrendingMovies(trendingToday)
     } catch (error) {
@@ -155,10 +167,10 @@ export default function Home() {
       }
       setFetchError('Unable to load featured content. Showing fallback items.')
       toast.error(`Home load failed: ${message}`)
-      heroMoviesToCache = fallbackMovies
-      setFeaturedMovies(fallbackMovies)
-      setTrendingMovies(fallbackMovies)
-      trendingToday = fallbackMovies
+      heroMoviesToCache = fallbackMovies.slice(0, maxHeroItems)
+      setFeaturedMovies(heroMoviesToCache)
+      setTrendingMovies(limitItems(fallbackMovies, 10))
+      trendingToday = limitItems(fallbackMovies, 10)
     } finally {
       setHeroLoading(false)
     }
@@ -168,7 +180,7 @@ export default function Home() {
       (async () => {
         try {
           const tvData = await tmdbApi.getTrendingTVToday()
-          trendingTV = tvData.length ? tvData : fallbackTV
+          trendingTV = limitItems(tvData.length ? tvData : fallbackTV, 8)
           popularTVToCache = trendingTV
           setPopularTV(trendingTV)
         } catch {
@@ -198,10 +210,10 @@ export default function Home() {
             tmdbApi.getMoviesByGenre(28).catch(() => []),
             tmdbApi.getMoviesByGenre(35).catch(() => []),
             tmdbApi.getTVByGenre(16).catch(() => []),
-            tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
-            tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
-            tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
-            tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
+            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
+            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
+            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
+            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
           ])
 
           const combinedTeenRomance = [
@@ -209,15 +221,15 @@ export default function Home() {
             ...(teenRomanceTV.length ? teenRomanceTV : []),
           ]
 
-          teenRomanceToCache = combinedTeenRomance.length ? combinedTeenRomance : trendingToday
-          kDramaToCache = koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8)
-          actionAdventureToCache = actionAdventureMovies.length ? actionAdventureMovies : trendingToday.slice(0, 8)
-          comedyToCache = comedyMovies.length ? comedyMovies : trendingToday.slice(0, 8)
-          animeToCache = animeContent.length ? animeContent : trendingTV.slice(0, 8)
-          netflixContentToCache = [...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)]
-          primeContentToCache = [...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)]
-          disneyContentToCache = [...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)]
-          appleContentToCache = [...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)]
+          teenRomanceToCache = limitItems(combinedTeenRomance.length ? combinedTeenRomance : trendingToday)
+          kDramaToCache = limitItems(koreanDrama.length ? koreanDrama : trendingTV.slice(0, 8))
+          actionAdventureToCache = limitItems(actionAdventureMovies.length ? actionAdventureMovies : trendingToday.slice(0, 8))
+          comedyToCache = limitItems(comedyMovies.length ? comedyMovies : trendingToday.slice(0, 8))
+          animeToCache = limitItems(animeContent.length ? animeContent : trendingTV.slice(0, 8))
+          netflixContentToCache = limitItems([...netflixCatalog.movies.slice(0, 10), ...netflixCatalog.tv.slice(0, 10)])
+          primeContentToCache = limitItems([...primeCatalog.movies.slice(0, 10), ...primeCatalog.tv.slice(0, 10)])
+          disneyContentToCache = limitItems([...disneyCatalog.movies.slice(0, 10), ...disneyCatalog.tv.slice(0, 10)])
+          appleContentToCache = limitItems([...appleCatalog.movies.slice(0, 10), ...appleCatalog.tv.slice(0, 10)])
 
           setTeenRomance(sortByRating(teenRomanceToCache))
           setKDrama(kDramaToCache)
@@ -235,11 +247,11 @@ export default function Home() {
           }
           setFetchError('Some home categories failed to load. Showing partial content.')
           toast.warning(`Home catalog load warning: ${message}`)
-          teenRomanceToCache = trendingToday
-          kDramaToCache = trendingTV.slice(0, 8)
-          actionAdventureToCache = trendingToday.slice(0, 8)
-          comedyToCache = trendingToday.slice(0, 8)
-          animeToCache = trendingTV.slice(0, 8)
+          teenRomanceToCache = limitItems(trendingToday)
+          kDramaToCache = limitItems(trendingTV.slice(0, 8))
+          actionAdventureToCache = limitItems(trendingToday.slice(0, 8))
+          comedyToCache = limitItems(trendingToday.slice(0, 8))
+          animeToCache = limitItems(trendingTV.slice(0, 8))
           netflixContentToCache = []
           primeContentToCache = []
           disneyContentToCache = []
@@ -274,7 +286,7 @@ export default function Home() {
       disneyContent: disneyContentToCache,
       appleContent: appleContentToCache,
     }
-  }, [toast])
+  }, [isTVPerformanceMode, limitItems, maxHeroItems, toast])
 
   useEffect(() => {
     if (!cachedData) {
@@ -351,7 +363,7 @@ export default function Home() {
             {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => (
               <Link
                 key={item.id}
-                to={`/kenyan-series/${item.id}-${item.id}`}
+                to={`/kenyan-series/${item.id}`}
                 className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48"
               >
                 <div className="relative aspect-[2/3] overflow-hidden">
@@ -412,7 +424,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="rounded-2xl border border-white/5 bg-darkSurface overflow-hidden">
-            <LiveMatches limit={4} />
+            <LiveMatches limit={liveMatchLimit} />
           </div>
         </section>
 
@@ -425,7 +437,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="rounded-2xl border border-white/5 bg-darkSurface overflow-hidden">
-            <LiveMatches limit={4} variant="upcoming" />
+            <LiveMatches limit={liveMatchLimit} variant="upcoming" />
           </div>
         </section>
 
@@ -561,4 +573,3 @@ export default function Home() {
     </div>
   )
 }
-

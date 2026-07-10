@@ -12,7 +12,7 @@ export default function ToastContainer() {
   const { toasts, removeToast } = useToast()
 
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+    <div className="pointer-events-none fixed inset-x-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[100] flex flex-col gap-2 sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-6 sm:w-[min(24rem,calc(100vw-3rem))]">
       {toasts.map((toast: ToastItem) => (
         <div key={toast.id} className="pointer-events-auto">
           <Toast

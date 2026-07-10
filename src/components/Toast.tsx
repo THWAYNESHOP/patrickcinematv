@@ -43,24 +43,25 @@ export default function Toast({ id, type, message, duration = 5000, onClose }: T
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -50, scale: 0.95 }}
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.3 }}
-          className="flex items-center gap-3 px-4 py-3 bg-darkSurface/95 backdrop-blur-xl rounded-lg border border-white/10 shadow-2xl"
+          exit={{ opacity: 0, y: 12, scale: 0.98 }}
+          transition={{ duration: 0.22 }}
+          className="flex w-full items-center gap-2.5 rounded-md border border-white/10 bg-zinc-950/95 px-3 py-2.5 shadow-xl shadow-black/35 backdrop-blur-xl sm:gap-3 sm:px-4 sm:py-3"
         >
-          <div className={`p-2 rounded-full ${colors[type]}`}>
-            <Icon className="w-4 h-4 text-white" />
+          <div className={`shrink-0 rounded-full p-1.5 ${colors[type]}`}>
+            <Icon className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" />
           </div>
-          <p className="flex-1 text-sm text-white font-medium">{message}</p>
+          <p className="min-w-0 flex-1 text-xs font-semibold leading-snug text-white sm:text-sm">{message}</p>
           <button
             onClick={() => {
               setIsVisible(false)
               setTimeout(() => onClose(id), 300)
             }}
-            className="p-1 hover:bg-white/10 rounded transition-colors"
+            className="shrink-0 rounded p-1 transition-colors hover:bg-white/10"
+            aria-label="Dismiss notification"
           >
-            <X className="w-4 h-4 text-gray-400 hover:text-white" />
+            <X className="h-4 w-4 text-gray-400 hover:text-white" />
           </button>
         </motion.div>
       )}

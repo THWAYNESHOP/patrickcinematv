@@ -22,7 +22,7 @@ export default function StreamingPlayer({
 }: StreamingPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement)
   const [isStretched, setIsStretched] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
@@ -43,6 +43,12 @@ export default function StreamingPlayer({
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
+
+  useEffect(() => {
+    if (isFullscreen) {
+      setIsStretched(false)
+    }
+  }, [isFullscreen])
 
   // Handle postMessage events from all providers for progress tracking
   useEffect(() => {
@@ -173,8 +179,10 @@ export default function StreamingPlayer({
             type="button"
             onClick={() => setIsStretched((prev) => !prev)}
             aria-label={isStretched ? 'Fit video' : 'Stretch video'}
+            aria-pressed={isStretched}
             title={isStretched ? 'Fit video' : 'Stretch video'}
-            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10"
+            disabled={isFullscreen}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isStretched ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
@@ -216,16 +224,18 @@ export default function StreamingPlayer({
         <iframe
           ref={iframeRef}
           src={vidLinkUrl}
-          className="w-full h-full"
+          className="absolute inset-0 h-full w-full"
           style={{
-            objectFit: isStretched ? 'cover' : 'contain',
             backgroundColor: '#000',
             visibility: 'visible',
             display: 'block',
             zIndex: 1,
-            position: 'relative',
+            position: 'absolute',
             width: '100%',
             height: '100%',
+            transform: isFullscreen || !isStretched ? 'scale(1)' : 'scale(1.2)',
+            transformOrigin: 'center center',
+            transition: 'transform 0.3s ease',
           }}
           frameBorder="0"
           allowFullScreen

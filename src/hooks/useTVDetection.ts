@@ -1,5 +1,71 @@
 import { useState, useEffect } from 'react'
 
+interface TVDetectionInput {
+  userAgent: string
+  screenWidth: number
+  screenHeight: number
+  maxTouchPoints: number
+  hasTouchEvent: boolean
+  pointerFine: boolean
+  pointerCoarse: boolean
+  hoverNone: boolean
+  deviceMemory?: number
+  hardwareConcurrency?: number
+  hasTVAPIs?: boolean
+}
+
+interface TVDetectionProfile {
+  isTV: boolean
+  usePerformanceMode: boolean
+}
+
+const tvPatterns = [
+  'tv',
+  'smart-tv',
+  'smarttv',
+  'hbbtv',
+  'netcast',
+  'webos',
+  'tizen',
+  'opera tv',
+  'viera',
+  'bravia',
+  'googletv',
+  'android tv',
+  'firetv',
+  'roku',
+  'appletv',
+  'chromecast',
+  'crkey',
+  'espial',
+  'netranger',
+  'nettv',
+  'kylo',
+]
+
+export function detectTVProfile(input: TVDetectionInput): TVDetectionProfile {
+  const userAgent = input.userAgent.toLowerCase()
+  const isTVUserAgent = tvPatterns.some((pattern) => userAgent.includes(pattern))
+  const aspectRatio = input.screenHeight > 0 ? input.screenWidth / input.screenHeight : 0
+  const largeLandscapeScreen = input.screenWidth >= 1280 && input.screenHeight >= 720 && aspectRatio >= 1.5
+  const hasNoTouch = input.maxTouchPoints === 0 && !input.hasTouchEvent
+  const remoteLikePointer = !input.pointerFine && (input.pointerCoarse || input.hoverNone)
+  const lowMemory = typeof input.deviceMemory === 'number' && input.deviceMemory > 0 && input.deviceMemory <= 2
+  const lowCPU =
+    typeof input.hardwareConcurrency === 'number' &&
+    input.hardwareConcurrency > 0 &&
+    input.hardwareConcurrency <= 2
+
+  const isLikelyTV = largeLandscapeScreen && hasNoTouch && remoteLikePointer
+  const isConstrainedLargeScreen = largeLandscapeScreen && hasNoTouch && !input.pointerFine && (lowMemory || lowCPU)
+  const isTV = Boolean(input.hasTVAPIs || isTVUserAgent || isLikelyTV)
+
+  return {
+    isTV,
+    usePerformanceMode: isTV || isConstrainedLargeScreen,
+  }
+}
+
 /**
  * Detects if the user is on a TV device
  * Checks for TV-specific user agents and characteristics
@@ -9,67 +75,37 @@ export function useTVDetection() {
 
   useEffect(() => {
     const checkTV = () => {
-      const userAgent = navigator.userAgent.toLowerCase()
-      
-      // Common TV browser user agents
-      const tvPatterns = [
-        'tv', // Generic TV
-        'smart-tv',
-        'smarttv',
-        'hbbtv', // Hybrid Broadcast Broadband TV
-        'netcast', // LG
-        'webos', // LG
-        'tizen', // Samsung
-        'opera tv', // Opera TV
-        'viera', // Panasonic
-        'bravia', // Sony
-        'googletv', // Google TV
-        'android tv',
-        'firetv', // Amazon Fire TV
-        'roku', // Roku
-        'appletv', // Apple TV
-        'chromecast',
-        'cast',
-        'crkey', // Chromecast
-        'espial', // Espial TV browsers
-        'netranger', // NetRanger
-        'nettv', // NetTV
-        'kylo', // Kylo TV browser
-        'zapitti', // Zapitti
-      ]
+      const nav = navigator as Navigator & { deviceMemory?: number }
+      const win = window as Window & {
+        webkitTVRemote?: unknown
+        TVControl?: unknown
+        tizen?: unknown
+        webos?: unknown
+        AmazonFireTV?: unknown
+      }
+      const profile = detectTVProfile({
+        userAgent: navigator.userAgent,
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height,
+        maxTouchPoints: navigator.maxTouchPoints ?? 0,
+        hasTouchEvent: 'ontouchstart' in window,
+        pointerFine: window.matchMedia('(pointer: fine)').matches,
+        pointerCoarse: window.matchMedia('(pointer: coarse)').matches,
+        hoverNone: window.matchMedia('(hover: none)').matches,
+        deviceMemory: nav.deviceMemory,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        hasTVAPIs: Boolean(win.webkitTVRemote || win.TVControl || win.tizen || win.webos || win.AmazonFireTV),
+      })
 
-      // Check user agent for TV patterns
-      const isTVUserAgent = tvPatterns.some(pattern => userAgent.includes(pattern))
-      
-      // Check for TV-specific characteristics
-      const hasTVCharacteristics = 
-        // Large screen size typical of TVs (1920x1080 or 4K)
-        (window.screen.width >= 1920 && window.screen.height >= 1080) ||
-        // No touch support (TVs don't have touchscreens)
-        !('ontouchstart' in window) ||
-        // Limited device memory (common in smart TVs)
-        (((navigator as unknown) as { deviceMemory?: number }).deviceMemory || 0) <= 4 ||
-        // No pointer events (TVs use remote, not mouse)
-        window.matchMedia('(pointer: coarse)').matches === false
+      setIsTV(profile.isTV)
+      document.body.classList.toggle('is-tv-device', profile.isTV)
+      document.body.classList.toggle('tv-performance-mode', profile.usePerformanceMode)
+      document.documentElement.classList.toggle('tv-performance-mode', profile.usePerformanceMode)
 
-      // Check for specific TV APIs
-      const hasTVAPIs = 
-        Boolean(((window as unknown) as { webkitTVRemote?: unknown }).webkitTVRemote) ||
-        Boolean(((window as unknown) as { TVControl?: unknown }).TVControl) ||
-        Boolean(((window as unknown) as { tizen?: unknown }).tizen) ||
-        Boolean(((window as unknown) as { webos?: unknown }).webos) ||
-        Boolean(((window as unknown) as { AmazonFireTV?: unknown }).AmazonFireTV)
-
-      const detected = isTVUserAgent || hasTVCharacteristics || hasTVAPIs
-      
-      setIsTV(detected)
-      
-      if (detected) {
-        // Add TV class to body for CSS targeting. Avoid logging user agent in production.
+      if (profile.isTV) {
         if (import.meta.env.DEV) {
           console.log('[TV Detection] TV device detected')
         }
-        document.body.classList.add('is-tv-device')
       }
     }
 

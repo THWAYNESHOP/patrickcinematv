@@ -188,7 +188,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Enter password"
                     className="w-full pl-12 pr-12 py-3 bg-white/10 rounded-lg border border-white/20 focus:border-neonPink focus:outline-none neon-glow text-white placeholder-gray-400"
                     required
                     minLength={6}
@@ -218,7 +218,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                         type={showPassword ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="Confirm password"
                         className="w-full pl-12 pr-4 py-3 bg-white/10 rounded-lg border border-white/20 focus:border-neonPink focus:outline-none neon-glow text-white placeholder-gray-400"
                         required
                         minLength={6}
