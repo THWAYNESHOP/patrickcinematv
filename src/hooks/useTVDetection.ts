@@ -83,15 +83,19 @@ export function useTVDetection() {
         webos?: unknown
         AmazonFireTV?: unknown
       }
+      const getMediaQueryMatches = (query: string) => {
+        if (typeof window.matchMedia !== 'function') return false
+        return window.matchMedia(query).matches
+      }
       const profile = detectTVProfile({
         userAgent: navigator.userAgent,
         screenWidth: window.screen.width,
         screenHeight: window.screen.height,
         maxTouchPoints: navigator.maxTouchPoints ?? 0,
         hasTouchEvent: 'ontouchstart' in window,
-        pointerFine: window.matchMedia('(pointer: fine)').matches,
-        pointerCoarse: window.matchMedia('(pointer: coarse)').matches,
-        hoverNone: window.matchMedia('(hover: none)').matches,
+        pointerFine: getMediaQueryMatches('(pointer: fine)'),
+        pointerCoarse: getMediaQueryMatches('(pointer: coarse)'),
+        hoverNone: getMediaQueryMatches('(hover: none)'),
         deviceMemory: nav.deviceMemory,
         hardwareConcurrency: navigator.hardwareConcurrency,
         hasTVAPIs: Boolean(win.webkitTVRemote || win.TVControl || win.tizen || win.webos || win.AmazonFireTV),
