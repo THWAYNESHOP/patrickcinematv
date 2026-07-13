@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useWatchHistory } from './useWatchHistory'
+import { useWatchHistory, WatchHistoryItem } from './useWatchHistory'
 
 export interface RecommendationScore {
   id: string | number
@@ -12,7 +12,7 @@ export function useRecommendations(allContent: Array<{ id: number | string; titl
   const { watchHistory } = useWatchHistory()
 
   const recommendations: RecommendationScore[] = useMemo(() => {
-    const watchedIds = new Set(watchHistory.map((h: any) => String(h.id)))
+    const watchedIds = new Set(watchHistory.map((h: WatchHistoryItem) => String(h.id)))
 
     if (watchHistory.length === 0) {
       return allContent.slice(0, 10).map((item, idx) => ({

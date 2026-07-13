@@ -164,7 +164,7 @@ export function getProviderUrl(
 
   // If provider requests proxying, wrap the provider URL with configured proxy endpoint.
   if (provider.useProxy) {
-    const env = (import.meta as any)?.env
+    const env = (import.meta as unknown as { env?: { VITE_STREAM_PROXY_URL?: string } })?.env
     const proxyBase = (env && env.VITE_STREAM_PROXY_URL) || '/api/stream'
     return `${proxyBase}?url=${encodeURIComponent(url)}`
   }

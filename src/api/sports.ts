@@ -262,9 +262,9 @@ export const sportsApi = {
 }
 
 // Backwards-compatible named exports for tests and callers that import * as sportsApi
-export const getLiveMatches = (...args: any[]) => sportsApi.getLiveMatches(...(args as [any]))
-export const getUpcomingMatches = (...args: any[]) => sportsApi.getUpcomingMatches(...(args as [any]))
-export const getStreams = (...args: any[]) => sportsApi.getStreams(...(args as [any]))
+export const getLiveMatches = (...args: Parameters<typeof sportsApi.getLiveMatches>) => sportsApi.getLiveMatches(...args)
+export const getUpcomingMatches = (...args: Parameters<typeof sportsApi.getUpcomingMatches>) => sportsApi.getUpcomingMatches(...args)
+export const getStreams = (...args: Parameters<typeof sportsApi.getStreams>) => sportsApi.getStreams(...args)
 export const getStreamUrl = (source: string, id: string) => sportsApi.getStreamUrl(source, id)
 export const sources = sportsApi.sources
 export const getMockMatches = () => sportsApi.getMockMatches()

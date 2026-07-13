@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Trash2, GripVertical, Star, Play } from 'lucide-react'
+import type { QueueItem } from '../store/queueStore'
 import { useQueue } from '../store/queueStore'
 import { useNavigate } from 'react-router-dom'
 
@@ -105,7 +106,7 @@ export default function QueueManager() {
               <select
                 value={item.priority}
                 onChange={(e) =>
-                  updatePriority(item.id, item.type, e.target.value as any)
+                  updatePriority(item.id, item.type, e.target.value as QueueItem['priority'])
                 }
                 className="px-2 py-1 text-xs rounded bg-white/10 text-white border border-white/20 focus:outline-none focus:border-primary"
               >

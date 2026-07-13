@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore'
 interface RecommendationsProps {
   allContent: Array<{ id: string | number; title: string; poster?: string; genre?: string; rating?: string | number; type?: string }>
   carouselId: string
-  carouselStateProps?: any
+  carouselStateProps?: Record<string, unknown>
 }
 
 export default function RecommendedForYou({ allContent, carouselId, carouselStateProps = {} }: RecommendationsProps) {
@@ -16,13 +16,14 @@ export default function RecommendedForYou({ allContent, carouselId, carouselStat
     return null
   }
 
-  const contentForCarousel = recommendations.map((item: any) => {
-    const original = allContent.find(c => c.id === Number(item.id))
-    const userRating = getAverageRatingForMedia(String(item.id))
+  const contentForCarousel = recommendations.map((item) => {
+    const rec = item as { id: string | number; title: string }
+    const original = allContent.find(c => c.id === Number(rec.id))
+    const userRating = getAverageRatingForMedia(String(rec.id))
     const realRating = original?.rating || (userRating > 0 ? userRating.toFixed(1) : '0')
     return {
-      id: item.id,
-      title: item.title,
+      id: rec.id,
+      title: rec.title,
       poster: original?.poster || '',
       type: original?.type || 'movie',
       rating: realRating,

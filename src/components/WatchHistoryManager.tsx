@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Trash2, Calendar, Clock } from 'lucide-react'
-import { useWatchHistory } from '../hooks/useWatchHistory'
+import { useWatchHistory, WatchHistoryItem } from '../hooks/useWatchHistory'
 
 export default function WatchHistoryManager() {
   const { watchHistory, removeFromWatchHistory, clearWatchHistory } = useWatchHistory()
@@ -76,7 +76,7 @@ export default function WatchHistoryManager() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedHistory.map((item: any) => (
+        {sortedHistory.map((item: WatchHistoryItem) => (
           <div
             key={`${item.id}-${item.type}`}
             className="group relative overflow-hidden rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"

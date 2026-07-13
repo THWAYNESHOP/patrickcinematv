@@ -3,29 +3,34 @@ import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useTVDetection } from '../../hooks/useTVDetection'
+import type { MovieSummary } from '../../api/tmdb'
 
 interface HeroSliderProps {
-  movies: any[]
+  movies: MovieSummary[]
 }
 
 export default function HeroSlider({ movies }: HeroSliderProps) {
-  if (!movies || movies.length === 0) return null
-
   const [currentIndex, setCurrentIndex] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
 
   useEffect(() => {
+    // Don't start timers when there are no movies
+    const length = movies?.length ?? 0
+    if (length === 0) return
+
     // Disable auto-rotation on TV to prevent hanging
     if (isTV) {
       return
     }
-    
+
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % movies.length)
+      setCurrentIndex((prev) => (prev + 1) % length)
     }, 6000)
     return () => clearInterval(timer)
-  }, [movies.length, isTV])
+  }, [movies, isTV])
+
+  if (!movies || movies.length === 0) return null
 
   const nextSlide = () => {
     triggerHaptic('light')

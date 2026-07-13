@@ -133,7 +133,14 @@ export default function StreamingPlayer({
     }
 
     // Simple network quality estimation based on connection
-    const connection = (navigator as any).connection
+    type NavigatorConnection = {
+      effectiveType?: string
+      downlink?: number
+      addEventListener?: (event: string, cb: EventListenerOrEventListenerObject) => void
+      removeEventListener?: (event: string, cb: EventListenerOrEventListenerObject) => void
+    }
+
+    const connection = (navigator as unknown as Navigator & { connection?: NavigatorConnection }).connection
     if (connection) {
       const updateNetworkQuality = () => {
         const effectiveType = connection.effectiveType
