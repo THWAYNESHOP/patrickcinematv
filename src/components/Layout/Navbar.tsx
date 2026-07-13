@@ -4,6 +4,8 @@ import { Search, Menu, X, Sun, Moon, Laptop, User, LogOut, ChevronDown } from 'l
 import SearchBar from '../Search/SearchBar'
 import { useTheme } from '../../hooks/useTheme'
 import { useStore } from '../../store/useStore'
+import { useAuth } from '../../hooks/useAuth'
+import Avatar from '../Avatar'
 
 const AuthModal = lazy(() => import('../Auth/AuthModal'))
 
@@ -95,6 +97,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   const [settingsTourSeen, setSettingsTourSeen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
+  const { user: firebaseUser } = useAuth()
   const user = useStore((state) => state.user)
 
   useEffect(() => {
@@ -123,6 +126,8 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       items: [
         { name: 'Trending', path: '/trending' },
         { name: 'My List', path: '/my-list' },
+        { name: 'Queue', path: '/queue' },
+        { name: 'Watch History', path: '/watch-history' },
       ],
     },
   ]
@@ -166,7 +171,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
 
   const userLabel = user?.name || user?.email?.split('@')[0] || 'Account'
   const themeLabel = theme === 'dark' ? 'Dark mode' : theme === 'light' ? 'Light mode' : 'System mode'
-  const themeIcon = theme === 'dark' ? <Sun className="w-5 h-5" /> : theme === 'light' ? <Moon className="w-5 h-5" /> : <Laptop className="w-5 h-5" />
+  const themeIcon = theme === 'dark' ? <Sun className="w-5 h-5 transition-all duration-300" /> : theme === 'light' ? <Moon className="w-5 h-5 transition-all duration-300" /> : <Laptop className="w-5 h-5 transition-all duration-300" />
   const showSettingsBadge = !settingsTourSeen
 
   const navClass = isPlayerPage
@@ -221,7 +226,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
                 <span className="inline-flex items-center gap-2">
                   Settings
                   {showSettingsBadge && (
-                    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+                    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
                       New
                     </span>
                   )}
@@ -236,11 +241,11 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               <>
                 <Link
                   to="/profile"
-                  className="hidden md:flex p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
+                  className="hidden md:flex rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
                   aria-label="Profile"
                   title="Profile"
                 >
-                  <User className="w-5 h-5" />
+                  <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="md" />
                 </Link>
                 <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-4 pr-1.5 py-1">
                   <span className="text-sm text-gray-300 max-w-[120px] truncate" title={user.email || undefined}>
@@ -296,11 +301,11 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               <Link
                 to="/profile"
                 onClick={() => setIsMenuOpen(false)}
-                className="sm:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center tv-focusable tv-touch-target"
+                className="sm:hidden rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
                 aria-label="Profile"
                 title="Profile"
               >
-                <User className="w-5 h-5" />
+                <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="sm" />
               </Link>
             ) : (
               <button
@@ -360,7 +365,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               <span className="inline-flex items-center justify-between w-full gap-3">
                 <span>Settings</span>
                 {showSettingsBadge && (
-                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
                     New
                   </span>
                 )}

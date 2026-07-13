@@ -29,6 +29,18 @@ export interface MyListItem {
   year?: number;
 }
 
+export interface ReviewItem {
+  id: string; // unique review ID (usually mediaId_timestamp)
+  mediaId: string;
+  mediaType: 'movie' | 'tv' | 'sports' | 'anime';
+  mediaTitle: string;
+  mediaPoster: string;
+  rating: number; // 1-5 stars
+  reviewText: string;
+  createdAt: number;
+  userId?: string; // optional, for future user auth
+}
+
 interface AppState {
   // My List / Favorites
   myList: MyListItem[];
@@ -36,6 +48,14 @@ interface AppState {
   removeFromMyList: (id: string) => void;
   isInMyList: (id: string) => boolean;
   clearMyList: () => void;
+
+  // Reviews/Ratings
+  reviews: ReviewItem[];
+  addReview: (review: Omit<ReviewItem, 'id' | 'createdAt'>) => void;
+  updateReview: (reviewId: string, updates: Partial<ReviewItem>) => void;
+  removeReview: (reviewId: string) => void;
+  getReviewsForMedia: (mediaId: string) => ReviewItem[];
+  getAverageRatingForMedia: (mediaId: string) => number;
 
   // Watch Progress
   watchProgress: Record<string, number>;
@@ -109,6 +129,49 @@ export const useStore = create<AppState>()(
       },
       clearMyList: () => {
         set({ myList: [] });
+      },
+
+      // Reviews/Ratings
+      reviews: [],
+      addReview: (review) => {
+        const newReview: ReviewItem = {
+          ...review,
+          id: `${review.mediaId}_${Date.now()}`,
+          createdAt: Date.now(),
+        };
+        set((state) => {
+          // Check if there's already a review for this media to replace it
+          const existingIndex = state.reviews.findIndex(
+            (r) => r.mediaId === review.mediaId
+          );
+          if (existingIndex !== -1) {
+            const updated = [...state.reviews];
+            updated[existingIndex] = newReview;
+            return { reviews: updated };
+          }
+          return { reviews: [...state.reviews, newReview] };
+        });
+      },
+      updateReview: (reviewId, updates) => {
+        set((state) => ({
+          reviews: state.reviews.map((r) =>
+            r.id === reviewId ? { ...r, ...updates } : r
+          ),
+        }));
+      },
+      removeReview: (reviewId) => {
+        set((state) => ({
+          reviews: state.reviews.filter((r) => r.id !== reviewId),
+        }));
+      },
+      getReviewsForMedia: (mediaId) => {
+        return get().reviews.filter((r) => r.mediaId === mediaId);
+      },
+      getAverageRatingForMedia: (mediaId) => {
+        const mediaReviews = get().reviews.filter((r) => r.mediaId === mediaId);
+        if (mediaReviews.length === 0) return 0;
+        const sum = mediaReviews.reduce((acc, r) => acc + r.rating, 0);
+        return sum / mediaReviews.length;
       },
 
       // Watch Progress
@@ -293,6 +356,7 @@ export const useStore = create<AppState>()(
         user: state.user,
         notificationPreferences: state.notificationPreferences,
         playbackPreferences: state.playbackPreferences,
+        reviews: state.reviews,
       }),
     }
   )

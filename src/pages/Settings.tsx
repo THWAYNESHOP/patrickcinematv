@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../hooks/useTheme'
 import { useStore } from '../store/useStore'
-import { ArrowLeft, Bell, User, Laptop } from 'lucide-react'
+import { ArrowLeft, Bell, User, Laptop, Moon, Sun } from 'lucide-react'
 
 const qualityOptions = [
   { value: 'auto', label: 'Auto' },
@@ -74,26 +74,31 @@ export default function Settings() {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
-                <p className="text-sm text-gray-300 uppercase tracking-[0.3em] mb-3">Theme mode</p>
-                <div className="flex flex-wrap gap-3">
-                  {['dark', 'light', 'system'].map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => setThemeMode(option as 'dark' | 'light' | 'system')}
-                      className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition ${
-                        theme === option
-                          ? 'border-primary bg-primary/10 text-white'
-                          : 'border-white/10 text-gray-300 hover:border-white/20 hover:text-white'
-                      }`}
-                    >
-                      {option === 'system' ? 'System' : option.charAt(0).toUpperCase() + option.slice(1)}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm text-gray-400">Current applied mode: <span className="text-white">{themeLabel}</span> ({resolvedTheme})</p>
+            <div className="rounded-3xl border border-white/10 bg-black/20 p-4">
+              <p className="text-sm text-gray-300 uppercase tracking-[0.3em] mb-3">Theme mode</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'dark', label: 'Dark', icon: <Moon className="w-5 h-5" /> },
+                  { id: 'light', label: 'Light', icon: <Sun className="w-5 h-5" /> },
+                  { id: 'system', label: 'System', icon: <Laptop className="w-5 h-5" /> },
+                ].map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setThemeMode(option.id as 'dark' | 'light' | 'system')}
+                    className={`rounded-2xl border p-4 text-sm font-semibold transition-all duration-200 flex flex-col items-center gap-2 ${
+                      theme === option.id
+                        ? 'border-primary bg-primary/10 text-white scale-105'
+                        : 'border-white/10 text-gray-300 hover:border-white/20 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </button>
+                ))}
               </div>
+              <p className="mt-4 text-sm text-gray-400">Current applied mode: <span className="text-white">{themeLabel}</span> ({resolvedTheme})</p>
             </div>
+          </div>
 
             <div className="mt-10 space-y-6">
               <div>

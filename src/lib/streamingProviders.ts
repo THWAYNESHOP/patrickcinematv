@@ -9,6 +9,7 @@ export interface StreamingProvider {
   supportsEpisodeSelector: boolean
   supportedParams?: string[]
   origin?: string // For postMessage security
+  useProxy?: boolean
 }
 
 export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
@@ -60,10 +61,75 @@ export const STREAMING_PROVIDERS: Record<string, StreamingProvider> = {
     supportedParams: ['autoplay', 'quality'],
     origin: 'https://vidfast.pro',
   },
+  anyembed: {
+    id: 'anyembed',
+    name: 'anyembed',
+    displayName: 'Anyembed',
+    movieUrlTemplate: 'https://player.autoembed.app/embed/movie/{tmdbId}',
+    tvUrlTemplate: 'https://player.autoembed.app/embed/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: false,
+    supportsNextEpisode: false,
+    supportsEpisodeSelector: false,
+    supportedParams: ['server'],
+    origin: 'https://player.autoembed.app',
+    useProxy: true,
+  },
+  vidapi: {
+    id: 'vidapi',
+    name: 'vidapi',
+    displayName: 'VidAPI',
+    movieUrlTemplate: 'https://vaplayer.ru/embed/movie/{tmdbId}',
+    tvUrlTemplate: 'https://vaplayer.ru/embed/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: true,
+    supportsNextEpisode: true,
+    supportsEpisodeSelector: true,
+    supportedParams: ['primaryColor', 'title', 'poster', 'autoplay', 'startAt', 'resumeAt', 'sub_url', 'sub_file', 'sub_label', 'sub_lang', 'sub_default', 'lang', 'controls', 'overlay', 'thumbnails'],
+    origin: 'https://vaplayer.ru',
+    useProxy: false,
+  },
+  vidspark: {
+    id: 'vidspark',
+    name: 'vidspark',
+    displayName: 'VidSpark',
+    movieUrlTemplate: 'https://moviesapi.to/movie/{tmdbId}',
+    tvUrlTemplate: 'https://moviesapi.to/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: true,
+    supportsNextEpisode: true,
+    supportsEpisodeSelector: true,
+    supportedParams: ['autoplay', 'primaryColor', 'title', 'poster', 'startAt', 'resumeAt'],
+    origin: 'https://moviesapi.to',
+    useProxy: false,
+  },
+  apiplayer: {
+    id: 'apiplayer',
+    name: 'apiplayer',
+    displayName: 'APIPlayer',
+    movieUrlTemplate: 'https://apiplayer.ru/embed/movie/{tmdbId}',
+    tvUrlTemplate: 'https://apiplayer.ru/embed/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: true,
+    supportsNextEpisode: true,
+    supportsEpisodeSelector: true,
+    supportedParams: ['autoplay', 'sub_url', 'primaryColor', 'title', 'poster', 'startAt', 'resumeAt', 'controls', 'overlay'],
+    origin: 'https://apiplayer.ru',
+    useProxy: false,
+  },
+  vidphantom: {
+    id: 'vidphantom',
+    name: 'vidphantom',
+    displayName: 'VidPhantom',
+    movieUrlTemplate: 'https://vidphantom.com/movie/{tmdbId}',
+    tvUrlTemplate: 'https://vidphantom.com/tv/{tmdbId}/{season}/{episode}',
+    supportsAutoplay: true,
+    supportsNextEpisode: true,
+    supportsEpisodeSelector: true,
+    supportedParams: ['primaryColor','secondaryColor','iconColor','accentColor','backdropColor','icons','poster','autoplay','nextbutton','startAt','sub_file','sub_label','sub_lang','subColor','subBgColor','subBgOpacity','subSize','subBottom','subShadow'],
+    origin: 'https://vidphantom.com',
+    useProxy: false,
+  },
 }
 
 export const DEFAULT_PROVIDER = 'vixsrc'
-export const PROVIDER_ORDER = ['vixsrc', 'vidking', 'vidlink', 'vidfast']
+export const PROVIDER_ORDER = ['vixsrc', 'vidking', 'vidlink', 'vidfast', 'anyembed', 'vidapi', 'vidspark', 'apiplayer', 'vidphantom']
 
 export function getProviderUrl(
   providerId: string,
@@ -94,6 +160,13 @@ export function getProviderUrl(
       })
       url += `?${searchParams.toString()}`
     }
+  }
+
+  // If provider requests proxying, wrap the provider URL with configured proxy endpoint.
+  if (provider.useProxy) {
+    const env = (import.meta as any)?.env
+    const proxyBase = (env && env.VITE_STREAM_PROXY_URL) || '/api/stream'
+    return `${proxyBase}?url=${encodeURIComponent(url)}`
   }
 
   return url

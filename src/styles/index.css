@@ -79,8 +79,13 @@
     -webkit-tap-highlight-color: transparent;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
-  
+
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     letter-spacing: -0.025em;
@@ -146,12 +151,20 @@ html.light .bg-white\/10 {
   background-color: rgba(0, 0, 0, 0.06);
 }
 
+html.light .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 html.light .bg-black\/50 {
   background-color: rgba(255, 255, 255, 0.8);
 }
 
 html.light .bg-black\/80 {
   background-color: rgba(255, 255, 255, 0.92);
+}
+
+html.light .bg-black\/20 {
+  background-color: rgba(255, 255, 255, 0.6);
 }
 
 html.light .bg-deepBlack\/95 {
@@ -178,6 +191,26 @@ html.light .glass {
 html.light .glass-strong {
   background-color: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .bg-darkSurface {
+  background-color: #ffffff;
+}
+
+html.light .bg-darkElevated {
+  background-color: #f0f0f0;
+}
+
+html.light .bg-darkHover {
+  background-color: #e4e4e7;
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+html.light .hover\:bg-white\/20:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 html.light img {

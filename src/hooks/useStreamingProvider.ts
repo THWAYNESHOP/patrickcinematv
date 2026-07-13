@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { STREAMING_PROVIDERS, DEFAULT_PROVIDER, getProviderUrl, type StreamingProvider } from '../lib/streamingProviders'
+import { useState, useEffect, useMemo } from 'react'
+import { STREAMING_PROVIDERS, DEFAULT_PROVIDER, PROVIDER_ORDER, getProviderUrl, type StreamingProvider } from '../lib/streamingProviders'
 
 const STORAGE_KEY = 'lastSelectedProvider'
 
@@ -26,6 +26,10 @@ export function useStreamingProvider() {
     return STREAMING_PROVIDERS[selectedProviderId] || STREAMING_PROVIDERS[DEFAULT_PROVIDER]
   }
 
+  const bestProviderId = useMemo(() => {
+    return PROVIDER_ORDER.find((id) => Boolean(STREAMING_PROVIDERS[id])) || DEFAULT_PROVIDER
+  }, [])
+
   const getEmbedUrl = (
     type: 'movie' | 'tv',
     tmdbId: string | number,
@@ -44,6 +48,7 @@ export function useStreamingProvider() {
     selectedProviderId,
     setProvider,
     getProvider,
+    bestProviderId,
     getEmbedUrl,
     getAllProviders,
   }

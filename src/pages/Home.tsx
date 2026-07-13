@@ -1,10 +1,11 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Star } from 'lucide-react'
 import { getOrderedKenyanSeriesItems } from '../data/kenyanSeries'
 import HeroSlider from '../components/Home/HeroSlider'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import LiveMatches from '../components/Sports/LiveMatches'
+import RecommendedForYou from '../components/RecommendedForYou'
 import { tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
@@ -13,6 +14,7 @@ import { useToast } from '../hooks/useToast'
 import { usePageState } from '../hooks/usePageState'
 import { useTVDetection } from '../hooks/useTVDetection'
 import { RefreshCw } from 'lucide-react'
+import { useStore } from '../store/useStore'
 import type { MovieSummary } from '../api/tmdb'
 
 const fallbackMovies = [
@@ -47,9 +49,17 @@ interface HomePageCache {
   primeContent: MovieSummary[]
   disneyContent: MovieSummary[]
   appleContent: MovieSummary[]
+  timestamp: number
 }
 
+const CACHE_EXPIRY_MS = 10 * 60 * 1000 // 10 minutes
+
 let cachedHomeContent: HomePageCache | null = null
+
+function isCacheValid(cache: HomePageCache | null): boolean {
+  if (!cache) return false
+  return Date.now() - cache.timestamp < CACHE_EXPIRY_MS
+}
 
 function HeroSkeleton() {
   return (
@@ -77,7 +87,7 @@ function HeroSkeleton() {
 
 export default function Home() {
   const isTVPerformanceMode = useTVDetection()
-  const cachedData = cachedHomeContent
+  const cachedData = isCacheValid(cachedHomeContent) ? cachedHomeContent : null
   const [featuredMovies, setFeaturedMovies] = useState<MovieSummary[]>(cachedData?.featuredMovies || [])
   const [trendingMovies, setTrendingMovies] = useState<MovieSummary[]>(cachedData?.trendingMovies || [])
   const [popularTV, setPopularTV] = useState<MovieSummary[]>(cachedData?.popularTV || [])
@@ -96,6 +106,7 @@ export default function Home() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
+  const { getAverageRatingForMedia } = useStore()
   const toast = useToast()
   const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Home')
   const maxCarouselItems = isTVPerformanceMode ? 8 : 20
@@ -119,6 +130,7 @@ export default function Home() {
     onPrefetch: isTVPerformanceMode ? undefined : tmdbApi.prefetchMediaDetails,
     performanceMode: isTVPerformanceMode,
   }
+
 
   const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh({
     onRefresh: async () => {
@@ -285,6 +297,7 @@ export default function Home() {
       primeContent: primeContentToCache,
       disneyContent: disneyContentToCache,
       appleContent: appleContentToCache,
+      timestamp: Date.now(),
     }
   }, [isTVPerformanceMode, limitItems, maxHeroItems, toast])
 
@@ -336,72 +349,22 @@ export default function Home() {
           <section className="mb-10 md:mb-12">
             <ContentCarousel
               title="Continue Watching"
-              items={continueWatching.map(item => ({
-                id: Number(item.id),
-                title: item.title,
-                poster: item.poster,
-                type: item.type,
-                rating: '0',
-                progress: item.progress
-              }))}
+              items={continueWatching.map(item => {
+                const userRating = getAverageRatingForMedia(String(item.id))
+                return ({
+                  id: Number(item.id),
+                  title: item.title,
+                  poster: item.poster,
+                  type: item.type,
+                  rating: userRating > 0 ? userRating.toFixed(1) : '0',
+                  progress: item.progress
+                })
+              })}
               type="movie"
               showProgress
               carouselId={carouselId('Continue Watching')}
               {...carouselStateProps}
             />
-          </section>
-        )}
-
-        {(continueWatching.length > 0 || featuredMovies.length > 0) && (
-          <section className="mb-10 md:mb-12">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white md:text-3xl">Recommended for you</h2>
-              <span className="text-sm text-gray-400">Based on your recent picks</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {(() => {
-                const recommendedItems = [
-                  ...(continueWatching.length > 0 ? continueWatching.slice(0, 2).map((item) => ({
-                    id: item.id,
-                    title: item.title,
-                    poster: item.poster,
-                    type: item.type,
-                    rating: '8.5',
-                    year: 2026,
-                    progress: item.progress,
-                  })) : []),
-                  ...featuredMovies.slice(0, 3).map((item) => ({
-                    id: item.id,
-                    title: item.title,
-                    poster: item.poster,
-                    rating: item.rating,
-                    year: item.year,
-                    type: item.type ?? 'movie' as const,
-                  })),
-                ].slice(0, 3)
-
-                return recommendedItems.map((item) => (
-                  <Link
-                    key={`${item.id}-${item.title}`}
-                    to={item.type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`}
-                    className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-darkSurface/80 p-3 transition hover:border-primary/40 hover:bg-white/5"
-                  >
-                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl">
-                      <img src={item.poster} alt={item.title} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-white">{item.title}</p>
-                      <p className="mt-1 text-sm text-gray-400">{item.type === 'tv' ? 'Series' : 'Movie'}</p>
-                      {typeof item.progress === 'number' && (
-                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(item.progress, 100)}%` }} />
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                ))
-              })()}
-            </div>
           </section>
         )}
 
@@ -414,7 +377,10 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-3 sm:gap-4">
-            {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => (
+            {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => {
+              const userRating = getAverageRatingForMedia(item.id)
+              const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
+              return (
               <Link
                 key={item.id}
                 to={`/kenyan-series/${item.id}`}
@@ -435,7 +401,7 @@ export default function Home() {
                   <div className="mt-2 flex items-center gap-1.5">
                     <div className="flex items-center gap-1 rounded-md border border-accent/30 bg-accent/20 px-2 py-0.5">
                       <Star className="h-3 w-3 fill-accent text-accent" />
-                      <span className="text-[11px] font-bold text-accent">8.5</span>
+                      <span className="text-[11px] font-bold text-accent">{rating}</span>
                     </div>
                     {item.year && <span className="text-[11px] text-gray-500">•</span>}
                     {item.year && <span className="text-[11px] text-gray-500">{item.year}</span>}
@@ -443,7 +409,7 @@ export default function Home() {
                   <p className="mt-1 text-xs text-gray-400">Tap to open</p>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         </section>
 
@@ -454,20 +420,30 @@ export default function Home() {
             items={trendingMovies}
             type="movie"
             loading={heroLoading}
-            carouselId={carouselId('Trending Today')}            {...carouselStateProps}
+            carouselId={carouselId('Trending Today')}
+            {...carouselStateProps}
           />
         </section>
 
-        {/* Recommended For You */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Recommended For You"
-            items={[...trendingMovies.slice(0, 5), ...popularTV.slice(0, 5)]}
-            type="movie"
-            loading={primaryLoading}
-            carouselId={carouselId('Recommended For You')}            {...carouselStateProps}
-          />
-        </section>
+        <RecommendedForYou
+          allContent={[
+            ...featuredMovies,
+            ...trendingMovies,
+            ...popularTV,
+            ...teenRomance,
+            ...kDrama,
+            ...actionAdventure,
+            ...comedy,
+            ...anime,
+            ...netflixContent,
+            ...primeContent,
+            ...disneyContent,
+            ...appleContent,
+            ...myList,
+          ]}
+          carouselId={carouselId('Recommended For You')}
+          carouselStateProps={carouselStateProps}
+        />
 
         {/* Live Sports */}
         <section className="mb-10 md:mb-12">
@@ -502,7 +478,8 @@ export default function Home() {
             items={sortByRating(teenRomance)}
             type="movie"
             loading={catalogLoading}
-            carouselId={carouselId('Teen Romance')}            {...carouselStateProps}
+            carouselId={carouselId('Teen Romance')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -513,7 +490,8 @@ export default function Home() {
             items={kDrama}
             type="tv"
             loading={catalogLoading}
-            carouselId={carouselId('Korean Dramas')}            {...carouselStateProps}
+            carouselId={carouselId('Korean Dramas')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -524,7 +502,8 @@ export default function Home() {
             items={actionAdventure}
             type="movie"
             loading={catalogLoading}
-            carouselId={carouselId('Action & Adventure')}            {...carouselStateProps}
+            carouselId={carouselId('Action & Adventure')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -535,7 +514,8 @@ export default function Home() {
             items={comedy}
             type="movie"
             loading={catalogLoading}
-            carouselId={carouselId('Comedy')}            {...carouselStateProps}
+            carouselId={carouselId('Comedy')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -546,7 +526,8 @@ export default function Home() {
             items={anime}
             type="tv"
             loading={catalogLoading}
-            carouselId={carouselId('Anime')}            {...carouselStateProps}
+            carouselId={carouselId('Anime')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -557,7 +538,8 @@ export default function Home() {
             items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
             type="movie"
             loading={primaryLoading}
-            carouselId={carouselId('Featured This Week')}            {...carouselStateProps}
+            carouselId={carouselId('Featured This Week')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -568,7 +550,8 @@ export default function Home() {
             items={myList.length > 0 ? myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type })) : trendingMovies.slice(0, 5)}
             type="movie"
             loading={primaryLoading && myList.length === 0}
-            carouselId={carouselId('My List')}            {...carouselStateProps}
+            carouselId={carouselId('My List')}
+            {...carouselStateProps}
           />
         </section>
 
@@ -580,7 +563,8 @@ export default function Home() {
               items={netflixContent}
               type="movie"
               loading={catalogLoading}
-              carouselId={carouselId('Only on Netflix')}              {...carouselStateProps}
+              carouselId={carouselId('Only on Netflix')}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -593,7 +577,8 @@ export default function Home() {
               items={primeContent}
               type="movie"
               loading={catalogLoading}
-              carouselId={carouselId('Only on Prime Video')}              {...carouselStateProps}
+              carouselId={carouselId('Only on Prime Video')}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -606,7 +591,8 @@ export default function Home() {
               items={disneyContent}
               type="movie"
               loading={catalogLoading}
-              carouselId={carouselId('Only on Disney+')}              {...carouselStateProps}
+              carouselId={carouselId('Only on Disney+')}
+              {...carouselStateProps}
             />
           </section>
         )}
@@ -619,7 +605,8 @@ export default function Home() {
               items={appleContent}
               type="movie"
               loading={catalogLoading}
-              carouselId={carouselId('Only on Apple TV+')}              {...carouselStateProps}
+              carouselId={carouselId('Only on Apple TV+')}
+              {...carouselStateProps}
             />
           </section>
         )}

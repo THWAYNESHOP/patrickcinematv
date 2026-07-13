@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, Check, Clock3, Play, Plus, Share2, Volume2, Volume
 import DetailHero, { MetaStar } from '../components/Details/DetailHero'
 import MediaRail from '../components/Details/MediaRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
+import ReviewsSection from '../components/Reviews/ReviewsSection'
 import { useMyList } from '../hooks/useMyList'
 import { useToast } from '../hooks/useToast'
 import { useStore } from '../store/useStore'
@@ -182,6 +183,7 @@ export default function KenyanSeriesDetails() {
   const item = useMemo(() => getKenyanSeriesItem(id), [id])
   const toast = useToast()
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
+  const { getAverageRatingForMedia } = useStore()
   const setWatchProgress = useStore((state) => state.setWatchProgress)
   const getWatchProgress = useStore((state) => state.getWatchProgress)
   const continueWatching = useStore((state) => state.continueWatching)
@@ -278,12 +280,15 @@ export default function KenyanSeriesDetails() {
   const handleMyList = () => {
     if (!item || !id) return
 
+    const userRating = id ? getAverageRatingForMedia(id) : 0
+    const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
+
     if (inMyList) {
       removeFromMyList(id)
       return
     }
 
-    addToMyList({ id, title: item.title, poster: item.poster, rating: '8.5', year: item.year, type: 'tv' })
+    addToMyList({ id, title: item.title, poster: item.poster, rating, year: item.year, type: 'tv' })
   }
 
   const handleShare = async () => {
@@ -319,34 +324,39 @@ export default function KenyanSeriesDetails() {
 
   return (
     <div className="min-h-screen bg-deepBlack text-white">
-      <DetailHero
-        backdrop={item.backdrop}
-        poster={item.poster}
-        title={item.title}
-        meta={[
-          { icon: <MetaStar />, label: '8.5' },
-          { icon: <Calendar className="w-3.5 h-3.5" />, label: String(item.year) },
-          { icon: <Clock3 className="w-3.5 h-3.5" />, label: item.runtime ?? '45 min' },
-        ]}
-        genres={item.genre.split('•').map((entry) => entry.trim()).filter(Boolean)}
-        overview={item.overview}
-        trailer={trailer}
-        showTrailer={showTrailer}
-        topBadges={['Citizen TV', 'Kenyan Series']}
-      >
-        <PlayButton onClick={handleContinue}>
-          <Play className="w-5 h-5 fill-black" />
-          Play Latest Episode
-        </PlayButton>
-        <IconAction icon={<Play className="w-5 h-5" />} label="Trailer" onClick={handleTrailer} />
-        <IconAction icon={inMyList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />} label={inMyList ? 'In My List' : 'My List'} onClick={handleMyList} active={inMyList} />
-        <IconAction icon={<Share2 className="w-5 h-5" />} label="Share" onClick={handleShare} />
-        {trailer && showTrailer && (
-          <IconAction icon={isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />} label={isMuted ? 'Unmute' : 'Mute'} onClick={() => setIsMuted(!isMuted)} />
-        )}
-      </DetailHero>
+      {(() => {
+        const userRating = id ? getAverageRatingForMedia(id) : 0
+        const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
+        return (
+          <>
+            <DetailHero
+              backdrop={item.backdrop}
+              poster={item.poster}
+              title={item.title}
+              meta={[
+                { icon: <MetaStar />, label: rating },
+                { icon: <Calendar className="w-3.5 h-3.5" />, label: String(item.year) },
+                { icon: <Clock3 className="w-3.5 h-3.5" />, label: item.runtime ?? '45 min' },
+              ]}
+              genres={item.genre.split('•').map((entry) => entry.trim()).filter(Boolean)}
+              overview={item.overview}
+              trailer={trailer}
+              showTrailer={showTrailer}
+              topBadges={['Citizen TV', 'Kenyan Series']}
+            >
+              <PlayButton onClick={handleContinue}>
+                <Play className="w-5 h-5 fill-black" />
+                Play Latest Episode
+              </PlayButton>
+              <IconAction icon={<Play className="w-5 h-5" />} label="Trailer" onClick={handleTrailer} />
+              <IconAction icon={inMyList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />} label={inMyList ? 'In My List' : 'My List'} onClick={handleMyList} active={inMyList} />
+              <IconAction icon={<Share2 className="w-5 h-5" />} label="Share" onClick={handleShare} />
+              {trailer && showTrailer && (
+                <IconAction icon={isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />} label={isMuted ? 'Unmute' : 'Mute'} onClick={() => setIsMuted(!isMuted)} />
+              )}
+            </DetailHero>
 
-      <div className="container mx-auto px-3 py-6 sm:px-4 md:px-8 md:py-8">
+            <div className="container mx-auto px-3 py-6 sm:px-4 md:px-8 md:py-8">
         <section className="mb-8 md:mb-10">
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl shadow-black/20">
             <div className="border-b border-white/10 p-4 sm:p-5">
@@ -363,7 +373,7 @@ export default function KenyanSeriesDetails() {
                   <iframe
                     title={`${item.title} episode player`}
                     src={selectedEpisodeEmbedUrl || ''}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allow="autoplay; encrypted-media; picture-in-picture"
                     allowFullScreen
                     className="h-full w-full"
                   />
@@ -459,8 +469,20 @@ export default function KenyanSeriesDetails() {
           </div>
         </section>
 
+        {id && item && (
+          <ReviewsSection
+            mediaId={id}
+            mediaType="tv"
+            mediaTitle={item.title}
+            mediaPoster={item.poster}
+          />
+        )}
+
         <MediaRail title="More Kenyan Series" items={recommendedSeries} type="tv" basePath="/kenyan-series" />
-      </div>
+            </div>
+          </>
+        )
+      })()}
     </div>
   )
 }

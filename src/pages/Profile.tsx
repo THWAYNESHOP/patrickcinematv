@@ -3,14 +3,33 @@ import { Link } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useToast } from '../hooks/useToast'
 import { useAuth } from '../hooks/useAuth'
-import { User, Mail, Clock, Heart, Play, LogOut } from 'lucide-react'
+import WatchHistoryManager from '../components/WatchHistoryManager'
+import Avatar from '../components/Avatar'
+import { User, Mail, Clock, Heart, Play, LogOut, Edit2, X, Check } from 'lucide-react'
 import { signOut } from 'firebase/auth'
 import { getAuth } from 'firebase/auth'
+import { motion, AnimatePresence } from 'framer-motion'
+
+// Default avatars for users to choose from
+const defaultAvatars = [
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Felix',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Aneka',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Bella',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Charlie',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Diana',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Emma',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Frank',
+  'https://api.dicebear.com/8.x/avataaars/svg?seed=Grace',
+]
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, updateUserProfile } = useAuth()
   const { myList, watchHistory, watchProgress } = useStore()
   const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'progress'>('favorites')
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [displayName, setDisplayName] = useState('')
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   const toast = useToast()
   const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
@@ -23,6 +42,13 @@ export default function Profile() {
     }
   }, [settingsTourSeen])
 
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || '')
+      setSelectedAvatar(user.photoURL || null)
+    }
+  }, [user])
+
   const handleSignOut = async () => {
     try {
       const auth = getAuth()
@@ -30,6 +56,33 @@ export default function Profile() {
     } catch (error) {
       console.error('Sign out failed:', error)
       toast.error('Unable to sign out. Please try again.')
+    }
+  }
+
+  const handleOpenEditModal = () => {
+    if (user) {
+      setDisplayName(user.displayName || '')
+      setSelectedAvatar(user.photoURL || null)
+    }
+    setIsEditModalOpen(true)
+  }
+
+  const handleSaveProfile = async () => {
+    if (!user) return
+
+    setIsSaving(true)
+    try {
+      await updateUserProfile({
+        displayName: displayName || undefined,
+        photoURL: selectedAvatar || undefined,
+      })
+      toast.success('Profile updated successfully!')
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      toast.error('Failed to update profile. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -47,8 +100,14 @@ export default function Profile() {
         {/* Profile Header */}
         <div className="glass rounded-2xl p-8 mb-8 neon-border">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <User className="w-12 h-12 text-white" />
+            <div className="relative">
+              <Avatar src={user.photoURL} alt={user.displayName || 'User'} size="xl" />
+              <button
+                onClick={handleOpenEditModal}
+                className="absolute -bottom-1 -right-1 w-10 h-10 bg-primary rounded-full flex items-center justify-center hover:bg-primary/80 transition-colors tv-focusable"
+              >
+                <Edit2 className="w-5 h-5 text-black" />
+              </button>
             </div>
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold text-white mb-2">
@@ -164,31 +223,7 @@ export default function Profile() {
           </div>
         )}
 
-        {activeTab === 'history' && (
-          <div className="space-y-4">
-            {watchHistory.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                No watch history yet
-              </div>
-            ) : (
-              watchHistory.map((item) => (
-                <div key={item.id} className="glass rounded-xl p-4 flex gap-4">
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    className="w-20 h-28 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-white">{item.title}</h3>
-                    <p className="text-sm text-gray-400">
-                      Watched {new Date(item.timestamp).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        {activeTab === 'history' && <WatchHistoryManager />}
 
         {activeTab === 'progress' && (
           <div className="space-y-4">
@@ -198,7 +233,7 @@ export default function Profile() {
               </div>
             ) : (
               Object.entries(watchProgress).map(([id, progress]) => {
-                const item = myList.find(i => i.id === id) || { id, title: 'Unknown', poster: '' }
+                const item = myList.find((i) => i.id === id) || { id, title: 'Unknown', poster: '' }
                 return (
                   <div key={id} className="glass rounded-xl p-4">
                     <div className="flex gap-4 mb-3">
@@ -225,6 +260,118 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {isEditModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEditModalOpen(false)}
+              className="absolute inset-0 bg-black/80"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-darkSurface border border-white/10 rounded-2xl p-6 md:p-8 max-w-lg w-[90%] shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-white">Edit Profile</h2>
+                <button
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="p-2 rounded-full hover:bg-white/10 transition-colors tv-focusable tv-touch-target"
+                  aria-label="Close edit profile modal"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Avatar Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-white mb-3">
+                    Choose Avatar
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {/* Default Avatar (none) */}
+                    <button
+                      onClick={() => setSelectedAvatar(null)}
+                      className={`aspect-square rounded-xl border-2 transition-all ${
+                        !selectedAvatar ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-10 h-10 text-white" />
+                      </div>
+                    </button>
+
+                    {/* Default Avatar Options */}
+                    {defaultAvatars.map((avatar, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedAvatar(avatar)}
+                        className={`aspect-square rounded-xl border-2 overflow-hidden transition-all ${
+                          selectedAvatar === avatar ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-white/30'
+                        }`}
+                      >
+                        <img
+                          src={avatar}
+                          alt={`Avatar ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Display Name */}
+                <div>
+                  <label htmlFor="displayName" className="block text-sm font-semibold text-white mb-2">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="flex-1 px-4 py-3 bg-primary hover:bg-primary/80 text-black font-semibold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isSaving ? (
+                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Check className="w-5 h-5" />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

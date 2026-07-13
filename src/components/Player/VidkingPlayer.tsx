@@ -121,7 +121,7 @@ export default function VidkingPlayer({ src, onProgress, className = '' }: Vidki
           }}
           frameBorder="0"
           allowFullScreen
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allow="autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="no-referrer-when-downgrade"
           title="Video Player"
           name="vidking-player"

@@ -19,7 +19,39 @@ export default function NotificationPermission({ onClose }: NotificationPermissi
     }
   };
 
-  if (permission.granted || !permission.canRequest) {
+  if (permission.granted) {
+    return null;
+  }
+
+  if (permission.state === 'unsupported') {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-fade-in">
+        <div className="glass rounded-lg p-4 shadow-2xl border border-primary/30">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <Bell className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-white mb-1">Notifications unavailable</h3>
+              <p className="text-sm text-gray-300 mb-3">
+                Your browser does not support push notifications. You will still receive in-app alerts while browsing.
+              </p>
+              {onClose && (
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Dismiss
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!permission.canRequest) {
     return null;
   }
 

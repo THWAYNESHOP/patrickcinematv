@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import { Radio, ArrowLeft, Minimize2, Maximize2 } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 import { useToast } from '../hooks/useToast'
+import { sanitizeIframeSrc } from '../utils/iframe'
 
 export default function SportsPlayer() {
   if (import.meta.env.DEV) {
@@ -318,7 +319,7 @@ export default function SportsPlayer() {
             <div className="absolute inset-0 overflow-hidden">
               <iframe
                 ref={iframeRef}
-                src={directStream ? directStream.url : currentStream.embedUrl}
+                src={sanitizeIframeSrc(directStream ? directStream.url : currentStream.embedUrl)}
                 className="absolute inset-0 h-full w-full"
                 style={{
                   objectFit: 'contain',
@@ -329,7 +330,7 @@ export default function SportsPlayer() {
                 }}
                 frameBorder="0"
                 allowFullScreen
-                allow="autoplay; encrypted-media; fullscreen"
+                allow="autoplay; encrypted-media"
               />
             </div>
           </div>

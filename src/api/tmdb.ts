@@ -24,6 +24,7 @@ export interface MovieSummary {
   rating: string
   year?: number
   type?: 'movie' | 'tv' | 'anime' | 'sports'
+  progress?: number
 }
 
 export interface PlatformCatalog {
@@ -84,6 +85,28 @@ interface TmdbVideo {
   site: string
   type: string
   official: boolean
+}
+
+export interface TmdbEpisode {
+  id: number
+  episode_number: number
+  name: string
+  overview: string
+  air_date: string
+  runtime?: number
+  still_path?: string
+  vote_average?: number
+}
+
+export interface TmdbSeason {
+  id: number
+  season_number: number
+  episode_count: number
+  name: string
+  overview: string
+  poster_path?: string
+  air_date: string
+  episodes?: TmdbEpisode[]
 }
 
 function toMovieSummary(movie: TmdbMovie): MovieSummary {
@@ -675,5 +698,47 @@ export const tmdbApi = {
     })
 
     return Array.isArray(response.data?.results) ? response.data.results : []
+  },
+
+  async getTVSeasonDetails(tvId: string, seasonNumber: number): Promise<TmdbSeason> {
+    const cacheKey = `tv-season-${tvId}-${seasonNumber}`
+    const cached = getCached<TmdbSeason>(cacheKey)
+    if (cached) return cached
+
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/tv/${tvId}/season/${seasonNumber}`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+      },
+      timeout: 10000,
+    })
+
+    setCached(cacheKey, response.data)
+    return response.data
+  },
+
+  async getTVEpisodeDetails(tvId: string, seasonNumber: number, episodeNumber: number): Promise<TmdbEpisode> {
+    const cacheKey = `tv-episode-${tvId}-${seasonNumber}-${episodeNumber}`
+    const cached = getCached<TmdbEpisode>(cacheKey)
+    if (cached) return cached
+
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    const response = await axios.get(`${TMDB_API_BASE}/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: 'en-US',
+      },
+      timeout: 10000,
+    })
+
+    setCached(cacheKey, response.data)
+    return response.data
   },
 }

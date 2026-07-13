@@ -191,7 +191,7 @@ export default function VidLinkPlayer({
           }}
           frameBorder="0"
           allowFullScreen
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allow="autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="no-referrer-when-downgrade"
           title="VidLink Player"
           name="vidlink-player"

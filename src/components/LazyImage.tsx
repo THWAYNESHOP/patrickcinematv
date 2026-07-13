@@ -10,6 +10,7 @@ interface LazyImageProps {
 export default function LazyImage({ src, alt, className = '', placeholder = 'bg-white/10' }: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function LazyImage({ src, alt, className = '', placeholder = 'bg-
       ref={imgRef}
       className={`relative overflow-hidden ${className} ${placeholder} ${isLoaded ? '' : 'animate-pulse'}`}
     >
-      {isInView && (
+      {isInView && !hasError && (
         <img
           src={src}
           alt={alt}
@@ -43,8 +44,14 @@ export default function LazyImage({ src, alt, className = '', placeholder = 'bg-
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
           loading="lazy"
         />
+      )}
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+          <span className="text-gray-500 text-xs">Image unavailable</span>
+        </div>
       )}
     </div>
   )

@@ -8,7 +8,8 @@ import DetailHero, { MetaStar } from '../components/Details/DetailHero'
 import MediaRail from '../components/Details/MediaRail'
 import CastRail from '../components/Details/CastRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
-import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
+import ReviewsSection from '../components/Reviews/ReviewsSection'
+import { MediaDetails, MovieSummary, tmdbApi, TmdbEpisode } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useToast } from '../hooks/useToast'
 import { useStore } from '../store/useStore'
@@ -38,6 +39,11 @@ export default function TVDetails() {
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
   const setWatchProgress = useStore((state) => state.setWatchProgress)
   const getWatchProgress = useStore((state) => state.getWatchProgress)
+  const [seasonEpisodes, setSeasonEpisodes] = useState<TmdbEpisode[]>([])
+  const [loadingSeason, setLoadingSeason] = useState(false)
+  const [nextEpisodeData, setNextEpisodeData] = useState<{ season: number; episode: number } | null>(null)
+  const [showNextEpisodeCountdown, setShowNextEpisodeCountdown] = useState(false)
+  const [countdown, setCountdown] = useState(0)
 
   useEffect(() => {
     if (id === '119051') {
@@ -49,8 +55,54 @@ export default function TVDetails() {
     }
   }, [id])
 
+  useEffect(() => {
+    async function loadSeasonEpisodes() {
+      if (!id) return
+
+      setLoadingSeason(true)
+      try {
+        const seasonData = await tmdbApi.getTVSeasonDetails(id, selectedSeason)
+        setSeasonEpisodes(seasonData.episodes || [])
+
+        // Determine next episode for preloading
+        const currentEpisodeIndex = seasonData.episodes?.findIndex(
+          ep => ep.episode_number === selectedEpisode
+        ) ?? -1
+        
+        if (currentEpisodeIndex >= 0 && seasonData.episodes && currentEpisodeIndex < seasonData.episodes.length - 1) {
+          // Next episode in same season
+          setNextEpisodeData({
+            season: selectedSeason,
+            episode: seasonData.episodes[currentEpisodeIndex + 1].episode_number
+          })
+        } else if (tv && selectedSeason < (tv.seasons || 1)) {
+          // First episode of next season
+          setNextEpisodeData({
+            season: selectedSeason + 1,
+            episode: 1
+          })
+        } else {
+          setNextEpisodeData(null)
+        }
+      } catch (error) {
+        console.error('Error loading season episodes:', error)
+        setSeasonEpisodes([])
+      } finally {
+        setLoadingSeason(false)
+      }
+    }
+
+    loadSeasonEpisodes()
+  }, [id, selectedSeason, selectedEpisode, tv])
+
   const handleProgress = (data: { progress: number; currentTime: number; duration: number }) => {
     setWatchProgress(`tv_${id}_${selectedSeason}_${selectedEpisode}`, data.progress)
+    
+    // Show countdown when episode is nearly finished (90%)
+    if (data.progress >= 90 && nextEpisodeData && playbackPreferences.autoplay) {
+      setShowNextEpisodeCountdown(true)
+      setCountdown(15) // 15 second countdown
+    }
   }
 
   const handlePlayerError = () => {
@@ -62,6 +114,100 @@ export default function TVDetails() {
     setPlayerError(false)
   }
 
+  const handlePlayNextEpisode = () => {
+    if (nextEpisodeData) {
+      setSelectedSeason(nextEpisodeData.season)
+      setSelectedEpisode(nextEpisodeData.episode)
+      setShowNextEpisodeCountdown(false)
+      setCountdown(0)
+      document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleCancelCountdown = () => {
+    setShowNextEpisodeCountdown(false)
+    setCountdown(0)
+  }
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (showNextEpisodeCountdown && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => prev - 1)
+      }, 1000)
+      return () => clearInterval(timer)
+    } else if (countdown === 0 && showNextEpisodeCountdown) {
+      handlePlayNextEpisode()
+    }
+  }, [showNextEpisodeCountdown, countdown])
+
+  // Keyboard navigation for episodes
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return
+      }
+
+      // Only handle episode navigation when not in fullscreen player
+      if (document.fullscreenElement) {
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowRight':
+          e.preventDefault()
+          // Next episode
+          if (nextEpisodeData) {
+            handlePlayNextEpisode()
+          }
+          break
+        case 'ArrowLeft': {
+          e.preventDefault()
+          // Previous episode
+          const currentEpisodeIndex = seasonEpisodes.findIndex(
+            ep => ep.episode_number === selectedEpisode
+          )
+          if (currentEpisodeIndex > 0) {
+            setSelectedEpisode(seasonEpisodes[currentEpisodeIndex - 1].episode_number)
+            document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' })
+          } else if (selectedSeason > 1) {
+            // Go to previous season's last episode
+            setSelectedSeason(selectedSeason - 1)
+            // Will be handled by season change effect
+          }
+          break
+        }
+        case 'n':
+          e.preventDefault()
+          // Skip to next episode
+          if (nextEpisodeData) {
+            handlePlayNextEpisode()
+          }
+          break
+        case 'p': {
+          e.preventDefault()
+          // Previous episode
+          const prevIndex = seasonEpisodes.findIndex(
+            ep => ep.episode_number === selectedEpisode
+          )
+          if (prevIndex > 0) {
+            setSelectedEpisode(seasonEpisodes[prevIndex - 1].episode_number)
+            document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' })
+          }
+          break
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [selectedEpisode, selectedSeason, seasonEpisodes, nextEpisodeData])
+
   useEffect(() => {
     // Load saved progress from store
     const savedProgress = getWatchProgress(`tv_${id}_${selectedSeason}_${selectedEpisode}`)
@@ -72,6 +218,7 @@ export default function TVDetails() {
       setStartProgressSeconds(0)
     }
   }, [id, selectedSeason, selectedEpisode, getWatchProgress])
+
 
   useEffect(() => {
     async function fetchTV() {
@@ -255,6 +402,36 @@ export default function TVDetails() {
         trailer={trailer}
         showTrailer={showTrailer}
       >
+        {/* Next Episode Countdown Overlay */}
+        {showNextEpisodeCountdown && nextEpisodeData && (
+          <div className="absolute bottom-4 right-4 z-50 bg-black/90 backdrop-blur-sm rounded-xl p-4 shadow-2xl border border-white/10 max-w-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-9 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">{countdown}</span>
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm">Next Episode</p>
+                <p className="text-gray-400 text-xs">Season {nextEpisodeData.season}, Episode {nextEpisodeData.episode}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancelCountdown}
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePlayNextEpisode}
+                  className="px-3 py-1.5 bg-primary hover:bg-primary/80 text-white text-xs rounded-lg transition-colors"
+                >
+                  Play Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <PlayButton>
           <Play className="w-5 h-5 fill-black" />
           Play
@@ -296,6 +473,7 @@ export default function TVDetails() {
                   providerId={selectedProviderId}
                   onProgress={handleProgress}
                   onError={handlePlayerError}
+                  onProviderSwitch={handleProviderChange}
                   className="rounded-b-2xl"
                 />
               </div>
@@ -365,64 +543,93 @@ export default function TVDetails() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
-            {Array.from({ length: 10 }).map((_, i) => {
-              const episodeNumber = i + 1
-              const isSelected = selectedEpisode === episodeNumber
-              const progressKey = `tv_${id}_${selectedSeason}_${episodeNumber}`
-              const savedProgress = useStore.getState().getWatchProgress(progressKey)
-              const progressPercent = Math.floor(savedProgress || 0)
+            {loadingSeason ? (
+              <div className="col-span-2 flex items-center justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full" />
+              </div>
+            ) : seasonEpisodes.length === 0 ? (
+              <div className="col-span-2 text-center py-8 text-gray-400">
+                No episodes available for this season.
+              </div>
+            ) : (
+              seasonEpisodes.map((episode) => {
+                const episodeNumber = episode.episode_number
+                const isSelected = selectedEpisode === episodeNumber
+                const progressKey = `tv_${id}_${selectedSeason}_${episodeNumber}`
+                const savedProgress = useStore.getState().getWatchProgress(progressKey)
+                const progressPercent = Math.floor(savedProgress || 0)
+                const runtime = episode.runtime ? `${episode.runtime} min` : '45 min'
 
-              return (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setSelectedEpisode(episodeNumber)
-                    document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className={`rounded-2xl p-3 flex gap-3 transition-all duration-200 w-full text-left border group ${
-                    isSelected
-                      ? 'bg-primary/10 border-primary/50'
-                      : 'bg-darkSurface border-white/5 hover:bg-darkHover hover:border-white/10'
-                  }`}
-                >
-                  <div className="w-28 sm:w-32 aspect-video bg-gradient-to-br from-darkHover to-darkElevated rounded-xl flex-shrink-0 relative overflow-hidden flex items-center justify-center">
-                    <span className="text-2xl font-extrabold text-white/20">{episodeNumber}</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-9 h-9 rounded-full bg-primary/90 flex items-center justify-center">
-                        <Play className="w-4 h-4 text-white fill-white" />
+                return (
+                  <button
+                    key={episode.id}
+                    onClick={() => {
+                      setSelectedEpisode(episodeNumber)
+                      document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                    className={`rounded-2xl p-3 flex gap-3 transition-all duration-200 w-full text-left border group ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary/50'
+                        : 'bg-darkSurface border-white/5 hover:bg-darkHover hover:border-white/10'
+                    }`}
+                  >
+                    <div className="w-28 sm:w-32 aspect-video bg-gradient-to-br from-darkHover to-darkElevated rounded-xl flex-shrink-0 relative overflow-hidden flex items-center justify-center">
+                      {episode.still_path ? (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                          alt={episode.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-2xl font-extrabold text-white/20">{episodeNumber}</span>
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <div className="w-9 h-9 rounded-full bg-primary/90 flex items-center justify-center">
+                          <Play className="w-4 h-4 text-white fill-white" />
+                        </div>
+                      </div>
+                      {progressPercent > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                          <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm text-white truncate">{episodeNumber}. {episode.name}</h3>
+                        {isSelected && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-semibold shrink-0">Playing</span>
+                        )}
+                      </div>
+                      <p className="text-gray-400 text-xs mb-2 line-clamp-2">{episode.overview || 'No description available.'}</p>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-gray-500">{runtime}</span>
+                        {progressPercent > 0 && progressPercent < 90 && (
+                          <span className="text-primary font-medium">Resume · {progressPercent}%</span>
+                        )}
+                        {progressPercent >= 90 && (
+                          <span className="text-green-400 font-medium">Watched</span>
+                        )}
                       </div>
                     </div>
-                    {progressPercent > 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
-                        <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm text-white truncate">Episode {episodeNumber}</h3>
-                      {isSelected && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-semibold shrink-0">Playing</span>
-                      )}
-                    </div>
-                    <p className="text-gray-400 text-xs mb-2 line-clamp-2">Watch season {selectedSeason}, episode {episodeNumber}.</p>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="text-gray-500">45 min</span>
-                      {progressPercent > 0 && progressPercent < 90 && (
-                        <span className="text-primary font-medium">Resume · {progressPercent}%</span>
-                      )}
-                      {progressPercent >= 90 && (
-                        <span className="text-green-400 font-medium">Watched</span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+                  </button>
+                )
+              })
+            )}
           </div>
         </section>
 
         <CastRail cast={tv.cast} />
+
+        {id && tv && (
+          <ReviewsSection
+            mediaId={id}
+            mediaType="tv"
+            mediaTitle={tv.title}
+            mediaPoster={tv.poster}
+          />
+        )}
 
         <MediaRail title="More Like This" items={recommendations} type="tv" />
       </div>

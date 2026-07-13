@@ -106,6 +106,17 @@ export function useAuth() {
     return await signInWithPopup(auth, provider);
   };
 
+  const updateUserProfile = async (updates: { displayName?: string; photoURL?: string }) => {
+    const auth = getAuthInstance();
+    if (!auth || !auth.currentUser) {
+      throw new Error('No user is signed in');
+    }
+
+    await updateProfile(auth.currentUser, updates);
+    // Refresh the local user state
+    setUser({ ...auth.currentUser });
+  };
+
   return {
     user,
     loading,
@@ -117,5 +128,6 @@ export function useAuth() {
     signInWithGithub,
     sendVerificationEmail,
     isEmailVerified,
+    updateUserProfile,
   };
 }

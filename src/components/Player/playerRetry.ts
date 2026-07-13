@@ -4,12 +4,17 @@ export interface PlayerRetryDecision {
 }
 
 export function getPlayerRetryDecision(attempt: number, isOnline: boolean): PlayerRetryDecision {
-  if (!isOnline || attempt >= 2) {
+  const MAX_ATTEMPTS = 4
+  
+  if (!isOnline || attempt >= MAX_ATTEMPTS) {
     return { canRetry: false, delayMs: 0 }
   }
 
+  // Exponential backoff: 1.5s, 3s, 6s, 12s
+  const delayMs = 1500 * Math.pow(2, attempt)
+
   return {
     canRetry: true,
-    delayMs: attempt === 0 ? 1500 : 4000,
+    delayMs,
   }
 }

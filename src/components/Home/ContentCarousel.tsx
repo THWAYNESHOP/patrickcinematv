@@ -103,9 +103,9 @@ const CarouselCard = function CarouselCard({
             }`}>
               <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
             </div>
-            {showProgress && (
+            {showProgress && typeof item.progress === 'number' && (
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
-                <div className="h-full bg-primary" style={{ width: '45%' }} />
+                <div className="h-full bg-primary" style={{ width: `${Math.min(item.progress, 100)}%` }} />
               </div>
             )}
             <button
@@ -281,9 +281,9 @@ export default function ContentCarousel({
 
   const carouselItems = useMemo(
     () =>
-      items.map((item: MovieSummary) => (
+      items.map((item: MovieSummary, index: number) => (
         <MemoizedCarouselCard
-          key={item.id}
+          key={`${item.id}-${item.type}-${index}`}
           item={item}
           itemType={item.type || type}
           showProgress={showProgress}

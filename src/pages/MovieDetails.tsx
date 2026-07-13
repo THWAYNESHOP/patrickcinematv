@@ -8,6 +8,7 @@ import DetailHero, { MetaStar } from '../components/Details/DetailHero'
 import MediaRail from '../components/Details/MediaRail'
 import CastRail from '../components/Details/CastRail'
 import { IconAction, PlayButton } from '../components/Details/DetailActions'
+import ReviewsSection from '../components/Reviews/ReviewsSection'
 import { MediaDetails, MovieSummary, tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useToast } from '../hooks/useToast'
@@ -146,6 +147,7 @@ export default function MovieDetails() {
 
     fetchMovie()
   }, [id, retryCount, toast])
+
 
   if (loading) {
     return (
@@ -288,6 +290,7 @@ export default function MovieDetails() {
                   providerId={selectedProviderId}
                   onProgress={handleProgress}
                   onError={handlePlayerError}
+                  onProviderSwitch={handleProviderChange}
                   className="rounded-b-2xl"
                 />
               </div>
@@ -335,6 +338,15 @@ export default function MovieDetails() {
         </section>
 
         <CastRail cast={movie.cast} />
+
+        {id && (
+          <ReviewsSection
+            mediaId={id}
+            mediaType="movie"
+            mediaTitle={movie.title}
+            mediaPoster={movie.poster}
+          />
+        )}
 
         <MediaRail title={`More Like ${movie.title}`} items={recommendations} type="movie" />
       </div>

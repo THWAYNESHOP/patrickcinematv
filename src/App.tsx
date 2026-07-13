@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, useNavigate, useLocation } from 'react-router-dom'
 import { lazy, Suspense, useMemo, useState, useEffect } from 'react'
 import Layout from './components/Layout/Layout'
 import AppRoutes from './pages/Routes'
@@ -9,8 +9,10 @@ import { useWebVitals } from './hooks/useWebVitals'
 import { useSpatialNavigation } from './hooks/useSpatialNavigation'
 import { useKeyboardHandler } from './hooks/useKeyboardHandler'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
+import NotificationPermission from './components/Notifications/NotificationPermission'
 import TVGuideOverlay from './components/TVGuideOverlay'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
+import { useNotifications } from './hooks/useNotifications'
 import { useNetworkStatus } from './hooks/useNetworkStatus'
 import { useTVDetection } from './hooks/useTVDetection'
 
@@ -33,7 +35,10 @@ function AppContent() {
   const [isTVGuideOpen, setIsTVGuideOpen] = useState(false)
   const [hasShownOfflineNotice, setHasShownOfflineNotice] = useState(false)
   const [shouldLoadAuthRuntime, setShouldLoadAuthRuntime] = useState(false)
+  const [shouldShowNotificationPrompt, setShouldShowNotificationPrompt] = useState(false)
+  const { permission: notificationPermission } = useNotifications()
   const { isOnline, isSlowConnection, effectiveConnectionType } = useNetworkStatus()
+  const location = useLocation()
   const missingConfigKeys = useMemo(() => getMissingConfigKeys(), [])
   const { registerHandler } = useKeyboardHandler()
   const isTV = useTVDetection()
@@ -45,6 +50,25 @@ function AppContent() {
     const id = window.setTimeout(() => setShouldLoadAuthRuntime(true), isTV ? 5000 : 1200)
     return () => window.clearTimeout(id)
   }, [isTV])
+
+  useEffect(() => {
+    const hasPrompted = window.localStorage.getItem('nexastream-notification-prompt-seen') === 'true'
+    if (hasPrompted || location.pathname !== '/') {
+      return
+    }
+
+    const isNotificationApiAvailable = typeof Notification !== 'undefined'
+    if (!isNotificationApiAvailable) {
+      setShouldShowNotificationPrompt(true)
+      window.localStorage.setItem('nexastream-notification-prompt-seen', 'true')
+      return
+    }
+
+    if (notificationPermission.canRequest) {
+      setShouldShowNotificationPrompt(true)
+      window.localStorage.setItem('nexastream-notification-prompt-seen', 'true')
+    }
+  }, [location.pathname, notificationPermission.canRequest])
 
   // Nav items for quick jump
   const navItems = [
@@ -116,9 +140,14 @@ function AppContent() {
   useEffect(() => {
     if (isOnline && hasShownOfflineNotice) {
       setHasShownOfflineNotice(false)
-      window.location.reload()
+      // Dispatch soft-sync event for graceful data refresh instead of full reload
+      window.dispatchEvent(new CustomEvent('nexastream:reconnected'))
+      // Only reload if in a video player to ensure fresh stream sources
+      if (location.pathname.includes('player') || location.pathname.includes('details')) {
+        setTimeout(() => window.location.reload(), 1000)
+      }
     }
-  }, [isOnline, hasShownOfflineNotice])
+  }, [isOnline, hasShownOfflineNotice, location.pathname])
 
   const globalErrorMessage = missingConfigKeys.length
     ? `Missing configuration: ${missingConfigKeys.join(', ')}. Some features may not work.`
@@ -149,6 +178,9 @@ function AppContent() {
           )}
           <AppRoutes />
           <ToastContainer />
+          {shouldShowNotificationPrompt && (
+            <NotificationPermission onClose={() => setShouldShowNotificationPrompt(false)} />
+          )}
         </Layout>
         <KeyboardShortcutsModal
           isOpen={isShortcutsModalOpen}
