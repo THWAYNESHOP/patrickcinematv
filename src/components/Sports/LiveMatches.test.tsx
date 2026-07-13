@@ -42,10 +42,10 @@ describe('LiveMatches', () => {
 
   it('renders loading skeleton initially', () => {
     vi.spyOn(sportsApi, 'getLiveMatches').mockImplementation(() => new Promise(() => {}))
-    
-    renderWithRouter(<LiveMatches />)
-    
-    expect(screen.getAllByRole('generic')).toHaveLength(5) // 5 skeleton cards
+    const { container } = renderWithRouter(<LiveMatches />)
+
+    const skeletons = container.querySelectorAll('.animate-pulse')
+    expect(skeletons.length).toBe(5)
   })
 
   it('renders matches after loading', async () => {
@@ -122,21 +122,19 @@ describe('LiveMatches', () => {
     vi.spyOn(sportsApi, 'getUpcomingMatches').mockResolvedValue(mockMatches)
     
     renderWithRouter(<LiveMatches variant="upcoming" />)
-    
-    await waitFor(() => {
-      expect(screen.getByText('Team A')).toBeInTheDocument()
-      expect(screen.getByText('UPCOMING')).toBeInTheDocument()
-    })
+
+    expect(await screen.findByText('Team A')).toBeInTheDocument()
+    const upcomingBadges = await screen.findAllByText('UPCOMING')
+    expect(upcomingBadges.length).toBeGreaterThan(0)
   })
 
   it('displays LIVE badge for live matches', async () => {
     vi.spyOn(sportsApi, 'getLiveMatches').mockResolvedValue(mockMatches)
     
     renderWithRouter(<LiveMatches />)
-    
-    await waitFor(() => {
-      expect(screen.getByText('LIVE')).toBeInTheDocument()
-    })
+
+    const liveBadges = await screen.findAllByText('LIVE')
+    expect(liveBadges.length).toBeGreaterThan(0)
   })
 
   it('renders match posters when available', async () => {

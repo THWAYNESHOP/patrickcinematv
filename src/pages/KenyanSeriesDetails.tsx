@@ -373,7 +373,7 @@ export default function KenyanSeriesDetails() {
                   <iframe
                     title={`${item.title} episode player`}
                     src={selectedEpisodeEmbedUrl || ''}
-                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                     allowFullScreen
                     className="h-full w-full"
                   />

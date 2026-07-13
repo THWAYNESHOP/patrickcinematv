@@ -9,6 +9,8 @@ interface HeroSliderProps {
 }
 
 export default function HeroSlider({ movies }: HeroSliderProps) {
+  if (!movies || movies.length === 0) return null
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
@@ -47,13 +49,26 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
           }`}
         >
           {/* Background Image with Optimized Quality for TV */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${movie.backdrop?.replace('w500', 'w1280') || movie.backdrop})`,
-              imageRendering: 'auto',
-            } as React.CSSProperties}
-          />
+          {(() => {
+            const optimized = movie.backdrop
+              ? (movie.backdrop.includes('w500')
+                  ? movie.backdrop.replace('w500', 'w1280')
+                  : `${movie.backdrop.replace(/\/?$/, '')}/w1280`)
+              : ''
+
+            return (
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${optimized})`,
+                  imageRendering: 'auto',
+                } as React.CSSProperties}
+              >
+                {/* Include a hidden img for accessibility and tests that query by alt text */}
+                <img src={optimized} alt={movie.title} className="sr-only" />
+              </div>
+            )
+          })()}
           
           {/* Gradient Overlays for Text Readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
@@ -97,12 +112,14 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
       {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
+        aria-label="Previous slide"
         className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
         <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
       </button>
       <button
         onClick={nextSlide}
+        aria-label="Next slide"
         className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
       >
         <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />

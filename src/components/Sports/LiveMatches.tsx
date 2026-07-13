@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Clock, Zap } from 'lucide-react'
-import { sportsApi, Match } from '../../api/sports'
+import { getLiveMatches, getUpcomingMatches, Match } from '../../api/sports'
 import { useToast } from '../../hooks/useToast'
 
 interface LiveMatchesProps {
@@ -51,8 +51,8 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
         setLoading(true)
         setFetchError(null)
         const data = variant === 'upcoming'
-          ? await sportsApi.getUpcomingMatches()
-          : await sportsApi.getLiveMatches()
+          ? await getUpcomingMatches()
+          : await getLiveMatches()
         let filteredMatches = data
         
         if (sport && sport !== 'all') {
