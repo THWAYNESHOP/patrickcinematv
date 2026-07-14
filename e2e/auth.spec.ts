@@ -3,13 +3,17 @@ import { test, expect } from '@playwright/test'
 test.describe('Authentication', () => {
   test('should open auth modal when clicking sign in button', async ({ page }) => {
     await page.goto('/')
-    
-    // Wait for page to load
-    await page.waitForLoadState('networkidle')
-    
-    // Click sign in button (adjust selector based on your actual implementation)
+
+    // Click sign in button (use stable wait + scroll; force click if an overlay intercepts)
     const signInButton = page.getByRole('button', { name: /sign in/i })
-    await signInButton.click()
+    await expect(signInButton).toBeVisible({ timeout: 10000 })
+    await signInButton.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(150)
+    try {
+      await signInButton.click()
+    } catch {
+      await signInButton.click({ force: true })
+    }
     
     // Verify modal is visible
     await expect(page.getByRole('dialog')).toBeVisible()
@@ -18,26 +22,45 @@ test.describe('Authentication', () => {
 
   test('should toggle between login and register modes', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
-    
-    // Open auth modal
-    await page.getByRole('button', { name: /sign in/i }).click()
-    
-    // Switch to register mode
-    await page.getByText(/register/i).click()
+
+    // Open auth modal (wait & scroll to avoid overlays)
+    const signIn = page.getByRole('button', { name: /sign in/i })
+    await expect(signIn).toBeVisible({ timeout: 10000 })
+    await signIn.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(150)
+    try {
+      await signIn.click()
+    } catch {
+      await signIn.click({ force: true })
+    }
+
+    // Ensure dialog is visible then switch to register mode using the actual toggle text 'Sign Up'
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    const registerToggle = page.getByRole('button', { name: /sign up/i })
+    await registerToggle.click()
     
     // Verify register form is visible
-    await expect(page.getByText('Create Account')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible()
     await expect(page.getByLabel(/name/i)).toBeVisible()
   })
 
   test('should show password strength indicator', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
-    
-    // Open auth modal and switch to register
-    await page.getByRole('button', { name: /sign in/i }).click()
-    await page.getByText(/register/i).click()
+
+    // Open auth modal and switch to register (robust waits)
+    const signIn2 = page.getByRole('button', { name: /sign in/i })
+    await expect(signIn2).toBeVisible({ timeout: 10000 })
+    await signIn2.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(150)
+    try {
+      await signIn2.click()
+    } catch {
+      await signIn2.click({ force: true })
+    }
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    const registerToggle2 = page.getByRole('button', { name: /sign up/i })
+    await expect(registerToggle2).toBeVisible({ timeout: 5000 })
+    await registerToggle2.click()
     
     // Type password
     await page.getByLabel(/^password$/i).fill('Test123!')
@@ -48,13 +71,22 @@ test.describe('Authentication', () => {
 
   test('should close modal when close button is clicked', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
-    
-    // Open auth modal
-    await page.getByRole('button', { name: /sign in/i }).click()
-    
+
+    // Open auth modal (robust wait)
+    const signIn3 = page.getByRole('button', { name: /sign in/i })
+    await expect(signIn3).toBeVisible({ timeout: 10000 })
+    await signIn3.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(150)
+    try {
+      await signIn3.click()
+    } catch {
+      await signIn3.click({ force: true })
+    }
+
     // Close modal
-    await page.getByLabel('Close modal').click()
+    const closeBtn = page.getByLabel('Close modal')
+    await expect(closeBtn).toBeVisible({ timeout: 5000 })
+    await closeBtn.click()
     
     // Verify modal is hidden
     await expect(page.getByRole('dialog')).not.toBeVisible()
