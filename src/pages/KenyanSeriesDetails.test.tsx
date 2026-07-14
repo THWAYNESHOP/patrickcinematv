@@ -36,6 +36,62 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/10TH FRIDAY PART 2/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Ayana 13th Monday Part 1 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/13TH MONDAY PART 1/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Ayana 13th Monday Part 2 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/13TH MONDAY PART 2/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Ayana 14th Tuesday Part 1 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/14TH TUESDAY PART 1/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Ayana 14th Tuesday Part 2 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/14TH TUESDAY PART 2/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the Lulu page without Ayana branding', () => {
     render(
       <ToastProvider>
@@ -50,6 +106,34 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getByRole('heading', { level: 1, name: /^Lulu$/i })).toBeInTheDocument()
     expect(screen.queryByText(/AYANA/i)).not.toBeInTheDocument()
     expect(screen.getByText(/6TH MONDAY/i)).toBeInTheDocument()
+  })
+
+  it('shows the new Lulu 10th Friday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lulu']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/10TH FRIDAY/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Lulu 13th Monday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lulu']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/13TH MONDAY/i).length).toBeGreaterThan(0)
   })
 
   it('shows a dedicated play prompt before opening the episode player', () => {
@@ -78,6 +162,34 @@ describe('KenyanSeriesDetails', () => {
     )
 
     expect(screen.getAllByText(/9TH THURSDAY/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Lazizi 10th Friday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lazizi']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/10TH FRIDAY/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Lazizi 13th Monday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lazizi']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/13TH MONDAY/i).length).toBeGreaterThan(0)
   })
 
   it('launches the episode player unmuted and with fullscreen support', () => {

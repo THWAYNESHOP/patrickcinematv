@@ -76,6 +76,42 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 6,
   },
+  {
+    id: 'part-7',
+    title: '13TH MONDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/hRG9YRoGJHc?si=AVBon47H0YhoI5W0',
+    date: '2026-07-13',
+    runtime: '45 min',
+    part: 7,
+  },
+  {
+    id: 'part-8',
+    title: '13TH MONDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/VfHFp-G958M?si=C9ajOEhzp0Dt8XxY',
+    date: '2026-07-13',
+    runtime: '45 min',
+    part: 8,
+  },
+  {
+    id: 'part-9',
+    title: '14TH TUESDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/V3TV-5fiCDk?si=38TAlsECjzdvcW5z',
+    date: '2026-07-14',
+    runtime: '45 min',
+    part: 9,
+  },
+  {
+    id: 'part-10',
+    title: '14TH TUESDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/Sm6aAWiy650?si=_o_NMfbL6vkEvaHW',
+    date: '2026-07-14',
+    runtime: '45 min',
+    part: 10,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -111,6 +147,22 @@ const luluEpisodes: AyanaEpisode[] = [
     date: '2026-07-09',
     runtime: '27 min',
   },
+  {
+    id: 'episode-16',
+    title: '10TH FRIDAY',
+    thumbnail: '/lulu.jpg',
+    youtubeUrl: 'https://youtu.be/su2-c9vYLKQ?si=QlxQ0iFLChMcK9T_',
+    date: '2026-07-10',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-17',
+    title: '13TH MONDAY',
+    thumbnail: '/lulu.jpg',
+    youtubeUrl: 'https://youtu.be/hMdCIW9g_7A?si=kJX8xXzPinRv3ME3',
+    date: '2026-07-13',
+    runtime: '27 min',
+  },
 ]
 
 const laziziEpisodes: AyanaEpisode[] = [
@@ -144,6 +196,22 @@ const laziziEpisodes: AyanaEpisode[] = [
     thumbnail: '/lazizi.jpg',
     youtubeUrl: 'https://youtu.be/Q9fHx3WjctU?si=ZAMd7wCEXe5dWIrb',
     date: '2026-07-09',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-17',
+    title: '10TH FRIDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://youtu.be/SQfEMY2JXgc?si=rh6cyWESuvJRxPnA',
+    date: '2026-07-10',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-18',
+    title: '13TH MONDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://youtu.be/pHf6KPeM800?si=qCY8sgsHPI7Jqt2-',
+    date: '2026-07-13',
     runtime: '27 min',
   },
 ]
