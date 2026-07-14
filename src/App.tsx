@@ -47,8 +47,33 @@ function AppContent() {
   useSpatialNavigation()
 
   useEffect(() => {
-    const id = window.setTimeout(() => setShouldLoadAuthRuntime(true), isTV ? 5000 : 1200)
-    return () => window.clearTimeout(id)
+    let timeoutId: number | null = null
+    let idleCallbackId: number | null = null
+
+    const scheduleAuthLoad = () => {
+      if ('requestIdleCallback' in window) {
+        idleCallbackId = (window as any).requestIdleCallback(
+          () => setShouldLoadAuthRuntime(true),
+          { timeout: isTV ? 5000 : 1200 }
+        )
+      } else {
+        timeoutId = globalThis.setTimeout(
+          () => setShouldLoadAuthRuntime(true),
+          isTV ? 3000 : 1200
+        )
+      }
+    }
+
+    scheduleAuthLoad()
+
+    return () => {
+      if (timeoutId !== null) {
+        globalThis.clearTimeout(timeoutId)
+      }
+      if (idleCallbackId !== null && 'cancelIdleCallback' in window) {
+        (window as any).cancelIdleCallback(idleCallbackId)
+      }
+    }
   }, [isTV])
 
   useEffect(() => {

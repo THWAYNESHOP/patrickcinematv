@@ -91,4 +91,30 @@ test.describe('Authentication', () => {
     // Verify modal is hidden
     await expect(page.getByRole('dialog')).not.toBeVisible()
   })
+
+  test('should toggle forgot password mode and back to sign in', async ({ page }) => {
+    await page.goto('/')
+
+    const signIn = page.getByRole('button', { name: /sign in/i })
+    await expect(signIn).toBeVisible({ timeout: 10000 })
+    await signIn.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(150)
+    try {
+      await signIn.click()
+    } catch {
+      await signIn.click({ force: true })
+    }
+
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    const forgotLink = page.getByRole('button', { name: /forgot password\?/i })
+    await expect(forgotLink).toBeVisible({ timeout: 5000 })
+    await forgotLink.click()
+
+    await expect(page.getByRole('heading', { name: /reset password/i })).toBeVisible({ timeout: 5000 })
+    const backToSignIn = page.getByRole('button', { name: /back to sign in/i })
+    await expect(backToSignIn).toBeVisible({ timeout: 5000 })
+    await backToSignIn.click()
+
+    await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible({ timeout: 5000 })
+  })
 })

@@ -377,13 +377,14 @@ export default function IPTVPlayer() {
   }, [channels]);
 
   const visibleChannels = useMemo(() => {
-    const filtered = channels.filter((ch) => 
+    const categoryChannels =
+      activeCategory === 'all'
+        ? channels
+        : categorizedChannels[activeCategory] || [];
+
+    return categoryChannels.filter((ch) =>
       !searchQuery || ch.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    if (activeCategory === 'all') return filtered;
-    
-    return categorizedChannels[activeCategory] || [];
   }, [channels, activeCategory, searchQuery, categorizedChannels]);
 
   const groupedSportsEvents = useMemo(() => groupSportsEvents(sportsEvents), [sportsEvents]);
@@ -742,27 +743,6 @@ export default function IPTVPlayer() {
           </div>
         )}
       </div>
-      {fetchError && (
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="rounded-3xl border border-primary/20 bg-primary/10 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-primary">Live TV load issue</p>
-              <p className="mt-1 text-sm text-gray-200">{fetchError}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setFetchError(null)
-                setLoading(true)
-                setRetryCount((prev) => prev + 1)
-              }}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black transition hover:bg-primaryHover"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

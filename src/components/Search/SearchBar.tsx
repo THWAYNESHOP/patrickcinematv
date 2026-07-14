@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react'
 import { Search, X, Film, Trophy, Zap, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { tmdbApi } from '../../api/tmdb'
@@ -31,6 +31,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [filters, setFilters] = useState({
     type: 'all', // all, movie, tv, anime, sports
     year: 'all',
@@ -39,6 +40,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     language: 'all',
     sortBy: 'relevance', // relevance, rating, year, newest
   })
+  const searchRequestId = useRef(0)
   const navigate = useNavigate()
   const searchContainerRef = useFocusTrap(true)
   const debouncedQuery = useDebounce(query, 500)
@@ -96,15 +98,15 @@ export default function SearchBar({ onClose }: SearchBarProps) {
     return filtered
   }
 
-  const fallbackData = [
-    { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
-    { id: '693134', title: 'Dune: Part Two', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024 },
-    { id: '872585', title: 'Oppenheimer', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', year: 2023 },
-    { id: '119051', title: 'Test Series', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2021 },
-    { id: '100088', title: 'The Last of Us', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2023 },
-    { id: '4', title: 'Attack on Titan', type: 'anime', poster: 'https://image.tmdb.org/t/p/w500/t21Ic7W6YBTURa1eLj5g3Z9Dqy.jpg', year: 2013 },
-    { id: '5', title: 'Manchester United vs Liverpool', type: 'sports', poster: '', year: 2024 },
-    { id: '6', title: 'Real Madrid vs Barcelona', type: 'sports', poster: '', year: 2024 },
+  const fallbackData: SearchableItem[] = [
+    { id: '1078605', title: 'Test Movie', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024, genre: [], language: 'en' },
+    { id: '693134', title: 'Dune: Part Two', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', year: 2024, genre: [], language: 'en' },
+    { id: '872585', title: 'Oppenheimer', type: 'movie', poster: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', year: 2023, genre: [], language: 'en' },
+    { id: '119051', title: 'Test Series', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2021, genre: [], language: 'en' },
+    { id: '100088', title: 'The Last of Us', type: 'tv', poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg', year: 2023, genre: [], language: 'en' },
+    { id: '4', title: 'Attack on Titan', type: 'anime', poster: 'https://image.tmdb.org/t/p/w500/t21Ic7W6YBTURa1eLj5g3Z9Dqy.jpg', year: 2013, genre: [], language: 'ja' },
+    { id: '5', title: 'Manchester United vs Liverpool', type: 'sports', poster: '', year: 2024, genre: [], language: 'en' },
+    { id: '6', title: 'Real Madrid vs Barcelona', type: 'sports', poster: '', year: 2024, genre: [], language: 'en' },
   ]
 
   useEffect(() => {
@@ -113,67 +115,73 @@ export default function SearchBar({ onClose }: SearchBarProps) {
       setSelectedIndex(-1)
       setSuggestions([])
       setShowSuggestions(false)
+      setSearchError(null)
       return
     }
 
+    const requestId = ++searchRequestId.current
     setIsSearching(true)
     setSelectedIndex(-1)
-    setShowSuggestions(true)
+    setSearchError(null)
+
     async function search() {
       try {
         const tmdbResults = await tmdbApi.searchMulti(debouncedQuery)
 
-        // Convert to SearchableItem format
+        if (requestId !== searchRequestId.current) return
+
         const searchableItems: SearchableItem[] = tmdbResults.map((item: MovieSummary) => ({
           id: String(item.id),
           title: item.title,
-          type: ((item.type ?? 'movie') as 'movie' | 'tv' | 'anime' | 'sports'),
+          type: item.type === 'tv' ? 'tv' : 'movie',
           year: item.year,
           rating: item.rating,
           poster: item.poster,
           genre: ((item as unknown) as { genres?: string[] }).genres || [],
           language: ((item as unknown) as { language?: string }).language,
         }))
-        
-        // Apply fuzzy search for better matching
+
         const fuzzyResults = performFuzzySearch(searchableItems, debouncedQuery)
-        
-        // Get search suggestions
         const searchSuggestions = getSearchSuggestions(searchableItems, debouncedQuery)
+
         setSuggestions(searchSuggestions)
-        
-        const filteredResults = applyFilters(fuzzyResults)
-        setResults(filteredResults)
+        setShowSuggestions(searchSuggestions.length > 0)
+        setResults(applyFilters(fuzzyResults))
       } catch (error) {
+        if (requestId !== searchRequestId.current) return
+
         if (import.meta.env.DEV) {
           console.warn('TMDB search unavailable, using fallback search:', error)
         }
-        
-        // Convert fallback data to SearchableItem format
+
         const searchableFallback: SearchableItem[] = fallbackData.map((item) => ({
           id: String(item.id),
           title: item.title,
           type: item.type as 'movie' | 'tv' | 'anime' | 'sports',
           year: item.year,
           poster: item.poster,
+          genre: item.genre ?? [],
+          language: item.language ?? undefined,
         }))
-        
-        // Use fuzzy search on fallback data
+
         const fuzzyResults = performFuzzySearch(searchableFallback, debouncedQuery)
         const searchSuggestions = getSearchSuggestions(searchableFallback, debouncedQuery)
+
+        setSearchError('Search service currently unavailable; showing fallback results.')
         setSuggestions(searchSuggestions)
-        
-        const filteredResults = applyFilters(fuzzyResults)
-        setResults(filteredResults)
+        setShowSuggestions(searchSuggestions.length > 0)
+        setResults(applyFilters(fuzzyResults))
       } finally {
-        setIsSearching(false)
+        if (requestId === searchRequestId.current) {
+          setIsSearching(false)
+        }
       }
     }
 
     search()
   }, [debouncedQuery, filters])
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (results.length === 0) return
 
     switch (e.key) {
@@ -265,6 +273,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               placeholder="Search movies, TV shows, anime, sports..."
               className="w-full pl-12 md:pl-14 pr-12 md:pr-14 py-3 md:py-4 bg-white/10 rounded-full border border-white/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-white placeholder-gray-400 transition-all duration-300 text-base"
               autoFocus
+              aria-label="Search content"
             />
             {query && (
               <button
@@ -403,6 +412,11 @@ export default function SearchBar({ onClose }: SearchBarProps) {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        {searchError && (
+          <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+            {searchError}
+          </div>
+        )}
         {isSearching ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary shadow-glow" />
