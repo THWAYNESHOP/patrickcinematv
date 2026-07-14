@@ -47,17 +47,23 @@ function AppContent() {
   useSpatialNavigation()
 
   useEffect(() => {
+    type IdleCallbackHandle = number
+    type IdleWindow = Window & {
+      requestIdleCallback?(callback: IdleRequestCallback, options?: IdleRequestOptions): number
+    }
+
+    const win = window as IdleWindow
     let timeoutId: number | null = null
-    let idleCallbackId: number | null = null
+    let idleCallbackId: IdleCallbackHandle | null = null
 
     const scheduleAuthLoad = () => {
-      if ('requestIdleCallback' in window) {
-        idleCallbackId = (window as any).requestIdleCallback(
+      if (typeof win.requestIdleCallback === 'function') {
+        idleCallbackId = win.requestIdleCallback(
           () => setShouldLoadAuthRuntime(true),
           { timeout: isTV ? 5000 : 1200 }
         )
       } else {
-        timeoutId = globalThis.setTimeout(
+        timeoutId = window.setTimeout(
           () => setShouldLoadAuthRuntime(true),
           isTV ? 3000 : 1200
         )
@@ -70,8 +76,8 @@ function AppContent() {
       if (timeoutId !== null) {
         globalThis.clearTimeout(timeoutId)
       }
-      if (idleCallbackId !== null && 'cancelIdleCallback' in window) {
-        (window as any).cancelIdleCallback(idleCallbackId)
+      if (idleCallbackId !== null && typeof win.cancelIdleCallback === 'function') {
+        win.cancelIdleCallback(idleCallbackId)
       }
     }
   }, [isTV])

@@ -5,7 +5,7 @@ import { tmdbApi } from '../../api/tmdb'
 import type { MovieSummary } from '../../api/tmdb'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { useDebounce } from '../../hooks/useDebounce'
-import { performFuzzySearch, getSearchSuggestions } from '../../utils/fuzzySearch'
+import { performFuzzySearch, getSearchSuggestions, type SearchableItem } from '../../utils/fuzzySearch'
 
 interface SearchBarProps {
   onClose?: () => void
@@ -13,17 +13,6 @@ interface SearchBarProps {
 
 export default function SearchBar({ onClose }: SearchBarProps) {
   const [query, setQuery] = useState('')
-
-  interface SearchableItem {
-    id: string
-    title: string
-    type: 'movie' | 'tv' | 'anime' | 'sports'
-    year?: number
-    rating?: string
-    poster?: string
-    genre?: string[]
-    language?: string
-  }
 
   const [results, setResults] = useState<SearchableItem[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -154,15 +143,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
           console.warn('TMDB search unavailable, using fallback search:', error)
         }
 
-        const searchableFallback: SearchableItem[] = fallbackData.map((item) => ({
-          id: String(item.id),
-          title: item.title,
-          type: item.type as 'movie' | 'tv' | 'anime' | 'sports',
-          year: item.year,
-          poster: item.poster,
-          genre: item.genre ?? [],
-          language: item.language ?? undefined,
-        }))
+        const searchableFallback: SearchableItem[] = fallbackData
 
         const fuzzyResults = performFuzzySearch(searchableFallback, debouncedQuery)
         const searchSuggestions = getSearchSuggestions(searchableFallback, debouncedQuery)
