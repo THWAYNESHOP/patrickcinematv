@@ -112,6 +112,7 @@ export default function Home() {
   const maxCarouselItems = isTVPerformanceMode ? 8 : 20
   const maxHeroItems = isTVPerformanceMode ? 3 : 5
   const liveMatchLimit = isTVPerformanceMode ? 2 : 4
+  const showExtendedHomeContent = !isTVPerformanceMode
 
   const limitItems = useCallback(
     (items: MovieSummary[], limit = maxCarouselItems) =>
@@ -203,6 +204,30 @@ export default function Home() {
         }
       })(),
       (async () => {
+        if (isTVPerformanceMode) {
+          teenRomanceToCache = []
+          kDramaToCache = []
+          actionAdventureToCache = []
+          comedyToCache = []
+          animeToCache = []
+          netflixContentToCache = []
+          primeContentToCache = []
+          disneyContentToCache = []
+          appleContentToCache = []
+
+          setTeenRomance([])
+          setKDrama([])
+          setActionAdventure([])
+          setComedy([])
+          setAnime([])
+          setNetflixContent([])
+          setPrimeContent([])
+          setDisneyContent([])
+          setAppleContent([])
+          setCatalogLoading(false)
+          return
+        }
+
         try {
           const [
             teenRomanceMovies,
@@ -222,10 +247,10 @@ export default function Home() {
             tmdbApi.getMoviesByGenre(28).catch(() => []),
             tmdbApi.getMoviesByGenre(35).catch(() => []),
             tmdbApi.getTVByGenre(16).catch(() => []),
-            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
-            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
-            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
-            isTVPerformanceMode ? Promise.resolve({ movies: [], tv: [] }) : tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Netflix').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Prime Video').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Disney+').catch(() => ({ movies: [], tv: [] })),
+            tmdbApi.getPlatformCatalog('Apple TV+').catch(() => ({ movies: [], tv: [] })),
           ])
 
           const combinedTeenRomance = [
@@ -471,77 +496,81 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Teen Romance */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Teen Romance - Top Rated Movies & Series"
-            items={sortByRating(teenRomance)}
-            type="movie"
-            loading={catalogLoading}
-            carouselId={carouselId('Teen Romance')}
-            {...carouselStateProps}
-          />
-        </section>
+        {showExtendedHomeContent && (
+          <>
+            {/* Teen Romance */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Teen Romance - Top Rated Movies & Series"
+                items={sortByRating(teenRomance)}
+                type="movie"
+                loading={catalogLoading}
+                carouselId={carouselId('Teen Romance')}
+                {...carouselStateProps}
+              />
+            </section>
 
-        {/* Korean Dramas */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Korean Dramas"
-            items={kDrama}
-            type="tv"
-            loading={catalogLoading}
-            carouselId={carouselId('Korean Dramas')}
-            {...carouselStateProps}
-          />
-        </section>
+            {/* Korean Dramas */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Korean Dramas"
+                items={kDrama}
+                type="tv"
+                loading={catalogLoading}
+                carouselId={carouselId('Korean Dramas')}
+                {...carouselStateProps}
+              />
+            </section>
 
-        {/* Action & Adventure */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Action & Adventure"
-            items={actionAdventure}
-            type="movie"
-            loading={catalogLoading}
-            carouselId={carouselId('Action & Adventure')}
-            {...carouselStateProps}
-          />
-        </section>
+            {/* Action & Adventure */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Action & Adventure"
+                items={actionAdventure}
+                type="movie"
+                loading={catalogLoading}
+                carouselId={carouselId('Action & Adventure')}
+                {...carouselStateProps}
+              />
+            </section>
 
-        {/* Comedy */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Comedy"
-            items={comedy}
-            type="movie"
-            loading={catalogLoading}
-            carouselId={carouselId('Comedy')}
-            {...carouselStateProps}
-          />
-        </section>
+            {/* Comedy */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Comedy"
+                items={comedy}
+                type="movie"
+                loading={catalogLoading}
+                carouselId={carouselId('Comedy')}
+                {...carouselStateProps}
+              />
+            </section>
 
-        {/* Anime */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Anime"
-            items={anime}
-            type="tv"
-            loading={catalogLoading}
-            carouselId={carouselId('Anime')}
-            {...carouselStateProps}
-          />
-        </section>
+            {/* Anime */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Anime"
+                items={anime}
+                type="tv"
+                loading={catalogLoading}
+                carouselId={carouselId('Anime')}
+                {...carouselStateProps}
+              />
+            </section>
 
-        {/* Featured This Week */}
-        <section className="mb-10 md:mb-12">
-          <ContentCarousel
-            title="Featured This Week"
-            items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
-            type="movie"
-            loading={primaryLoading}
-            carouselId={carouselId('Featured This Week')}
-            {...carouselStateProps}
-          />
-        </section>
+            {/* Featured This Week */}
+            <section className="mb-10 md:mb-12">
+              <ContentCarousel
+                title="Featured This Week"
+                items={[...trendingMovies.slice(0, 4), ...popularTV.slice(0, 4)]}
+                type="movie"
+                loading={primaryLoading}
+                carouselId={carouselId('Featured This Week')}
+                {...carouselStateProps}
+              />
+            </section>
+          </>
+        )}
 
         {/* My List */}
         <section className="mb-10 md:mb-12">
@@ -555,60 +584,64 @@ export default function Home() {
           />
         </section>
 
-        {/* Only on Netflix */}
-        {(catalogLoading || netflixContent.length > 0) && (
-          <section className="mb-10 md:mb-12">
-            <ContentCarousel
-              title="Only on Netflix"
-              items={netflixContent}
-              type="movie"
-              loading={catalogLoading}
-              carouselId={carouselId('Only on Netflix')}
-              {...carouselStateProps}
-            />
-          </section>
-        )}
+        {showExtendedHomeContent && (
+          <>
+            {/* Only on Netflix */}
+            {(catalogLoading || netflixContent.length > 0) && (
+              <section className="mb-10 md:mb-12">
+                <ContentCarousel
+                  title="Only on Netflix"
+                  items={netflixContent}
+                  type="movie"
+                  loading={catalogLoading}
+                  carouselId={carouselId('Only on Netflix')}
+                  {...carouselStateProps}
+                />
+              </section>
+            )}
 
-        {/* Only on Prime Video */}
-        {(catalogLoading || primeContent.length > 0) && (
-          <section className="mb-10 md:mb-12">
-            <ContentCarousel
-              title="Only on Prime Video"
-              items={primeContent}
-              type="movie"
-              loading={catalogLoading}
-              carouselId={carouselId('Only on Prime Video')}
-              {...carouselStateProps}
-            />
-          </section>
-        )}
+            {/* Only on Prime Video */}
+            {(catalogLoading || primeContent.length > 0) && (
+              <section className="mb-10 md:mb-12">
+                <ContentCarousel
+                  title="Only on Prime Video"
+                  items={primeContent}
+                  type="movie"
+                  loading={catalogLoading}
+                  carouselId={carouselId('Only on Prime Video')}
+                  {...carouselStateProps}
+                />
+              </section>
+            )}
 
-        {/* Only on Disney+ */}
-        {(catalogLoading || disneyContent.length > 0) && (
-          <section className="mb-10 md:mb-12">
-            <ContentCarousel
-              title="Only on Disney+"
-              items={disneyContent}
-              type="movie"
-              loading={catalogLoading}
-              carouselId={carouselId('Only on Disney+')}
-              {...carouselStateProps}
-            />
-          </section>
-        )}
+            {/* Only on Disney+ */}
+            {(catalogLoading || disneyContent.length > 0) && (
+              <section className="mb-10 md:mb-12">
+                <ContentCarousel
+                  title="Only on Disney+"
+                  items={disneyContent}
+                  type="movie"
+                  loading={catalogLoading}
+                  carouselId={carouselId('Only on Disney+')}
+                  {...carouselStateProps}
+                />
+              </section>
+            )}
 
-        {/* Only on Apple TV+ */}
-        {(catalogLoading || appleContent.length > 0) && (
-          <section className="mb-10 md:mb-12">
-            <ContentCarousel
-              title="Only on Apple TV+"
-              items={appleContent}
-              type="movie"
-              loading={catalogLoading}
-              carouselId={carouselId('Only on Apple TV+')}
-              {...carouselStateProps}
-            />
-          </section>
+            {/* Only on Apple TV+ */}
+            {(catalogLoading || appleContent.length > 0) && (
+              <section className="mb-10 md:mb-12">
+                <ContentCarousel
+                  title="Only on Apple TV+"
+                  items={appleContent}
+                  type="movie"
+                  loading={catalogLoading}
+                  carouselId={carouselId('Only on Apple TV+')}
+                  {...carouselStateProps}
+                />
+              </section>
+            )}
+          </>
         )}
       </div>
     </div>

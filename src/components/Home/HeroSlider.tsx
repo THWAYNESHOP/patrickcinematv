@@ -44,42 +44,27 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
 
   const currentMovie = movies[currentIndex]
 
+  const optimizedBackdrop = currentMovie.backdrop
+    ? (currentMovie.backdrop.includes('w500')
+        ? currentMovie.backdrop.replace('w500', 'w1280')
+        : `${currentMovie.backdrop.replace(/\/?$/, '')}/w1280`)
+    : ''
+
   return (
     <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
-      {movies.map((movie, index) => (
+      <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100">
         <div
-          key={movie.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentIndex ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${optimizedBackdrop})`,
+            imageRendering: 'auto',
+          } as React.CSSProperties}
         >
-          {/* Background Image with Optimized Quality for TV */}
-          {(() => {
-            const optimized = movie.backdrop
-              ? (movie.backdrop.includes('w500')
-                  ? movie.backdrop.replace('w500', 'w1280')
-                  : `${movie.backdrop.replace(/\/?$/, '')}/w1280`)
-              : ''
-
-            return (
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${optimized})`,
-                  imageRendering: 'auto',
-                } as React.CSSProperties}
-              >
-                {/* Include a hidden img for accessibility and tests that query by alt text */}
-                <img src={optimized} alt={movie.title} className="sr-only" />
-              </div>
-            )
-          })()}
-          
-          {/* Gradient Overlays for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+          <img src={optimizedBackdrop} alt={currentMovie.title} className="sr-only" />
         </div>
-      ))}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+      </div>
 
       <div className="absolute inset-0 flex items-end pb-12 md:pb-16 lg:pb-20">
         <div className="container mx-auto px-4 md:px-8 lg:px-12">
