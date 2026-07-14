@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trash2, Calendar, Clock } from 'lucide-react'
-import { useWatchHistory, WatchHistoryItem } from '../hooks/useWatchHistory'
+import { useWatchHistory } from '../hooks/useWatchHistory'
+import type { WatchHistoryItem } from '../types/watchHistory'
 
 export default function WatchHistoryManager() {
   const { watchHistory, removeFromWatchHistory, clearWatchHistory } = useWatchHistory()

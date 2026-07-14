@@ -1,0 +1,1 @@
+import{c as r}from"./index-dy6tFckc.js";function t(){return{watchHistory:r(r=>r.watchHistory),addToWatchHistory:r(r=>r.addToWatchHistory),removeFromWatchHistory:r(r=>r.removeFromWatchHistory),clearWatchHistory:r(r=>r.clearWatchHistory),clearOldHistory:r(r=>r.clearOldHistory)}}export{t};

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { useWatchHistory, WatchHistoryItem } from './useWatchHistory'
+import { useWatchHistory } from './useWatchHistory'
+import type { WatchHistoryItem } from '../types/watchHistory'
 
 export interface RecommendationScore {
   id: string | number

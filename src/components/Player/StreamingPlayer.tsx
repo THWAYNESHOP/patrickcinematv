@@ -144,7 +144,7 @@ export default function StreamingPlayer({
     if (connection) {
       const updateNetworkQuality = () => {
         const effectiveType = connection.effectiveType
-        const downlink = connection.downlink
+        const downlink = typeof connection.downlink === 'number' ? connection.downlink : 0
 
         if (downlink >= 10 || effectiveType === '4g') {
           setNetworkQuality('excellent')
@@ -158,8 +158,18 @@ export default function StreamingPlayer({
       }
 
       updateNetworkQuality()
-      connection.addEventListener('change', updateNetworkQuality)
-      return () => connection.removeEventListener('change', updateNetworkQuality)
+      const handleConnectionChange = () => {
+        updateNetworkQuality()
+      }
+
+      if (connection.addEventListener) {
+        connection.addEventListener('change', handleConnectionChange)
+      }
+      return () => {
+        if (connection.removeEventListener) {
+          connection.removeEventListener('change', handleConnectionChange)
+        }
+      }
     }
   }, [isOnline])
 

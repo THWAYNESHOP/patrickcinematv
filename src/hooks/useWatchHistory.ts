@@ -1,13 +1,5 @@
 import { useStore } from '../store/useStore';
-
-export interface WatchHistoryItem {
-  id: string;
-  title: string;
-  poster: string;
-  type: 'movie' | 'tv' | 'sports';
-  timestamp: number;
-  duration?: number;
-}
+export type { WatchHistoryItem } from '../types/watchHistory'
 
 export function useWatchHistory() {
   const watchHistory = useStore((state) => state.watchHistory);

@@ -1,5 +1,6 @@
 import { useRecommendations } from '../hooks/useRecommendations'
 import ContentCarousel from './Home/ContentCarousel'
+import type { MovieSummary } from '../api/tmdb'
 import { useStore } from '../store/useStore'
 
 interface RecommendationsProps {
@@ -16,7 +17,7 @@ export default function RecommendedForYou({ allContent, carouselId, carouselStat
     return null
   }
 
-  const contentForCarousel = recommendations.map((item) => {
+  const contentForCarousel: MovieSummary[] = recommendations.map((item) => {
     const rec = item as { id: string | number; title: string }
     const original = allContent.find(c => c.id === Number(rec.id))
     const userRating = getAverageRatingForMedia(String(rec.id))
@@ -25,9 +26,9 @@ export default function RecommendedForYou({ allContent, carouselId, carouselStat
       id: rec.id,
       title: rec.title,
       poster: original?.poster || '',
-      type: original?.type || 'movie',
-      rating: realRating,
-    }
+      type: (original?.type as MovieSummary['type']) || 'movie',
+      rating: String(realRating),
+    } satisfies MovieSummary
   })
 
   return (

@@ -1,20 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { WatchHistoryItem, MediaType } from '../types/watchHistory';
 
-export interface WatchHistoryItem {
-  id: string;
-  title: string;
-  poster: string;
-  type: 'movie' | 'tv' | 'sports' | 'anime';
-  timestamp: number;
-  duration?: number;
-}
+export type { WatchHistoryItem, MediaType } from '../types/watchHistory';
 
 export interface ContinueWatchingItem {
   id: string;
   title: string;
   poster: string;
-  type: 'movie' | 'tv' | 'sports' | 'anime';
+  type: MediaType;
   progress: number;
   lastWatched: number;
 }
@@ -23,7 +17,7 @@ export interface MyListItem {
   id: string;
   title: string;
   poster: string;
-  type: 'movie' | 'tv' | 'sports' | 'anime';
+  type: MediaType;
   addedAt: number;
   rating?: string;
   year?: number;
@@ -32,7 +26,7 @@ export interface MyListItem {
 export interface ReviewItem {
   id: string; // unique review ID (usually mediaId_timestamp)
   mediaId: string;
-  mediaType: 'movie' | 'tv' | 'sports' | 'anime';
+  mediaType: MediaType;
   mediaTitle: string;
   mediaPoster: string;
   rating: number; // 1-5 stars
