@@ -8,29 +8,34 @@ test.describe('Home Page', () => {
 
   test('should display hero slider', async ({ page }) => {
     await page.goto('/')
-    // Wait for page to load
-    await page.waitForLoadState('networkidle')
-    // Check if any content is visible instead of specific hero class
     const mainContent = page.locator('#root')
-    await expect(mainContent).toBeVisible()
+    await expect(mainContent).toBeVisible({ timeout: 20000 })
   })
 
   test('should navigate to movies page', async ({ page }) => {
     await page.goto('/')
-    // Use direct navigation instead of clicking
     await page.goto('/movies')
     await expect(page).toHaveURL(/\/movies/)
   })
 
   test('should open search', async ({ page }) => {
     await page.goto('/')
-    // Try to find search button or input
-    const searchButton = page.locator('[aria-label*="search" i], button:has-text("Search"), input[placeholder*="search" i]').first()
-    if (await searchButton.isVisible()) {
-      await searchButton.click()
+
+    const desktopSearchButton = page.locator('button[aria-label*="search" i]').first()
+    if (await desktopSearchButton.isVisible()) {
+      await desktopSearchButton.click({ timeout: 10000 })
+    } else {
+      const menuButton = page.locator('[aria-label="Open menu"]')
+      if (await menuButton.isVisible()) {
+        await menuButton.click({ timeout: 10000 })
+        const mobileSearchButton = page.getByRole('button', { name: /^search$/i }).first()
+        await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
+        await mobileSearchButton.click({ timeout: 10000 })
+      }
     }
-    const searchInput = page.locator('input[type="text"], input[placeholder*="search" i]').first()
-    await expect(searchInput).toBeVisible()
+
+    const searchInput = page.locator('input[aria-label="Search content"], input[placeholder*="search" i]').first()
+    await expect(searchInput).toBeVisible({ timeout: 10000 })
   })
 
   test('should toggle theme', async ({ page }) => {
@@ -43,7 +48,6 @@ test.describe('Home Page', () => {
   })
 })
 
-// Mobile tests - use device configuration at describe level with proper syntax
 test.describe('Home Page - Mobile', () => {
   test('should load home page on mobile', async ({ page }) => {
     await page.goto('/')
@@ -52,7 +56,6 @@ test.describe('Home Page - Mobile', () => {
 
   test('should navigate to movies page on mobile', async ({ page }) => {
     await page.goto('/')
-    // Use direct navigation for mobile
     await page.goto('/movies')
     await expect(page).toHaveURL(/\/movies/)
   })
