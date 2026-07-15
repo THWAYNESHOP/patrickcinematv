@@ -112,6 +112,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 10,
   },
+  {
+    id: 'part-11',
+    title: '15TH WEDNESDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/_iHbZ5Ikyfo?si=6PZR1yi_BX1io6xA',
+    date: '2026-07-15',
+    runtime: '45 min',
+    part: 11,
+  },
+  {
+    id: 'part-12',
+    title: '15TH WEDNESDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://youtu.be/9WQDBhgHrYw?si=WzHgiArdP5t-KRky',
+    date: '2026-07-15',
+    runtime: '45 min',
+    part: 12,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -131,8 +149,14 @@ const luluEpisodes: AyanaEpisode[] = [
     date: '2026-07-07',
     runtime: '27 min',
   },
-  {
-    id: 'episode-14',
+  {    id: 'episode-18',
+    title: '14TH TUESDAY',
+    thumbnail: '/lulu.jpg',
+    youtubeUrl: 'https://youtu.be/CO_DbeR4cO0?is=WLq2B5-05-T5v-jR',
+    date: '2026-07-14',
+    runtime: '27 min',
+  },
+  {    id: 'episode-14',
     title: '8TH WEDNESDAY',
     thumbnail: '/lulu.jpg',
     youtubeUrl: 'https://youtu.be/lJh-NpxFFxE?si=c9CHnlDgBndRti_B',
@@ -180,6 +204,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     thumbnail: '/lazizi.jpg',
     youtubeUrl: 'https://youtu.be/ejlgwFm4Kqo?si=BiCk8vS7-F8UA0WB',
     date: '2026-07-07',
+    runtime: '27 min',
+  },
+  {
+    id: 'episode-19',
+    title: '14TH TUESDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://youtu.be/Ucs5jeVRqBI?is=AXlXZj7H4roCvRpR',
+    date: '2026-07-14',
     runtime: '27 min',
   },
   {

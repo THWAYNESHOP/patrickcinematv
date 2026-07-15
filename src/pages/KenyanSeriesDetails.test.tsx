@@ -92,6 +92,34 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/14TH TUESDAY PART 2/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Ayana 15th Wednesday Part 1 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/15TH WEDNESDAY PART 1/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Ayana 15th Wednesday Part 2 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/15TH WEDNESDAY PART 2/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the Lulu page without Ayana branding', () => {
     render(
       <ToastProvider>
@@ -134,6 +162,20 @@ describe('KenyanSeriesDetails', () => {
     )
 
     expect(screen.getAllByText(/13TH MONDAY/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Lulu 14th Tuesday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lulu']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/14TH TUESDAY/i).length).toBeGreaterThan(0)
   })
 
   it('shows a dedicated play prompt before opening the episode player', () => {
@@ -190,6 +232,20 @@ describe('KenyanSeriesDetails', () => {
     )
 
     expect(screen.getAllByText(/13TH MONDAY/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Lazizi 14th Tuesday episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/lazizi']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/14TH TUESDAY/i).length).toBeGreaterThan(0)
   })
 
   it('launches the episode player unmuted and with fullscreen support', () => {
