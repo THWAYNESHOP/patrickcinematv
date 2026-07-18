@@ -39,6 +39,12 @@ This project depends on several Vite environment variables for API access and in
 - `VITE_FIREBASE_MEASUREMENT_ID`
 - `VITE_SENTRY_DSN`
 - `VITE_STREAM_PROXY_URL`
+- `DARAJA_ENV`
+- `DARAJA_CONSUMER_KEY`
+- `DARAJA_CONSUMER_SECRET`
+- `DARAJA_BUSINESS_SHORT_CODE`
+- `DARAJA_PASSKEY`
+- `DARAJA_CALLBACK_URL`
 
 ### Secure setup
 
@@ -78,7 +84,8 @@ npm run build
 
 1. Build the project: `npm run build`
 2. Set the build output directory to `dist`
-3. In Cloudflare Pages, add the required environment variables under Build & Deploy > Environment variables, including:
+3. Ensure the `functions` directory is deployed with the project. Cloudflare Pages will expose the function routes under `/api/support`.
+4. In Cloudflare Pages, add the required environment variables under Build & Deploy > Environment variables, including:
    - `VITE_TMDB_API_KEY`
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
@@ -91,8 +98,16 @@ npm run build
    - `VITE_FIREBASE_MEASUREMENT_ID`
    - `VITE_SENTRY_DSN`
    - `VITE_STREAM_PROXY_URL`
+   - `DARAJA_ENV`
+   - `DARAJA_CONSUMER_KEY`
+   - `DARAJA_CONSUMER_SECRET`
+   - `DARAJA_BUSINESS_SHORT_CODE`
+   - `DARAJA_PASSKEY`
+   - `DARAJA_CALLBACK_URL`
 
-This is required for features like the TMDB API, authentication, and Live TV stream proxying to work correctly.
+This is required for features like the TMDB API, authentication, live TV stream proxying, and the STK Push support flow to work correctly.
+
+> For the DARAJA callback URL, use the Pages URL for the new function endpoint, for example: `https://<your-site>.pages.dev/api/support/callback`.
 
 ## API Integration
 
