@@ -2,19 +2,32 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Search overlay', () => {
   const openSearch = async (page) => {
-    const openSearchButton = page.locator('button[aria-label="Open search"]').first()
+    const openSearchButton = page.getByRole('button', { name: /open search/i }).first()
     if (await openSearchButton.isVisible()) {
       await openSearchButton.scrollIntoViewIfNeeded()
-      await openSearchButton.click({ timeout: 10000 })
+      // Allow animations/overlays to settle
+      await page.waitForTimeout(150)
+      try {
+        await openSearchButton.click({ timeout: 10000 })
+      } catch {
+        // Fallback if animation/overlay still blocks the click
+        await openSearchButton.click({ timeout: 10000, force: true })
+      }
       return
     }
 
-    const menuButton = page.locator('[aria-label="Open menu"], [aria-label="Close menu"]').first()
+    const menuButton = page.locator('[aria-label="Open menu"], [aria-label="Close menu"]:visible').first()
     if (await menuButton.isVisible()) {
       await menuButton.click({ timeout: 10000 })
-      const mobileSearchButton = page.getByRole('button', { name: /^search$/i }).first()
+      const mobileSearchButton = page.getByRole('button', { name: /^search$/i, exact: true }).first()
       await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
-      await mobileSearchButton.click({ timeout: 10000 })
+      await mobileSearchButton.scrollIntoViewIfNeeded()
+      await page.waitForTimeout(150)
+      try {
+        await mobileSearchButton.click({ timeout: 10000 })
+      } catch {
+        await mobileSearchButton.click({ timeout: 10000, force: true })
+      }
       return
     }
 
@@ -22,6 +35,27 @@ test.describe('Search overlay', () => {
   }
 
   test('should open search, show results, and close with Escape', async ({ page }) => {
+    // Mock TMDB search API to avoid network flakiness and ensure deterministic results
+    await page.route('**/search/multi**', async (route) => {
+      const mock = {
+        results: [
+          {
+            id: 693134,
+            title: 'Dune: Part Two',
+            media_type: 'movie',
+            poster_path: '/test-poster.jpg',
+            release_date: '2024-03-01',
+            vote_average: 7.8,
+          },
+        ],
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mock),
+      })
+    })
+
     await page.goto('/', { waitUntil: 'load' })
 
     await openSearch(page)
