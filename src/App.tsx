@@ -138,7 +138,16 @@ function AppContent() {
     navItems.forEach(item => {
       item.keys.forEach(key => {
         unregister.push(
-          registerHandler(key, () => {
+          registerHandler(key, (e) => {
+            const target = e.target as HTMLElement
+            if (
+              target.tagName === 'INPUT' ||
+              target.tagName === 'TEXTAREA' ||
+              target.isContentEditable
+            ) {
+              return false
+            }
+
             navigate(item.path)
           })
         )

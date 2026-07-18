@@ -125,6 +125,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       label: 'Discover',
       items: [
         { name: 'Trending', path: '/trending' },
+        { name: 'Support', path: '/support' },
         { name: 'My List', path: '/my-list' },
         { name: 'Queue', path: '/queue' },
         { name: 'Watch History', path: '/watch-history' },
@@ -218,6 +219,9 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               />
               <Link to="/trending" className={navLinkClass('/trending')}>
                 Trending
+              </Link>
+              <Link to="/support" className={navLinkClass('/support')}>
+                Support
               </Link>
               <Link to="/my-list" className={navLinkClass('/my-list')}>
                 My List

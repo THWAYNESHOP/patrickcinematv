@@ -22,6 +22,14 @@ export default function Contact() {
           </a>
         </div>
       </section>
+      <div className="mt-6">
+        <Link
+          to="/support"
+          className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-black transition hover:bg-primaryHover"
+        >
+          Support via MPESA STK Push
+        </Link>
+      </div>
       <p className="text-sm text-gray-500">
         For copyright or DMCA requests, please include detailed information about the content in
         question. See our{' '}

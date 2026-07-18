@@ -1,7 +1,14 @@
+import { existsSync, readFileSync } from 'fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+
+const supportPortFile = resolve(__dirname, '.support-server-port')
+const supportPort = existsSync(supportPortFile)
+  ? Number(readFileSync(supportPortFile, 'utf8').trim() || 4000)
+  : 4000
+const supportServerTarget = process.env.VITE_SUPPORT_SERVER_URL || `http://localhost:${supportPort}`
 
 export default defineConfig({
   plugins: [
@@ -26,13 +33,16 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i,
+            urlPattern: /^\/.*\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'static-images-cache',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
           },
@@ -44,6 +54,9 @@ export default defineConfig({
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
           },
@@ -57,6 +70,9 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24, // 24 hours
               },
               networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {
@@ -69,6 +85,9 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24, // 24 hours
               },
               networkTimeoutSeconds: 15,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
         ],
@@ -200,6 +219,10 @@ export default defineConfig({
         target: process.env.VITE_STREAM_PROXY_URL || 'http://localhost:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/stream/, ''),
+      },
+      '/api/support': {
+        target: supportServerTarget,
+        changeOrigin: true,
       },
     },
   },

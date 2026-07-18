@@ -65,19 +65,21 @@ function getPosterUrl(poster?: string): string | undefined {
 }
 
 // Generate fallback sports image based on sport category
+const LOCAL_FALLBACK_IMAGE = '/icon-192.svg'
+
 function getFallbackSportImage(sport: string): string {
   const sportImages: Record<string, string> = {
-    football: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop',
-    basketball: 'https://images.unsplash.com/photo-1546519638-68711109880c?w=400&h=300&fit=crop',
-    rugby: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
-    tennis: 'https://images.unsplash.com/photo-1554224311-beee415c15cb?w=400&h=300&fit=crop',
-    cricket: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop',
-    afl: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86e81?w=400&h=300&fit=crop',
-    ufc: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
-    motorsports: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=300&fit=crop',
+    football: LOCAL_FALLBACK_IMAGE,
+    basketball: LOCAL_FALLBACK_IMAGE,
+    rugby: LOCAL_FALLBACK_IMAGE,
+    tennis: LOCAL_FALLBACK_IMAGE,
+    cricket: LOCAL_FALLBACK_IMAGE,
+    afl: LOCAL_FALLBACK_IMAGE,
+    ufc: LOCAL_FALLBACK_IMAGE,
+    motorsports: LOCAL_FALLBACK_IMAGE,
   }
 
-  return sportImages[sport.toLowerCase()] || 'https://images.unsplash.com/photo-1552346154-5425766f2df2?w=400&h=300&fit=crop'
+  return sportImages[sport.toLowerCase()] || LOCAL_FALLBACK_IMAGE
 }
 
 function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIVE'): Match {
@@ -244,7 +246,7 @@ export const sportsApi = {
         hd: true,
         embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         source: 'alpha',
-        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+        thumbnail: LOCAL_FALLBACK_IMAGE,
       },
       {
         id: 'stream2',
@@ -253,7 +255,7 @@ export const sportsApi = {
         hd: true,
         embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         source: 'alpha',
-        thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+        thumbnail: LOCAL_FALLBACK_IMAGE,
       },
     ]
   },

@@ -27,6 +27,7 @@ const Privacy = lazy(() => import('./Privacy'))
 const Terms = lazy(() => import('./Terms'))
 const Dmca = lazy(() => import('./Dmca'))
 const NotFound = lazy(() => import('./NotFound'))
+const Support = lazy(() => import('./Support'))
 
 export default function AppRoutes() {
   const location = useLocation()
@@ -53,6 +54,7 @@ export default function AppRoutes() {
           <Route path="/tv/:id" element={<PageTransition><TVDetails /></PageTransition>} />
           <Route path="/sports/:source/:id" element={<PageTransition><SportsPlayer /></PageTransition>} />
           <Route path="/sports/:matchId" element={<PageTransition><SportsPlayer /></PageTransition>} />
+          <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
