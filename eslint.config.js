@@ -86,6 +86,21 @@ export default [
     },
   },
   {
+    files: ['server/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+      },
+    },
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+  {
     ignores: ['dist', 'node_modules', 'package', 'public', '*.config.js', '*.config.ts', '*.config.timestamp-*.mjs'],
   },
 ]
