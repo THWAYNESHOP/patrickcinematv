@@ -1,0 +1,1 @@
+import{c as i}from"./index-tQjed0QR.js";function s(){return{myList:i(i=>i.myList),addToMyList:i(i=>i.addToMyList),removeFromMyList:i(i=>i.removeFromMyList),isInMyList:i(i=>i.isInMyList),clearMyList:i(i=>i.clearMyList)}}export{s as t};

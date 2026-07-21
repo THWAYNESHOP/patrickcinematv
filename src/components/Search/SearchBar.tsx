@@ -163,20 +163,20 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   }, [debouncedQuery, filters])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (results.length === 0) return
-
     switch (e.key) {
       case 'ArrowDown':
+        if (results.length === 0) return
         e.preventDefault()
         setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev))
         break
       case 'ArrowUp':
+        if (results.length === 0) return
         e.preventDefault()
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1))
         break
       case 'Enter':
-        e.preventDefault()
         if (selectedIndex >= 0 && selectedIndex < results.length) {
+          e.preventDefault()
           const selectedItem = results[selectedIndex]
           navigate(getRoute(selectedItem))
           onClose?.()
@@ -238,6 +238,20 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         return '/'
     }
   }
+
+  useEffect(() => {
+    const element = searchContainerRef.current
+    if (!element) return
+
+    const handleFocusTrapEscape = () => {
+      onClose?.()
+    }
+
+    element.addEventListener('focusTrapEscape', handleFocusTrapEscape as EventListener)
+    return () => {
+      element.removeEventListener('focusTrapEscape', handleFocusTrapEscape as EventListener)
+    }
+  }, [onClose])
 
   return (
     <div ref={searchContainerRef} className="fixed inset-0 z-50 bg-deepBlack/95 flex flex-col">

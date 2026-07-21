@@ -120,6 +120,34 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/15TH WEDNESDAY PART 2/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Ayana 16th Thursday full episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/16TH THURSDAY FULL EPISODE/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows the new Ayana 17th Friday full episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/17TH FRIDAY FULL EPISODE/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the Lulu page without Ayana branding', () => {
     render(
       <ToastProvider>

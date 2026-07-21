@@ -21,15 +21,16 @@ test.describe('Home Page', () => {
   test('should open search', async ({ page }) => {
     await page.goto('/')
 
-    const desktopSearchButton = page.locator('button[aria-label*="search" i]').first()
+    const desktopSearchButton = page.locator('button[aria-label*="search" i]:visible').first()
     if (await desktopSearchButton.isVisible()) {
       await desktopSearchButton.click({ timeout: 10000 })
     } else {
-      const menuButton = page.locator('[aria-label="Open menu"]')
+      const menuButton = page.locator('[aria-label="Open menu"]:visible')
       if (await menuButton.isVisible()) {
         await menuButton.click({ timeout: 10000 })
-        const mobileSearchButton = page.getByRole('button', { name: /^search$/i }).first()
+        const mobileSearchButton = page.getByRole('button', { name: /^search$/i, exact: true }).first()
         await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
+        await mobileSearchButton.scrollIntoViewIfNeeded()
         await mobileSearchButton.click({ timeout: 10000 })
       }
     }

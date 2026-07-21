@@ -17,9 +17,9 @@ test.describe('Authentication', () => {
   }
 
   const openAuthModal = async (page) => {
-    const signInButton = page.locator('button[aria-label="Sign in"], button:has-text("Sign In")').first()
+    const signInButton = page.locator('button[aria-label="Sign in"]:visible, button:has-text("Sign In"):visible').first()
     if (!(await signInButton.isVisible())) {
-      const menuButton = page.locator('[aria-label="Open menu"]')
+      const menuButton = page.locator('[aria-label="Open menu"]:visible')
       if (await menuButton.isVisible()) {
         await menuButton.click({ timeout: 10000 })
       }

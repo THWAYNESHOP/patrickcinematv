@@ -28,6 +28,7 @@ const Terms = lazy(() => import('./Terms'))
 const Dmca = lazy(() => import('./Dmca'))
 const NotFound = lazy(() => import('./NotFound'))
 const Support = lazy(() => import('./Support'))
+const WatchPage = lazy(() => import('./WatchPage'))
 
 export default function AppRoutes() {
   const location = useLocation()
@@ -50,6 +51,7 @@ export default function AppRoutes() {
           <Route path="/watch-history" element={<PageTransition><WatchHistory /></PageTransition>} />
           <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
           <Route path="/settings" element={<PageTransition><Settings /></PageTransition>} />
+          <Route path="/watch/:id" element={<PageTransition><WatchPage /></PageTransition>} />
           <Route path="/movie/:id" element={<PageTransition><MovieDetails /></PageTransition>} />
           <Route path="/tv/:id" element={<PageTransition><TVDetails /></PageTransition>} />
           <Route path="/sports/:source/:id" element={<PageTransition><SportsPlayer /></PageTransition>} />
