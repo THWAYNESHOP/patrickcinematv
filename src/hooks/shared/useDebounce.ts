@@ -3,7 +3,7 @@
  * Consolidated debounce and throttle patterns
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 export function useDebounce<T>(value: T, delay: number = 500): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
@@ -45,28 +45,28 @@ export function useDebouncedCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   delay: number = 500
 ): T {
-  const timeoutRef = useState<ReturnType<typeof setTimeout> | null>(null)[0]
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const debouncedCallback = useCallback(
     (...args: Parameters<T>) => {
-      if (timeoutRef) {
-        clearTimeout(timeoutRef)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
       const newTimeout = setTimeout(() => {
         callback(...args)
       }, delay)
-      timeoutRef = newTimeout
+      timeoutRef.current = newTimeout
     },
-    [callback, delay, timeoutRef]
+    [callback, delay]
   ) as T
 
   useEffect(() => {
     return () => {
-      if (timeoutRef) {
-        clearTimeout(timeoutRef)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
     }
-  }, [timeoutRef])
+  }, [])
 
   return debouncedCallback
 }
@@ -75,33 +75,33 @@ export function useThrottledCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   limit: number = 500
 ): T {
-  const lastRun = useState(Date.now())[0]
-  const timeoutRef = useState<ReturnType<typeof setTimeout> | null>(null)[0]
+  const lastRun = useRef(Date.now())
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const throttledCallback = useCallback(
     (...args: Parameters<T>) => {
       const now = Date.now()
-      if (now - lastRun >= limit) {
+      if (now - lastRun.current >= limit) {
         callback(...args)
-        lastRun = now
-      } else if (!timeoutRef) {
+        lastRun.current = now
+      } else if (!timeoutRef.current) {
         const newTimeout = setTimeout(() => {
           callback(...args)
-          lastRun = Date.now()
-        }, limit - (now - lastRun))
-        timeoutRef = newTimeout
+          lastRun.current = Date.now()
+        }, limit - (now - lastRun.current))
+        timeoutRef.current = newTimeout
       }
     },
-    [callback, limit, lastRun, timeoutRef]
+    [callback, limit]
   ) as T
 
   useEffect(() => {
     return () => {
-      if (timeoutRef) {
-        clearTimeout(timeoutRef)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
     }
-  }, [timeoutRef])
+  }, [])
 
   return throttledCallback
 }

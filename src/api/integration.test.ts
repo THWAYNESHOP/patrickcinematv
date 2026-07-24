@@ -1,15 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { sportsApi } from './sports'
 import { tmdbApi } from './tmdb'
 
-// Type augmentation for Vite environment variables
-interface ImportMetaEnv {
-  VITE_TMDB_API_KEY?: string
-}
-
-interface ImportMeta {
-  env: ImportMetaEnv
-}
 
 describe('API Integration Tests', () => {
   describe('Sports API Integration', () => {

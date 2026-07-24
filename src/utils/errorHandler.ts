@@ -3,6 +3,12 @@
  * Provides consistent error handling across the application
  */
 
+interface WindowWithSentry extends Window {
+  Sentry?: {
+    captureException: (error: Error, context?: { extra?: unknown }) => void
+  }
+}
+
 export class AppError extends Error {
   constructor(
     message: string,
@@ -86,8 +92,9 @@ export function logError(error: AppError, context?: string): void {
   // In production, send to error tracking service
   if (!import.meta.env.DEV) {
     // Send to Sentry or other error tracking
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      ;(window as any).Sentry.captureException(error, { extra: errorLog })
+    const sentry = (window as WindowWithSentry).Sentry
+    if (typeof window !== 'undefined' && sentry?.captureException) {
+      sentry.captureException(error, { extra: errorLog })
     }
   }
 }

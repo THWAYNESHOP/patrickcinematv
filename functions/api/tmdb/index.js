@@ -40,7 +40,7 @@ export async function onRequest(context) {
         'RateLimit-Remaining': '99'
       }
     })
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Failed to fetch from TMDB' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

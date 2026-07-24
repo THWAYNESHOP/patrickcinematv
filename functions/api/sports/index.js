@@ -1,6 +1,6 @@
 // Cloudflare Function for Sports API proxy with rate limiting
 export async function onRequest(context) {
-  const { request, env } = context
+  const { request } = context
   
   // Rate limiting using Cloudflare KV
   const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown'
@@ -50,7 +50,7 @@ export async function onRequest(context) {
         'RateLimit-Remaining': String(99 - count)
       }
     })
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Failed to fetch from sports API' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
