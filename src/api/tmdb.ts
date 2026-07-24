@@ -1,18 +1,19 @@
 import axios from 'axios'
 import { getCached, setCached } from '../utils/apiCache'
 
-const TMDB_API_BASE = 'https://api.themoviedb.org/3'
+const TMDB_API_BASE = import.meta.env.DEV ? 'https://api.themoviedb.org/3' : '/api/tmdb'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY
+const TMDB_API_KEY = import.meta.env.DEV ? import.meta.env.VITE_TMDB_API_KEY : undefined
 
-// Image optimization helper - returns WebP format URLs
+// Image optimization helper - returns WebP format URLs with responsive sizing
 function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w780'): string {
   if (!path) {
     return 'https://image.tmdb.org/t/p/w780/8cXbitsS6dWQ5gfMTZdorpAAzEd.jpg'
   }
   // TMDB automatically serves WebP when supported by the browser
   // Using original size for 4K quality backdrops
-  return `${TMDB_IMAGE_BASE}/${size}${path}`
+  // Add quality parameter for better compression
+  return `${TMDB_IMAGE_BASE}/${size}${path}?quality=90&format=webp`
 }
 
 export interface MovieSummary {

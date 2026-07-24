@@ -129,6 +129,90 @@ This is required for features like the TMDB API, authentication, live TV stream 
 - Accent Gold: `#FFD700`
 - White: `#ffffff`
 
+## Contributing
+
+We welcome contributions to NEXASTREAM! Please follow these guidelines:
+
+### Getting Started
+
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/yourusername/nexastream.git`
+3. Navigate to the project: `cd nexastream`
+4. Install dependencies: `npm install`
+5. Create a branch: `git checkout -b feature/your-feature-name`
+
+### Development Workflow
+
+1. Make your changes following the code style guidelines
+2. Test your changes thoroughly
+3. Run the linter: `npm run lint`
+4. Run tests: `npm run test`
+5. Commit your changes with descriptive messages
+6. Push to your fork: `git push origin feature/your-feature-name`
+7. Open a pull request
+
+### Code Style Guidelines
+
+- Use TypeScript for all new code
+- Follow the existing code structure and patterns
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Keep components small and focused
+- Use the shared hooks in `src/hooks/shared/` instead of creating duplicates
+- Follow the existing error handling patterns using `src/utils/errorHandler.ts`
+
+### Commit Message Format
+
+Follow conventional commits:
+
+```
+feat: add new feature
+fix: fix bug
+docs: update documentation
+style: format code
+refactor: refactor code
+test: add tests
+chore: update dependencies
+```
+
+### Testing
+
+- Write unit tests for new utilities and hooks
+- Write component tests for new UI components
+- Ensure all tests pass before submitting PR
+- Test on multiple browsers and devices
+
+### Pull Request Guidelines
+
+- Describe what your PR does and why
+- Link related issues
+- Include screenshots for UI changes
+- Ensure all CI checks pass
+- Request review from maintainers
+
+### Documentation
+
+- Update relevant documentation for your changes
+- Add JSDoc comments for public functions
+- Update the README if needed
+- Add examples for new features
+
+### Issues
+
+When reporting issues:
+- Use the issue template
+- Provide steps to reproduce
+- Include browser and device information
+- Add screenshots if applicable
+- Check for existing issues first
+
+## Documentation
+
+- [Architecture Documentation](docs/Architecture.md)
+- [API Documentation](docs/API-Documentation.md)
+- [State Management](docs/StateManagement.md)
+- [Video Player API](docs/VideoPlayer-API.md)
+
 ## License
 
 MIT

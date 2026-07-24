@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
@@ -9,7 +9,7 @@ interface HeroSliderProps {
   movies: MovieSummary[]
 }
 
-export default function HeroSlider({ movies }: HeroSliderProps) {
+function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
@@ -103,18 +103,24 @@ export default function HeroSlider({ movies }: HeroSliderProps) {
       <button
         onClick={prevSlide}
         aria-label="Previous slide"
-        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
+        role="button"
+        tabIndex={0}
+        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" aria-hidden="true" />
       </button>
       <button
         onClick={nextSlide}
         aria-label="Next slide"
-        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center"
+        role="button"
+        tabIndex={0}
+        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" aria-hidden="true" />
       </button>
 
     </div>
   )
 }
+
+export default memo(HeroSlider)

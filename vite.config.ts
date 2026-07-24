@@ -30,6 +30,7 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+              rangeRequests: true,
             },
           },
           {
@@ -76,6 +77,21 @@ export default defineConfig({
             },
           },
           {
+            urlPattern: /^\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+              networkTimeoutSeconds: 5,
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             urlPattern: /\.(?:mp4|webm|m3u8)$/i,
             handler: 'NetworkFirst',
             options: {
@@ -88,11 +104,29 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+              rangeRequests: true,
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
         ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
+        skipWaiting: true,
+        clientsClaim: true,
+        offlineGoogleAnalytics: false,
       },
       manifest: {
         name: 'NEXASTREAM',
@@ -171,23 +205,44 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
+          // React core
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
             return 'react-vendor'
           }
+          // UI components
           if (id.includes('lucide-react')) {
             return 'ui-vendor'
           }
+          // API clients
           if (id.includes('axios')) {
             return 'api-vendor'
           }
+          // Animation
           if (id.includes('framer-motion')) {
             return 'animation-vendor'
           }
+          // Backend services
           if (id.includes('supabase')) {
             return 'supabase-vendor'
           }
           if (id.includes('firebase')) {
             return 'firebase-vendor'
+          }
+          // Video playback
+          if (id.includes('hls.js')) {
+            return 'video-vendor'
+          }
+          // State management
+          if (id.includes('zustand')) {
+            return 'state-vendor'
+          }
+          // Utilities
+          if (id.includes('fuse.js')) {
+            return 'utils-vendor'
+          }
+          // Sentry
+          if (id.includes('@sentry')) {
+            return 'sentry-vendor'
           }
         },
         assetFileNames: 'assets/[name]-[hash][extname]',

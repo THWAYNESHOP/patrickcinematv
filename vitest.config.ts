@@ -23,6 +23,7 @@ export default defineConfig({
       'node_modules',
       'dist',
       'e2e',
+      'backend',
       '**/*.config.js',
       '**/*.config.ts',
     ],

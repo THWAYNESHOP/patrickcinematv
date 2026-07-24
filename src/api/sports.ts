@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const SPORTS_API_BASE = 'https://streamed.pk/api'
+const SPORTS_API_BASE = import.meta.env.DEV ? 'https://streamed.pk/api' : '/api/sports'
 
 export interface Stream {
   id: string

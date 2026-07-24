@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Play, Star } from 'lucide-react'
 import { MovieSummary } from '../../api/tmdb'
+import { memo } from 'react'
 
 interface MediaRailProps {
   title: string
@@ -9,7 +10,7 @@ interface MediaRailProps {
   basePath?: string
 }
 
-export default function MediaRail({ title, items, type, basePath }: MediaRailProps) {
+function MediaRail({ title, items, type, basePath }: MediaRailProps) {
   if (!items.length) return null
 
   return (
@@ -52,3 +53,5 @@ export default function MediaRail({ title, items, type, basePath }: MediaRailPro
     </section>
   )
 }
+
+export default memo(MediaRail)

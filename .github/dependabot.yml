@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "patrickcinematv"
+    assignees:
+      - "patrickcinematv"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+    ignore:
+      # Ignore major version updates for React ecosystem
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group React-related dependencies
+      react-dependencies:
+        patterns:
+          - "react*"
+          - "@vitejs/plugin-react"
+      # Group Vite-related dependencies
+      vite-dependencies:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+      # Group testing dependencies
+      testing-dependencies:
+        patterns:
+          - "vitest*"
+          - "@playwright/*"
+          - "@testing-library/*"
