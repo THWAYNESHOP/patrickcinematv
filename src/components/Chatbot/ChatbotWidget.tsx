@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Send, MessageCircle, X } from 'lucide-react'
 import { sendAiMessage } from '../../api/ai'
 
