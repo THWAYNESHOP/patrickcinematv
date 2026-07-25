@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import MobileNav from './MobileNav'
+import ChatbotWidget from '../Chatbot/ChatbotWidget'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -40,6 +41,7 @@ export default function Layout({ children }: LayoutProps) {
       <main id="main-content" className={`pt-14 sm:pt-16 md:pt-20 ${isPlayerPage ? 'pb-2 sm:pb-4 md:pb-8' : ''}`}>{children}</main>
       <Footer />
       <MobileNav isPlayerPage={isPlayerPage} />
+      {!isPlayerPage && <ChatbotWidget />}
     </div>
   )
 }

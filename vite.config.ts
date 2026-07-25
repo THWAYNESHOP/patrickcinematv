@@ -10,6 +10,7 @@ const supportPort = existsSync(supportPortFile)
   : 4000
 const supportServerTarget = process.env.VITE_SUPPORT_SERVER_URL || `http://localhost:${supportPort}`
 
+
 export default defineConfig({
   plugins: [
     react(),
@@ -276,6 +277,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/stream/, ''),
       },
       '/api/support': {
+        target: supportServerTarget,
+        changeOrigin: true,
+      },
+      '/api/ai': {
         target: supportServerTarget,
         changeOrigin: true,
       },

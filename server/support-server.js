@@ -87,6 +87,12 @@ const darajaBase = DARAJA_ENV === 'production'
   ? 'https://api.safaricom.co.ke'
   : 'https://sandbox.safaricom.co.ke'
 
+const AI_PROVIDER = process.env.AI_PROVIDER || 'gemini'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || ''
+const GROK_API_KEY = process.env.GROK_API_KEY
+const GROK_MODEL = process.env.GROK_MODEL || 'grok-4.5'
+
 async function getDarajaAccessToken() {
   const auth = Buffer.from(`${DARAJA_CONSUMER_KEY}:${DARAJA_CONSUMER_SECRET}`).toString('base64')
   const response = await axios.get(`${darajaBase}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -95,6 +101,224 @@ async function getDarajaAccessToken() {
     },
   })
   return response.data.access_token
+}
+
+function getAiProvider() {
+  return AI_PROVIDER.trim().toLowerCase() === 'grok' ? 'grok' : 'gemini'
+}
+
+function collectText(value) {
+  const texts = []
+  if (!value || typeof value !== 'object') {
+    return texts
+  }
+
+  const obj = value
+
+  if (typeof obj.output_text === 'string') {
+    texts.push(obj.output_text)
+  }
+  if (typeof obj.output === 'string') {
+    texts.push(obj.output)
+  }
+  if (typeof obj.text === 'string') {
+    texts.push(obj.text)
+  }
+  if (typeof obj.markdown === 'string') {
+    texts.push(obj.markdown)
+  }
+
+  if (Array.isArray(obj.parts)) {
+    for (const part of obj.parts) {
+      texts.push(...collectText(part))
+    }
+  }
+
+  if (Array.isArray(obj.content)) {
+    for (const contentBlock of obj.content) {
+      texts.push(...collectText(contentBlock))
+    }
+  }
+
+  if (Array.isArray(obj.candidates)) {
+    for (const candidate of obj.candidates) {
+      texts.push(...collectText(candidate))
+    }
+  }
+
+  if (Array.isArray(obj.output)) {
+    for (const output of obj.output) {
+      texts.push(...collectText(output))
+    }
+  }
+
+  return texts
+}
+
+function parseAiResponseBody(data) {
+  if (typeof data === 'string') {
+    const trimmed = data.trim()
+    return trimmed.length ? trimmed : null
+  }
+
+  const texts = collectText(data)
+  const output = texts.map((text) => String(text).trim()).filter(Boolean).join(' ').trim()
+  return output.length ? output : null
+}
+
+
+async function callGemini(input) {
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured.')
+  }
+
+  const requestBodyFor = (text) => ({
+    contents: [
+      { parts: [{ text }] },
+    ],
+    generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
+  })
+
+  const isTextModel = (modelId) => {
+    const normalized = String(modelId || '').toLowerCase()
+    return !normalized.includes('image') && !normalized.includes('vision') && !normalized.includes('img')
+  }
+
+  const getModelName = (model) => {
+    if (typeof model === 'string') {
+      return model.replace(/^models\//, '').trim()
+    }
+
+    if (model && typeof model === 'object') {
+      const name = typeof model.name === 'string' ? model.name : ''
+      return name.replace(/^models\//, '').trim()
+    }
+
+    return ''
+  }
+
+  const formatGeminiError = (data, status) => {
+    if (data && typeof data === 'object') {
+      const errorStatus = typeof data.status === 'string' ? data.status : ''
+      const errorMessage = typeof data.error === 'string'
+        ? data.error
+        : typeof data.message === 'string'
+          ? data.message
+          : ''
+      const details = Array.isArray(data.details) ? data.details : []
+      const detailMessages = details
+        .map((detail) => (detail && typeof detail === 'object' ? JSON.stringify(detail) : String(detail)))
+        .filter(Boolean)
+
+      const combined = `${errorStatus} ${errorMessage} ${detailMessages.join(' ')}`.toUpperCase()
+
+      if (combined.includes('RESOURCE_EXHAUSTED') || status === 429 || status === 403) {
+        return 'Gemini quota is exhausted or rate-limited for the current API key. Billing or free-tier quota must be restored before requests can succeed.'
+      }
+
+      if (combined.includes('INVALID') || combined.includes('BAD REQUEST')) {
+        return `Gemini request failed with status ${status}: the provided key or model configuration is invalid. Verify the API key, project access, and model name before retrying.`
+      }
+
+      return errorMessage || `Gemini request failed with status ${status}`
+    }
+
+    return `Gemini request failed with status ${status}`
+  }
+
+  const isQuotaExhausted = (data, status) => {
+    const message = formatGeminiError(data, status)
+    return message.includes('quota is exhausted') || status === 429 || status === 403
+  }
+
+  let listResp
+  try {
+    listResp = await axios.get(`https://generativelanguage.googleapis.com/v1/models?key=${GEMINI_API_KEY}`, { timeout: 20000 })
+  } catch (error) {
+    const status = error?.response?.status ?? 'unknown'
+    const body = error?.response?.data ?? error?.message ?? 'unknown error'
+    throw new Error(formatGeminiError(body, status))
+  }
+
+  const listData = listResp.data
+  if (!Array.isArray(listData?.models)) {
+    throw new Error('Unable to discover available Gemini models for this API key.')
+  }
+
+  const availableModels = listData.models
+    .filter((model) => model && typeof model === 'object' && Array.isArray(model.supportedGenerationMethods) && model.supportedGenerationMethods.includes('generateContent'))
+    .map((model) => getModelName(model))
+    .filter((model) => model && isTextModel(model))
+
+  if (availableModels.length === 0) {
+    throw new Error('No supported text-generation Gemini models are available for this API key.')
+  }
+
+  const candidates = []
+  if (GEMINI_MODEL) {
+    const configuredModel = availableModels.find((model) => model === GEMINI_MODEL)
+    if (configuredModel) {
+      candidates.push(configuredModel)
+    }
+  }
+
+  for (const model of availableModels) {
+    if (!candidates.includes(model)) {
+      candidates.push(model)
+    }
+  }
+
+  for (const model of candidates) {
+    const url = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(model)}:generateContent?key=${GEMINI_API_KEY}`
+    try {
+      const response = await axios.post(url, requestBodyFor(input), {
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const text = parseAiResponseBody(response.data)
+      if (text) {
+        return text
+      }
+    } catch (error) {
+      const status = error?.response?.status ?? 'unknown'
+      const body = error?.response?.data ?? error?.message ?? 'unknown error'
+
+      if (isQuotaExhausted(body, status)) {
+        throw new Error(formatGeminiError(body, status))
+      }
+
+      if (status === 404) {
+        continue
+      }
+
+      throw new Error(formatGeminiError(body, status))
+    }
+  }
+
+  throw new Error('No supported Gemini text model produced a usable response for this request.')
+}
+
+async function callGrok(input) {
+  if (!GROK_API_KEY) {
+    throw new Error('GROK_API_KEY is not configured.')
+  }
+
+  const response = await axios.post(
+    'https://api.x.ai/v1/responses',
+    {
+      model: GROK_MODEL,
+      input,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${GROK_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  const output = parseAiResponseBody(response.data)
+  return output || 'No response from Grok.'
 }
 
 function getTimestamp() {
@@ -156,6 +380,31 @@ app.post('/api/support/stk-push', async (req, res) => {
   } catch (error) {
     const message = error?.response?.data || error?.message || 'Unexpected error'
     return res.status(500).json({ error: message })
+  }
+})
+
+app.post('/api/ai', async (req, res) => {
+  try {
+    const { input } = req.body
+
+    if (typeof input !== 'string' || !input.trim()) {
+      return res.status(400).json({ error: 'input is required and must be a string.' })
+    }
+
+    const provider = getAiProvider()
+    const output = provider === 'grok'
+      ? await callGrok(input.trim())
+      : await callGemini(input.trim())
+
+    return res.status(200).json({ output, provider, model: provider === 'grok' ? GROK_MODEL : GEMINI_MODEL })
+  } catch (error) {
+    const message = error?.response?.data || error?.message || 'Unexpected error'
+    const fallbackResponse = 'I’m unable to answer right now because the AI service is unavailable. Please try again in a moment.'
+    const finalMessage = typeof message === 'string' && message.includes('Gemini')
+      ? fallbackResponse
+      : message
+
+    return res.status(500).json({ error: finalMessage })
   }
 })
 
