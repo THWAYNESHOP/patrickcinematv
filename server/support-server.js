@@ -237,7 +237,7 @@ async function callGemini(input) {
   } catch (error) {
     const status = error?.response?.status ?? 'unknown'
     const body = error?.response?.data ?? error?.message ?? 'unknown error'
-    throw new Error(formatGeminiError(body, status))
+    throw new Error(formatGeminiError(body, status), { cause: error })
   }
 
   const listData = listResp.data
@@ -284,14 +284,14 @@ async function callGemini(input) {
       const body = error?.response?.data ?? error?.message ?? 'unknown error'
 
       if (isQuotaExhausted(body, status)) {
-        throw new Error(formatGeminiError(body, status))
+        throw new Error(formatGeminiError(body, status), { cause: error })
       }
 
       if (status === 404) {
         continue
       }
 
-      throw new Error(formatGeminiError(body, status))
+      throw new Error(formatGeminiError(body, status), { cause: error })
     }
   }
 

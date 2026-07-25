@@ -21,11 +21,6 @@ export default function ChatbotWidget() {
   const [error, setError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const assistantTyping = useMemo(
-    () => messages.some((message) => message.id === 'assistant-typing'),
-    [messages],
-  )
-
   const flushAssistantTyping = useCallback(() => {
     setMessages((current) => current.filter((message) => message.id !== 'assistant-typing'))
   }, [])

@@ -35,7 +35,7 @@ export async function sendAiMessage(message: string): Promise<AiChatResponse> {
         ? payload.error
         : bodyText || 'Unable to send AI request.'
 
-      throw new Error(typeof messageText === 'string' ? messageText : JSON.stringify(messageText))
+      throw new Error(typeof messageText === 'string' ? messageText : JSON.stringify(messageText), { cause: error })
     }
 
     return response.json()
@@ -43,12 +43,12 @@ export async function sendAiMessage(message: string): Promise<AiChatResponse> {
     if (error instanceof Error) {
       const message = error.message
       if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-        throw new Error('The AI service is unreachable. Start the support server with npm start or check the backend port.')
+        throw new Error('The AI service is unreachable. Start the support server with npm start or check the backend port.', { cause: error })
       }
 
       throw error
     }
 
-    throw new Error('Unable to send AI request.')
+    throw new Error('Unable to send AI request.', { cause: error })
   }
 }
