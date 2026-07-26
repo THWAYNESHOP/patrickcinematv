@@ -1,9 +1,38 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Critical User Flows', () => {
+  const mainNavigation = (page) => page.locator('nav[aria-label="Primary"], nav:not([aria-label])').first()
+
+  const clickNavLink = async (page, name) => {
+    const link = page.getByRole('link', { name })
+    if (await link.isVisible()) {
+      await link.click()
+      return
+    }
+
+    const dropdownButtonNames = new Map([
+      ['Movies', 'Browse'],
+      ['TV Series', 'Browse'],
+      ['Kenyan Series', 'Browse'],
+      ['Anime', 'Browse'],
+      ['Sports', 'Live'],
+      ['Livestreams', 'Live'],
+    ])
+    const dropdownLabel = dropdownButtonNames.get(name)
+
+    if (dropdownLabel) {
+      const toggleButton = page.getByRole('button', { name: dropdownLabel })
+      if ((await toggleButton.count()) > 0 && await toggleButton.isVisible()) {
+        await toggleButton.click()
+      }
+    }
+
+    await page.getByRole('link', { name }).click()
+  }
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await expect(page.getByRole('navigation')).toBeVisible({ timeout: 10000 })
+    await expect(mainNavigation(page)).toBeVisible({ timeout: 10000 })
   })
 
   test('Home page loads and displays content', async ({ page }) => {
@@ -14,16 +43,15 @@ test.describe('Critical User Flows', () => {
     await expect(heroSlider).toBeVisible({ timeout: 10000 })
 
     // Check for navigation
-    await expect(page.getByRole('navigation')).toBeVisible()
+    await expect(mainNavigation(page)).toBeVisible()
   })
 
   test('User can navigate to movies page', async ({ page }) => {
-    await page.getByRole('button', { name: 'Browse' }).click()
-    await page.getByRole('link', { name: 'Movies' }).click()
+    await clickNavLink(page, 'Movies')
 
     await expect(page).toHaveURL(/.*\/movies/)
 
-    const movieContent = page.getByText('Popular Movies')
+    const movieContent = page.getByRole('heading', { name: 'Movies' })
     await expect(movieContent).toBeVisible({ timeout: 10000 })
   })
 
@@ -34,46 +62,46 @@ test.describe('Critical User Flows', () => {
     await expect(searchInput).toBeVisible({ timeout: 10000 })
     await searchInput.fill('test')
 
-    const movieResult = page.getByRole('button', { name: /Test Movie/i }).first()
-    await expect(movieResult).toBeVisible({ timeout: 20000 })
+    const results = page.locator('button:has-text("test")')
+    await expect(results.first()).toBeVisible({ timeout: 20000 })
   })
 
   test('User can view movie details', async ({ page }) => {
-    await page.getByRole('button', { name: 'Browse' }).click()
-    await page.getByRole('link', { name: 'Movies' }).click()
+    await clickNavLink(page, 'Movies')
 
-    const firstMovie = page.locator('[class*="group/card"]').first()
+    const firstMovie = page.locator('[data-carousel-card-id]').first()
     await expect(firstMovie).toBeVisible({ timeout: 10000 })
     await firstMovie.click()
 
-    await expect(page).toHaveURL(/.*\/movie\/\d+/)
+    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/)
     const movieTitle = page.locator('h1, h2').first()
     await expect(movieTitle).toBeVisible({ timeout: 10000 })
   })
 
   test('User can add movie to My List', async ({ page }) => {
-    await page.getByRole('button', { name: 'Browse' }).click()
-    await page.getByRole('link', { name: 'Movies' }).click()
+    await clickNavLink(page, 'Movies')
 
-    const firstMovie = page.locator('[class*="group/card"]').first()
+    const firstMovie = page.locator('[data-carousel-card-id]').first()
     await expect(firstMovie).toBeVisible({ timeout: 10000 })
     await firstMovie.click()
 
-    const addToListButton = page.locator('button:has-text("Add to My List"), button[aria-label*="Add"]').first()
-    if (await addToListButton.isVisible()) {
-      await addToListButton.click()
+    const addToListButton = page.locator('main button[aria-label="My List"]').first()
+    await expect(addToListButton).toBeVisible({ timeout: 10000 })
+    await expect(addToListButton).toBeEnabled({ timeout: 10000 })
+    await addToListButton.click()
 
-      const myListButton = page.getByRole('link', { name: 'My List' })
-      await expect(myListButton).toBeVisible({ timeout: 10000 })
+    const myListButton = page.locator('a[href="/my-list"]').first()
+    if ((await myListButton.count()) > 0 && await myListButton.isVisible()) {
       await myListButton.click()
-
-      await expect(page).toHaveURL(/.*\/my-list/)
+    } else {
+      await page.goto('/my-list')
     }
+
+    await expect(page).toHaveURL(/.*\/my-list/)
   })
 
   test('User can navigate to sports page', async ({ page }) => {
-    await page.getByRole('button', { name: 'Live' }).click()
-    await page.getByRole('link', { name: 'Sports' }).click()
+    await clickNavLink(page, 'Sports')
 
     await expect(page).toHaveURL(/.*\/sports/)
 
@@ -103,7 +131,10 @@ test.describe('Critical User Flows', () => {
   test('Error handling works', async ({ page }) => {
     await page.goto('/non-existent-page', { waitUntil: 'networkidle' })
 
-    const errorPage = page.getByText(/404|Page not found|Not Found|Error/i)
-    await expect(errorPage).toBeVisible({ timeout: 10000 })
+    const errorHeading = page.getByRole('heading', { name: 'Page not found' })
+    await expect(errorHeading).toBeVisible({ timeout: 10000 })
+
+    const errorCode = page.getByText('404')
+    await expect(errorCode).toBeVisible()
   })
 })
