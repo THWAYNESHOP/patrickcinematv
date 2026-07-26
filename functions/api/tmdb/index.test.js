@@ -12,8 +12,12 @@ describe('TMDB Cloudflare proxy', () => {
 
   it('uses VITE_TMDB_API_KEY when TMDB_API_KEY is not provided', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
       status: 200,
-      json: async () => ({ results: [] }),
+      headers: {
+        get: () => 'application/json',
+      },
+      text: async () => JSON.stringify({ results: [] }),
     })
     vi.stubGlobal('fetch', fetchMock)
 

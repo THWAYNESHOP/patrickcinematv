@@ -12,10 +12,9 @@ export async function onRequest(context) {
 
   try {
     const url = new URL(request.url)
-    const path = url.pathname.replace('/api/tmdb', '')
+    const path = url.pathname.replace('/api/tmdb', '') || '/movie/popular'
     const searchParams = url.searchParams
     
-    // Add API key to params
     searchParams.set('api_key', TMDB_API_KEY)
     
     const tmdbUrl = `https://api.themoviedb.org/3${path}?${searchParams.toString()}`
@@ -27,8 +26,23 @@ export async function onRequest(context) {
         'User-Agent': 'NexaStream/1.0'
       }
     })
-    
-    const data = await response.json()
+
+    const contentType = response.headers.get('content-type') || ''
+    const text = await response.text()
+
+    if (!response.ok) {
+      return new Response(JSON.stringify({ error: 'TMDB upstream request failed', detail: text }), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    let data
+    if (contentType.includes('application/json')) {
+      data = JSON.parse(text)
+    } else {
+      data = { raw: text }
+    }
     
     return new Response(JSON.stringify(data), {
       status: response.status,
@@ -40,8 +54,8 @@ export async function onRequest(context) {
         'RateLimit-Remaining': '99'
       }
     })
-  } catch {
-    return new Response(JSON.stringify({ error: 'Failed to fetch from TMDB' }), {
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to fetch from TMDB', detail: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
