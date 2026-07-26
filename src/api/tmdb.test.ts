@@ -1,15 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { tmdbApi } from './tmdb'
 import axios from 'axios'
 
 // Mock axios
 vi.mock('axios')
 
-describe('TMDB API', () => {
-  const mockAxios = vi.mocked(axios)
+const TEST_TMDB_API_KEY = 'test-tmdb-key'
 
-  beforeEach(() => {
+let tmdbApi: Awaited<ReturnType<typeof import('./tmdb')>>['tmdbApi']
+
+const mockAxios = vi.mocked(axios)
+
+describe('TMDB API', () => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    vi.resetModules()
+    vi.stubEnv('VITE_TMDB_API_KEY', TEST_TMDB_API_KEY)
+
+    const tmdbModule = await import('./tmdb')
+    tmdbApi = tmdbModule.tmdbApi
   })
 
   describe('getPopularMovies', () => {
