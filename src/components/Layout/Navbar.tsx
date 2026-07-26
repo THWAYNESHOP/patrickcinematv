@@ -279,6 +279,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               onClick={() => setIsSearchOpen(true)}
               className="hidden sm:flex p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
               aria-label="Open search"
+              data-testid="desktop-search-toggle"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -381,6 +382,8 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
                   setIsSearchOpen(true)
                 }}
                 className="w-full flex items-center gap-3 py-3 px-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target"
+                data-testid="mobile-search-toggle"
+                aria-label="Search"
               >
                 <Search className="w-5 h-5" />
                 Search

@@ -50,6 +50,7 @@ function MobileNav({ isPlayerPage = false }: MobileNavProps) {
               onClick={handleClick}
               aria-label={item.name}
               aria-current={isActive ? 'page' : undefined}
+              data-testid={`mobile-nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
               className={linkClasses}
             >
               <Icon className={iconClasses} />

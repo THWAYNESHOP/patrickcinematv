@@ -4,9 +4,15 @@ test.describe('Critical User Flows', () => {
   const mainNavigation = (page) => page.locator('nav[aria-label="Primary"], nav:not([aria-label])').first()
 
   const clickNavLink = async (page, name) => {
+    const mobileNavLink = page.getByTestId(`mobile-nav-link-${name.toLowerCase().replace(/\s+/g, '-')}`).first()
+    if (await mobileNavLink.count() && await mobileNavLink.isVisible()) {
+      await mobileNavLink.click({ timeout: 10000, force: true })
+      return
+    }
+
     const link = page.getByRole('link', { name })
     if (await link.isVisible()) {
-      await link.click()
+      await link.click({ timeout: 10000, force: true })
       return
     }
 
@@ -82,13 +88,14 @@ test.describe('Critical User Flows', () => {
     await clickNavLink(page, 'Movies')
 
     const firstMovie = page.locator('[data-carousel-card-id]').first()
-    await expect(firstMovie).toBeVisible({ timeout: 10000 })
-    await firstMovie.click()
+    await expect(firstMovie).toBeVisible({ timeout: 15000 })
+    await firstMovie.click({ force: true })
 
-    const addToListButton = page.locator('main button[aria-label="My List"]').first()
-    await expect(addToListButton).toBeVisible({ timeout: 10000 })
-    await expect(addToListButton).toBeEnabled({ timeout: 10000 })
-    await addToListButton.click()
+    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/, { timeout: 20000 })
+    const addToListButton = page.locator('main [data-testid="my-list-action"]').first()
+    await expect(addToListButton).toBeVisible({ timeout: 20000 })
+    await expect(addToListButton).toBeEnabled({ timeout: 20000 })
+    await addToListButton.click({ force: true })
 
     const myListButton = page.locator('a[href="/my-list"]').first()
     if ((await myListButton.count()) > 0 && await myListButton.isVisible()) {

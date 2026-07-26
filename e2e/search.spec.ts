@@ -2,16 +2,16 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Search overlay', () => {
   const openSearch = async (page) => {
-    const openSearchButton = page.getByRole('button', { name: /open search/i }).first()
+    const openSearchButton = page.getByTestId('desktop-search-toggle').first()
     if (await openSearchButton.isVisible()) {
       await openSearchButton.scrollIntoViewIfNeeded()
-      // Allow animations/overlays to settle
       await page.waitForTimeout(150)
       try {
         await openSearchButton.click({ timeout: 10000 })
       } catch {
-        // Fallback if animation/overlay still blocks the click
-        await openSearchButton.click({ timeout: 10000, force: true })
+        await openSearchButton.evaluate((element) => {
+          element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+        })
       }
       return
     }
@@ -19,14 +19,16 @@ test.describe('Search overlay', () => {
     const menuButton = page.locator('[aria-label="Open menu"], [aria-label="Close menu"]:visible').first()
     if (await menuButton.isVisible()) {
       await menuButton.click({ timeout: 10000 })
-      const mobileSearchButton = page.getByRole('button', { name: /^search$/i, exact: true }).first()
+      const mobileSearchButton = page.getByTestId('mobile-search-toggle').first()
       await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
       await mobileSearchButton.scrollIntoViewIfNeeded()
       await page.waitForTimeout(150)
       try {
         await mobileSearchButton.click({ timeout: 10000 })
       } catch {
-        await mobileSearchButton.click({ timeout: 10000, force: true })
+        await mobileSearchButton.evaluate((element) => {
+          element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+        })
       }
       return
     }

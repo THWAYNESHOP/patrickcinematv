@@ -8,11 +8,15 @@ interface IconActionProps {
 }
 
 export function IconAction({ icon, label, onClick, active = false }: IconActionProps) {
+  const isMyListAction = label.toLowerCase().includes('my list')
+
   return (
     <button
       onClick={onClick}
       aria-label={label}
+      aria-pressed={isMyListAction ? active : undefined}
       title={label}
+      data-testid={isMyListAction ? 'my-list-action' : undefined}
       className={`group flex items-center justify-center gap-2 rounded-full border transition-all duration-200 min-h-[48px] min-w-[48px] px-0 md:px-5 active:scale-95 tv-focusable tv-touch-target ${
         active
           ? 'bg-primary/20 border-primary/50 text-primary'
