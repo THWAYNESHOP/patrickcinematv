@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { sportsApi } from './sports'
 import { tmdbApi } from './tmdb'
 
+const hasTmdbKey = Boolean(import.meta.env.VITE_TMDB_API_KEY)
+const tmdbDescribe = hasTmdbKey ? describe : describe.skip
+
 
 describe('API Integration Tests', () => {
   describe('Sports API Integration', () => {
@@ -36,7 +39,7 @@ describe('API Integration Tests', () => {
     })
   })
 
-  describe('TMDB API Integration', () => {
+  tmdbDescribe('TMDB API Integration', () => {
     it('should fetch popular movies', async () => {
       const movies = await tmdbApi.getPopularMovies()
       
@@ -69,7 +72,7 @@ describe('API Integration Tests', () => {
     })
   })
 
-  describe('API Response Caching', () => {
+  tmdbDescribe('API Response Caching', () => {
     it('should cache responses to reduce API calls', async () => {
       const start1 = Date.now()
       await tmdbApi.getPopularMovies()

@@ -10,12 +10,6 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: false,
-        isolate: false,
-      },
-    },
     testTimeout: 40000,
     hookTimeout: 40000,
     teardownTimeout: 15000,
