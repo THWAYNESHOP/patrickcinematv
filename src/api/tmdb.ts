@@ -1,9 +1,25 @@
 import axios from 'axios'
 import { getCached, setCached } from '../utils/apiCache'
 
-const TMDB_API_BASE = import.meta.env.DEV ? 'https://api.themoviedb.org/3' : '/api/tmdb'
+const IS_PRODUCTION = import.meta.env.PROD || import.meta.env.MODE === 'production'
+const TMDB_API_BASE = IS_PRODUCTION ? '/api/tmdb' : 'https://api.themoviedb.org/3'
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
-const TMDB_API_KEY = import.meta.env.DEV ? import.meta.env.VITE_TMDB_API_KEY : undefined
+const TMDB_API_KEY = !IS_PRODUCTION ? import.meta.env.VITE_TMDB_API_KEY : undefined
+
+function getTmdbRequestParams(extraParams: Record<string, string | number | boolean | undefined> = {}) {
+  if (!IS_PRODUCTION) {
+    if (!TMDB_API_KEY) {
+      throw new Error('Missing VITE_TMDB_API_KEY')
+    }
+
+    return {
+      api_key: TMDB_API_KEY,
+      ...extraParams,
+    }
+  }
+
+  return extraParams
+}
 
 // Image optimization helper - returns WebP format URLs with responsive sizing
 function getOptimizedImageUrl(path: string | null | undefined, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w780'): string {
@@ -157,23 +173,18 @@ const PROVIDER_IDS: Record<string, number> = {
 }
 
 export const tmdbApi = {
-  hasApiKey: Boolean(TMDB_API_KEY),
+  hasApiKey: IS_PRODUCTION ? true : Boolean(TMDB_API_KEY),
 
   async getPopularMovies(): Promise<MovieSummary[]> {
     const cacheKey = 'popular-movies'
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/movie/popular`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -190,17 +201,12 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/movie/now_playing`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
         region: 'US',
-      },
+      }),
       timeout: 10000,
     })
 
@@ -217,15 +223,10 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/trending/movie/day`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
-      },
+      }),
       timeout: 10000,
     })
 
@@ -242,15 +243,10 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/trending/tv/day`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
-      },
+      }),
       timeout: 10000,
     })
 
@@ -267,16 +263,11 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/tv/popular`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -293,16 +284,11 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/tv/top_rated`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -319,16 +305,11 @@ export const tmdbApi = {
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/movie/top_rated`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -345,16 +326,11 @@ export const tmdbApi = {
     const cached = getCached<MediaDetails>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/movie/${id}`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         append_to_response: 'credits',
-      },
+      }),
       timeout: 10000,
     })
 
@@ -364,16 +340,11 @@ export const tmdbApi = {
   },
 
   async getMovieRecommendations(id: string): Promise<MovieSummary[]> {
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/movie/${id}/recommendations`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -387,16 +358,11 @@ export const tmdbApi = {
     const cached = getCached<MediaDetails>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/tv/${id}`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         append_to_response: 'credits',
-      },
+      }),
       timeout: 10000,
     })
 
@@ -418,16 +384,11 @@ export const tmdbApi = {
   },
 
   async getTVRecommendations(id: string): Promise<MovieSummary[]> {
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/tv/${id}/recommendations`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         page: 1,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -437,18 +398,13 @@ export const tmdbApi = {
   },
 
   async searchMulti(query: string): Promise<MovieSummary[]> {
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const response = await axios.get(`${TMDB_API_BASE}/search/multi`, {
-      params: {
-        api_key: TMDB_API_KEY,
+      params: getTmdbRequestParams({
         language: 'en-US',
         query,
         page: 1,
         include_adult: false,
-      },
+      }),
       timeout: 10000,
     })
 
@@ -464,32 +420,26 @@ export const tmdbApi = {
     const cached = getCached<PlatformCatalog>(cacheKey)
     if (cached) return cached
 
-    if (!TMDB_API_KEY) {
-      throw new Error('Missing VITE_TMDB_API_KEY')
-    }
-
     const providerId = PROVIDER_IDS[platform]
 
     if (!providerId) {
       const [moviesResponse, tvResponse] = await Promise.all([
         axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
-          params: {
-            api_key: TMDB_API_KEY,
+          params: getTmdbRequestParams({
             language: 'en-US',
             sort_by: 'popularity.desc',
             page: 1,
             region: 'US',
-          },
+          }),
           timeout: 10000,
         }),
         axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
-          params: {
-            api_key: TMDB_API_KEY,
+          params: getTmdbRequestParams({
             language: 'en-US',
             sort_by: 'popularity.desc',
             page: 1,
             with_origin_country: 'US',
-          },
+          }),
           timeout: 10000,
         }),
       ])
@@ -509,25 +459,23 @@ export const tmdbApi = {
 
     const [moviesResponse, tvResponse] = await Promise.all([
       axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
-        params: {
-          api_key: TMDB_API_KEY,
+        params: getTmdbRequestParams({
           language: 'en-US',
           sort_by: 'popularity.desc',
           page: 1,
           with_watch_providers: providerId,
           watch_region: 'US',
-        },
+        }),
         timeout: 10000,
       }),
       axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
-        params: {
-          api_key: TMDB_API_KEY,
+        params: getTmdbRequestParams({
           language: 'en-US',
           sort_by: 'popularity.desc',
           page: 1,
           with_watch_providers: providerId,
           watch_region: 'US',
-        },
+        }),
         timeout: 10000,
       }),
     ])

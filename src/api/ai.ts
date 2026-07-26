@@ -35,7 +35,7 @@ export async function sendAiMessage(message: string): Promise<AiChatResponse> {
         ? payload.error
         : bodyText || 'Unable to send AI request.'
 
-      throw new Error(typeof messageText === 'string' ? messageText : JSON.stringify(messageText), { cause: error })
+      throw new Error(typeof messageText === 'string' ? messageText : JSON.stringify(messageText))
     }
 
     return response.json()

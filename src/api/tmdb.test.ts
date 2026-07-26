@@ -31,6 +31,33 @@ describe('TMDB API', () => {
         expect.any(Object)
       )
     })
+
+    it('uses the proxy endpoint in production without requiring a client-side key', async () => {
+      vi.resetModules()
+      vi.stubEnv('MODE', 'production')
+      vi.stubEnv('VITE_TMDB_API_KEY', '')
+
+      const { tmdbApi: productionTmdbApi } = await import('./tmdb')
+      mockAxios.get.mockResolvedValue({ data: { results: [] } })
+
+      await productionTmdbApi.getPopularMovies()
+
+      expect(mockAxios.get).toHaveBeenCalledWith(
+        '/api/tmdb/movie/popular',
+        expect.objectContaining({
+          params: expect.objectContaining({
+            language: 'en-US',
+            page: 1,
+          }),
+        })
+      )
+      expect(mockAxios.get).not.toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          params: expect.objectContaining({ api_key: '' }),
+        })
+      )
+    })
   })
 
   describe('getMovieDetails', () => {

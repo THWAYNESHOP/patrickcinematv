@@ -9,7 +9,7 @@ const supportPort = existsSync(supportPortFile)
   ? Number(readFileSync(supportPortFile, 'utf8').trim() || 4000)
   : 4000
 const supportServerTarget = process.env.VITE_SUPPORT_SERVER_URL || `http://localhost:${supportPort}`
-
+const basePath = process.env.VITE_BASE_PATH || '/'
 
 export default defineConfig({
   plugins: [
@@ -199,7 +199,7 @@ export default defineConfig({
       '@assets': resolve(__dirname, './src/assets'),
     },
   },
-  base: './',
+  base: basePath,
   build: {
     outDir: 'dist',
     sourcemap: false,
