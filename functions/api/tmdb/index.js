@@ -1,7 +1,7 @@
 // Cloudflare Function for TMDB API proxy
 export async function onRequest(context) {
   const { request, env } = context
-  const TMDB_API_KEY = env.TMDB_API_KEY
+  const TMDB_API_KEY = env.TMDB_API_KEY || env.VITE_TMDB_API_KEY
   
   if (!TMDB_API_KEY) {
     return new Response(JSON.stringify({ error: 'TMDB API key not configured' }), {
