@@ -1,29 +1,7 @@
-// Cloudflare Function for Sports API proxy with rate limiting
 export async function onRequest(context) {
   const { request } = context
 
-  // Rate limiting using Cloudflare KV
-  const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown'
-  const rateLimitKey = `rate-limit:${clientIP}`
-
   try {
-    const { get, put } = context.env.RATE_LIMIT || { get: async () => null, put: async () => {} }
-    const current = await get(rateLimitKey)
-    const count = current ? parseInt(current) : 0
-
-    if (count >= 100) {
-      return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Retry-After': '60'
-        }
-      })
-    }
-
-    await put(rateLimitKey, String(count + 1), { expirationTtl: 60 })
-
     const url = new URL(request.url)
     const pathname = url.pathname.replace(/^\/api\/sports/, '') || '/'
     const query = url.search
@@ -39,16 +17,14 @@ export async function onRequest(context) {
 
     const responseText = await response.text()
     const contentType = response.headers.get('content-type') || 'application/json'
-    const data = contentType.includes('application/json') ? JSON.parse(responseText || '[]') : responseText
+    const data = contentType.includes('application/json') ? JSON.parse(responseText || '{}') : responseText
 
     return new Response(typeof data === 'string' ? data : JSON.stringify(data), {
       status: response.status,
       headers: {
         'Content-Type': contentType.includes('application/json') ? 'application/json' : contentType,
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'RateLimit-Limit': '100',
-        'RateLimit-Remaining': String(99 - count)
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
       }
     })
   } catch (error) {
