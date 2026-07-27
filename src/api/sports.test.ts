@@ -32,4 +32,13 @@ describe('sports API poster URLs', () => {
     expect(normalizeSportsPosterUrl('https://example.com/card.jpg')).toBe('https://example.com/card.jpg')
     expect(normalizeSportsPosterUrl('//example.com/card.jpg')).toBe('https://example.com/card.jpg')
   })
+
+  it('uses a JPG fallback for matches without upstream posters', async () => {
+    vi.resetModules()
+
+    const { fallbackSportImage } = await import('./sports')
+
+    expect(fallbackSportImage('football')).toBe('/sports-fallback.jpg')
+    expect(fallbackSportImage('unknown')).toBe('/sports-fallback.jpg')
+  })
 })

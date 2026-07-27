@@ -78,7 +78,7 @@ export function normalizeSportsPosterUrl(poster?: string): string | undefined {
 }
 
 // Generate fallback sports image based on sport category
-const LOCAL_FALLBACK_IMAGE = '/icon-192.svg'
+const LOCAL_FALLBACK_IMAGE = '/sports-fallback.jpg'
 
 function getFallbackSportImage(sport: string): string {
   const sportImages: Record<string, string> = {
