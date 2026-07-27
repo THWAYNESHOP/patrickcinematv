@@ -9,14 +9,14 @@ export interface AiChatResponse {
   model: string
 }
 
-export async function sendAiMessage(message: string): Promise<AiChatResponse> {
+export async function sendAiMessage(message: string, messages: AiChatMessage[] = []): Promise<AiChatResponse> {
   try {
     const response = await fetch('/api/ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ input: message }),
+      body: JSON.stringify({ input: message, messages }),
     })
 
     if (!response.ok) {

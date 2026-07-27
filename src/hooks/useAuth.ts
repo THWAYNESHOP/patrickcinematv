@@ -1,10 +1,61 @@
 import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, updateProfile, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, type User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, updateProfile, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, type ActionCodeSettings, type User } from 'firebase/auth';
 import { app } from '../firebase';
 
 function getAuthInstance() {
   if (!app) return null;
   return getAuth(app);
+}
+
+function getEmailVerificationSettings(): ActionCodeSettings | undefined {
+  if (typeof window === 'undefined' || !window.location.origin || window.location.origin === 'null') {
+    return undefined;
+  }
+
+  return {
+    url: `${window.location.origin}/profile`,
+    handleCodeInApp: false,
+  };
+}
+
+function getAuthErrorCode(error: unknown) {
+  return error && typeof error === 'object' && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : '';
+}
+
+function getVerificationEmailError(error: unknown) {
+  const code = getAuthErrorCode(error);
+
+  if (code === 'auth/unauthorized-continue-uri') {
+    return 'Verification email was not sent because this app domain is not authorized in Firebase Authentication. Add your local/production domain under Firebase Auth > Settings > Authorized domains.';
+  }
+
+  if (code === 'auth/invalid-continue-uri') {
+    return 'Verification email was not sent because the verification redirect URL is invalid.';
+  }
+
+  if (code === 'auth/too-many-requests') {
+    return 'Verification email was not sent because Firebase is rate-limiting this address. Try again later.';
+  }
+
+  if (code === 'auth/network-request-failed') {
+    return 'Verification email was not sent because the network request failed. Check your connection and try again.';
+  }
+
+  if (error instanceof Error) {
+    return error.message || 'Failed to send verification email.';
+  }
+
+  return 'Failed to send verification email.';
+}
+
+async function sendVerificationEmailToUser(user: User) {
+  try {
+    await sendEmailVerification(user, getEmailVerificationSettings());
+  } catch (error) {
+    throw new Error(getVerificationEmailError(error), { cause: error });
+  }
 }
 
 export function useAuth() {
@@ -42,7 +93,7 @@ export function useAuth() {
 
     // Send email verification
     if (userCredential.user) {
-      await sendEmailVerification(userCredential.user);
+      await sendVerificationEmailToUser(userCredential.user);
     }
 
     return userCredential;
@@ -79,7 +130,7 @@ export function useAuth() {
     }
     const currentUser = auth.currentUser;
     if (currentUser) {
-      await sendEmailVerification(currentUser);
+      await sendVerificationEmailToUser(currentUser);
     }
   };
 

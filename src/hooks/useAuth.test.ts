@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useAuth } from './useAuth'
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth'
 
 // Mock Firebase
 vi.mock('../firebase', () => ({
@@ -46,5 +47,37 @@ describe('useAuth', () => {
     expect(typeof result.current.resetPassword).toBe('function')
     expect(typeof result.current.signInWithGoogle).toBe('function')
     expect(typeof result.current.signInWithGithub).toBe('function')
+  })
+
+  it('sends an email verification after sign up', async () => {
+    const firebaseUser = {
+      uid: 'user-1',
+      email: 'new-user@example.com',
+      displayName: null,
+    }
+
+    vi.mocked(createUserWithEmailAndPassword).mockResolvedValue({
+      user: firebaseUser,
+    } as Awaited<ReturnType<typeof createUserWithEmailAndPassword>>)
+    vi.mocked(updateProfile).mockResolvedValue()
+    vi.mocked(sendEmailVerification).mockResolvedValue()
+
+    const { result } = renderHook(() => useAuth())
+
+    await result.current.signUp('new-user@example.com', 'password123', 'New User')
+
+    expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(
+      {},
+      'new-user@example.com',
+      'password123',
+    )
+    expect(updateProfile).toHaveBeenCalledWith(firebaseUser, { displayName: 'New User' })
+    expect(sendEmailVerification).toHaveBeenCalledWith(
+      firebaseUser,
+      expect.objectContaining({
+        handleCodeInApp: false,
+        url: expect.stringContaining('/profile'),
+      }),
+    )
   })
 })

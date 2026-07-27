@@ -45,6 +45,11 @@ This project depends on several Vite environment variables for API access and in
 - `DARAJA_BUSINESS_SHORT_CODE`
 - `DARAJA_PASSKEY`
 - `DARAJA_CALLBACK_URL`
+- `AI_PROVIDER`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
+- `GROK_API_KEY`
+- `GROK_MODEL`
 
 ### Secure setup
 
@@ -52,8 +57,17 @@ This project depends on several Vite environment variables for API access and in
 - Never commit `.env`, `.env.local`, or real secrets to GitHub.
 - For Cloudflare Pages, add the same variables in the Pages project settings under Build & Deploy > Environment variables.
 - If you deploy from GitHub Actions, store the values in GitHub Secrets and inject them into the build step.
+- For Firebase email verification, add your production domain to Firebase Authentication > Settings > Authorized domains.
 
 > Only variables prefixed with `VITE_` are exposed to the frontend bundle. If something must stay truly private, keep it on a server-side endpoint or Cloudflare Worker instead of the client app.
+
+### AI chat setup
+
+The chatbot calls the server-side `/api/ai` endpoint, so AI keys must stay in `.env.local` locally and in Cloudflare Pages environment variables for production.
+
+- For Gemini, use `AI_PROVIDER=gemini`, set `GEMINI_API_KEY`, and set `GEMINI_MODEL=gemini-3.6-flash`.
+- For Grok, use `AI_PROVIDER=grok`, set `GROK_API_KEY`, and set `GROK_MODEL`.
+- You only need the key for the provider selected by `AI_PROVIDER`; Gemini does not require a Grok key, and Grok does not require a Gemini key.
 
 ## Installation
 

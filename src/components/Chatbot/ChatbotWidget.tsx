@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Send, MessageCircle, X } from 'lucide-react'
-import { sendAiMessage } from '../../api/ai'
+import { sendAiMessage, type AiChatMessage } from '../../api/ai'
 
 interface ChatMessage {
   id: string
@@ -42,7 +42,16 @@ export default function ChatbotWidget() {
     setMessages((current) => [...current, { id: 'assistant-typing', role: 'assistant', text: '...' }])
 
     try {
-      const response = await sendAiMessage(trimmed)
+      const response = await sendAiMessage(
+        trimmed,
+        messages
+          .filter((message) => message.id !== 'assistant-typing')
+          .slice(-8)
+          .map<AiChatMessage>((message) => ({
+            role: message.role,
+            content: message.text,
+          })),
+      )
       flushAssistantTyping()
 
       const assistantMessage: ChatMessage = {
@@ -67,7 +76,7 @@ export default function ChatbotWidget() {
           <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-primary">NEXASTREAM AI</p>
-              <h2 className="text-base font-semibold text-white">Gemini chat</h2>
+              <h2 className="text-base font-semibold text-white">AI chat</h2>
             </div>
             <button
               type="button"
@@ -109,7 +118,7 @@ export default function ChatbotWidget() {
               disabled={isLoading}
               className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-black transition hover:bg-primaryHover disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? 'Thinking…' : 'Send'}
+              {isLoading ? 'Thinking...' : 'Send'}
               <Send className="h-4 w-4" />
             </button>
           </div>
@@ -120,7 +129,7 @@ export default function ChatbotWidget() {
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-black shadow-2xl shadow-primary/30 transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/20"
-        aria-label={isOpen ? 'Close Gemini chat' : 'Open Gemini chat'}
+        aria-label={isOpen ? 'Close AI chat' : 'Open AI chat'}
       >
         <MessageCircle className="h-6 w-6" />
       </button>
