@@ -269,6 +269,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
               className="w-full pl-12 md:pl-14 pr-12 md:pr-14 py-3 md:py-4 bg-white/10 rounded-full border border-white/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-white placeholder-gray-400 transition-all duration-300 text-base"
               autoFocus
               aria-label="Search content"
+              data-testid="search-overlay-input"
             />
             {query && (
               <button

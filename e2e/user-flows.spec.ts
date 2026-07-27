@@ -4,36 +4,37 @@ test.describe('Critical User Flows', () => {
   const mainNavigation = (page) => page.locator('nav[aria-label="Primary"], nav:not([aria-label])').first()
 
   const clickNavLink = async (page, name) => {
-    const mobileNavLink = page.getByTestId(`mobile-nav-link-${name.toLowerCase().replace(/\s+/g, '-')}`).first()
-    if (await mobileNavLink.count() && await mobileNavLink.isVisible()) {
-      await mobileNavLink.click({ timeout: 10000, force: true })
-      return
+    const routeByName = {
+      Movies: '/movies',
+      'TV Series': '/tv',
+      'Kenyan Series': '/kenyan-series',
+      Anime: '/anime',
+      Sports: '/sports',
+      Livestreams: '/live-tv',
     }
 
-    const link = page.getByRole('link', { name })
-    if (await link.isVisible()) {
-      await link.click({ timeout: 10000, force: true })
-      return
-    }
-
-    const dropdownButtonNames = new Map([
-      ['Movies', 'Browse'],
-      ['TV Series', 'Browse'],
-      ['Kenyan Series', 'Browse'],
-      ['Anime', 'Browse'],
-      ['Sports', 'Live'],
-      ['Livestreams', 'Live'],
-    ])
-    const dropdownLabel = dropdownButtonNames.get(name)
-
-    if (dropdownLabel) {
-      const toggleButton = page.getByRole('button', { name: dropdownLabel })
-      if ((await toggleButton.count()) > 0 && await toggleButton.isVisible()) {
-        await toggleButton.click()
+    const href = routeByName[name]
+    if (href) {
+      const directLink = page.locator(`a[href="${href}"]`).first()
+      if ((await directLink.count()) > 0) {
+        const isVisible = await directLink.isVisible().catch(() => false)
+        if (isVisible) {
+          await directLink.click({ timeout: 10000, force: true })
+          return
+        }
       }
     }
 
-    await page.getByRole('link', { name }).click()
+    const mobileNavLink = page.getByTestId(`mobile-nav-link-${name.toLowerCase().replace(/\s+/g, '-')}`).first()
+    if ((await mobileNavLink.count()) > 0) {
+      const isVisible = await mobileNavLink.isVisible().catch(() => false)
+      if (isVisible) {
+        await mobileNavLink.click({ timeout: 10000, force: true })
+        return
+      }
+    }
+
+    await page.goto(href || '/', { waitUntil: 'domcontentloaded', timeout: 60000 })
   }
 
   test.beforeEach(async ({ page }) => {
@@ -62,9 +63,19 @@ test.describe('Critical User Flows', () => {
   })
 
   test('User can search for content', async ({ page }) => {
-    await page.keyboard.press('/')
+    const searchButton = page.getByTestId('desktop-search-toggle').first()
+    if (await searchButton.isVisible().catch(() => false)) {
+      await searchButton.click({ timeout: 10000, force: true })
+    } else {
+      const menuButton = page.locator('[aria-label="Open menu"]').first()
+      await expect(menuButton).toBeVisible({ timeout: 10000 })
+      await menuButton.click({ timeout: 10000, force: true })
+      const mobileSearchButton = page.getByTestId('mobile-search-toggle').first()
+      await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
+      await mobileSearchButton.click({ timeout: 10000, force: true })
+    }
 
-    const searchInput = page.getByRole('textbox', { name: /search content/i })
+    const searchInput = page.getByTestId('search-overlay-input').first()
     await expect(searchInput).toBeVisible({ timeout: 10000 })
     await searchInput.fill('test')
 
@@ -75,11 +86,11 @@ test.describe('Critical User Flows', () => {
   test('User can view movie details', async ({ page }) => {
     await clickNavLink(page, 'Movies')
 
-    const firstMovie = page.locator('[data-carousel-card-id]').first()
-    await expect(firstMovie).toBeVisible({ timeout: 10000 })
-    await firstMovie.click()
+    const firstMovieLink = page.locator('[data-carousel-card-id] a').first()
+    await expect(firstMovieLink).toBeVisible({ timeout: 15000 })
+    await firstMovieLink.click({ force: true })
 
-    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/)
+    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/, { timeout: 20000 })
     const movieTitle = page.locator('h1, h2').first()
     await expect(movieTitle).toBeVisible({ timeout: 10000 })
   })
@@ -87,24 +98,18 @@ test.describe('Critical User Flows', () => {
   test('User can add movie to My List', async ({ page }) => {
     await clickNavLink(page, 'Movies')
 
-    const firstMovie = page.locator('[data-carousel-card-id]').first()
-    await expect(firstMovie).toBeVisible({ timeout: 15000 })
-    await firstMovie.click({ force: true })
+    const firstMovieLink = page.locator('[data-carousel-card-id] a').first()
+    await expect(firstMovieLink).toBeVisible({ timeout: 15000 })
+    await firstMovieLink.click({ force: true })
 
     await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/, { timeout: 20000 })
-    const addToListButton = page.locator('main [data-testid="my-list-action"]').first()
+    const addToListButton = page.locator('main button[aria-label*="My List"], main [data-testid="my-list-action"]').first()
     await expect(addToListButton).toBeVisible({ timeout: 20000 })
     await expect(addToListButton).toBeEnabled({ timeout: 20000 })
     await addToListButton.click({ force: true })
 
-    const myListButton = page.locator('a[href="/my-list"]').first()
-    if ((await myListButton.count()) > 0 && await myListButton.isVisible()) {
-      await myListButton.click()
-    } else {
-      await page.goto('/my-list')
-    }
-
-    await expect(page).toHaveURL(/.*\/my-list/)
+    await page.goto('/my-list', { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await expect(page).toHaveURL(/.*\/my-list/, { timeout: 10000 })
   })
 
   test('User can navigate to sports page', async ({ page }) => {

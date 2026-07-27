@@ -327,7 +327,7 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden mt-4 bg-darkSurface/95 backdrop-blur-xl rounded-xl p-4 border border-white/10 shadow-2xl">
+          <div className="lg:hidden mt-4 max-h-[calc(100dvh-7rem)] overflow-y-auto bg-darkSurface/95 backdrop-blur-xl rounded-xl p-4 border border-white/10 shadow-2xl">
             {mobileGroups.map((group, groupIndex) => (
               <div
                 key={group.label ?? 'home'}

@@ -22,22 +22,20 @@ test.describe('Home Page', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
 
     const desktopSearchButton = page.getByTestId('desktop-search-toggle').first()
-    if (await desktopSearchButton.isVisible()) {
+    if (await desktopSearchButton.isVisible().catch(() => false)) {
+      await desktopSearchButton.scrollIntoViewIfNeeded()
       await desktopSearchButton.click({ timeout: 10000, force: true })
     } else {
-      const menuButton = page.locator('[aria-label="Open menu"]:visible')
-      if (await menuButton.isVisible()) {
-        await menuButton.click({ timeout: 10000, force: true })
-        const mobileSearchButton = page.getByTestId('mobile-search-toggle').first()
-        await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
-        await mobileSearchButton.scrollIntoViewIfNeeded()
-        await mobileSearchButton.evaluate((element) => {
-          element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
-        })
-      }
+      const menuButton = page.locator('[aria-label="Open menu"]').first()
+      await expect(menuButton).toBeVisible({ timeout: 10000 })
+      await menuButton.click({ timeout: 10000, force: true })
+      const mobileSearchButton = page.getByTestId('mobile-search-toggle').first()
+      await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
+      await mobileSearchButton.scrollIntoViewIfNeeded()
+      await mobileSearchButton.click({ timeout: 10000, force: true })
     }
 
-    const searchInput = page.locator('input[aria-label="Search content"], input[placeholder*="search" i]').first()
+    const searchInput = page.getByTestId('search-overlay-input').first()
     await expect(searchInput).toBeVisible({ timeout: 10000 })
   })
 
