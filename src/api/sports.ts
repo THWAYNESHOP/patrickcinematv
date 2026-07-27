@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const SPORTS_API_BASE = import.meta.env.DEV ? 'https://streamed.pk/api' : '/api/sports'
+const IS_PRODUCTION = import.meta.env.PROD || import.meta.env.MODE === 'production'
+const STREAMED_API_BASE = 'https://streamed.pk/api'
+const SPORTS_API_BASE = IS_PRODUCTION ? '/api/sports' : STREAMED_API_BASE
 
 export interface Stream {
   id: string
@@ -59,9 +61,20 @@ function getMatchTime(date?: number, showDate = false): string {
   }).format(matchDate)
 }
 
-function getPosterUrl(poster?: string): string | undefined {
+function getSportsApiPath(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return normalizedPath.startsWith('/api/')
+    ? normalizedPath.slice('/api'.length)
+    : normalizedPath
+}
+
+export function normalizeSportsPosterUrl(poster?: string): string | undefined {
   if (!poster) return undefined
-  return poster.startsWith('http') ? poster : `${SPORTS_API_BASE.replace('/api', '')}${poster}`
+  if (/^https?:\/\//i.test(poster)) return poster
+  if (poster.startsWith('//')) return `https:${poster}`
+
+  const apiPath = getSportsApiPath(poster)
+  return `${SPORTS_API_BASE}${apiPath}`
 }
 
 // Generate fallback sports image based on sport category
@@ -98,7 +111,7 @@ function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIV
     time: getMatchTime(match.date, status === 'UPCOMING'),
     score: 'vs',
     sport,
-    poster: getPosterUrl(match.poster) || getFallbackSportImage(sport),
+    poster: normalizeSportsPosterUrl(match.poster) || getFallbackSportImage(sport),
     date: match.date,
     sources: match.sources || [],
   }
@@ -107,13 +120,13 @@ function normalizeMatch(match: StreamedMatch, status: 'LIVE' | 'UPCOMING' = 'LIV
 export const sportsApi = {
   async getLiveMatches(): Promise<Match[]> {
     try {
-      if (import.meta.env.DEV) {
+      if (!IS_PRODUCTION) {
         console.log('Fetching live matches from:', `${SPORTS_API_BASE}/matches/live`)
       }
       const response = await axios.get(`${SPORTS_API_BASE}/matches/live`, {
         timeout: 10000,
       })
-      if (import.meta.env.DEV) {
+      if (!IS_PRODUCTION) {
         console.log('Live matches response:', response.data)
       }
       return Array.isArray(response.data)
@@ -135,7 +148,7 @@ export const sportsApi = {
 
   async getUpcomingMatches(): Promise<Match[]> {
     try {
-      if (import.meta.env.DEV) {
+      if (!IS_PRODUCTION) {
         console.log('Fetching upcoming matches from:', `${SPORTS_API_BASE}/matches/all`)
       }
       const response = await axios.get(`${SPORTS_API_BASE}/matches/all`, {
@@ -161,13 +174,13 @@ export const sportsApi = {
 
   async getStreams(source: string, id: string): Promise<Stream[]> {
     try {
-      if (import.meta.env.DEV) {
+      if (!IS_PRODUCTION) {
         console.log('Fetching streams from:', `${SPORTS_API_BASE}/stream/${source}/${id}`)
       }
       const response = await axios.get(`${SPORTS_API_BASE}/stream/${source}/${id}`, {
         timeout: 10000,
       })
-      if (import.meta.env.DEV) {
+      if (!IS_PRODUCTION) {
         console.log('Streams response:', response.data)
       }
       return response.data
