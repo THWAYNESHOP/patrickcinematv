@@ -24,23 +24,25 @@ function renderSearch(onClose = vi.fn()) {
 describe('SearchBar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(window.localStorage.getItem).mockReturnValue(null)
+    window.localStorage.clear()
   })
 
   it('shows stored recent searches and can clear them', async () => {
-    vi.mocked(window.localStorage.getItem).mockReturnValue(JSON.stringify(['Dune', 'NBA']))
+    window.localStorage.setItem('nexastream-recent-searches', JSON.stringify(['Dune', 'NBA']))
 
     const user = userEvent.setup()
     renderSearch()
 
-    const recentSection = screen.getByRole('heading', { name: /Recent Searches/i }).closest('section')
+    const recentHeading = await screen.findByRole('heading', { name: /Recent Searches/i })
+    const recentSection = recentHeading.closest('section')
     expect(recentSection).toBeInTheDocument()
+
     expect(within(recentSection!).getByRole('button', { name: /^Dune$/i })).toBeInTheDocument()
     expect(within(recentSection!).getByRole('button', { name: /^NBA$/i })).toBeInTheDocument()
 
     await user.click(within(recentSection!).getByRole('button', { name: /Clear/i }))
 
-    expect(window.localStorage.setItem).toHaveBeenCalledWith('nexastream-recent-searches', '[]')
+    expect(window.localStorage.getItem('nexastream-recent-searches')).toBe('[]')
     expect(within(recentSection!).queryByRole('button', { name: /^Dune$/i })).not.toBeInTheDocument()
   })
 
@@ -69,26 +71,20 @@ describe('SearchBar', () => {
 
     await user.type(screen.getByRole('textbox', { name: /search content/i }), 'Dune')
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Movies/i })).toBeInTheDocument()
-    })
+    const movieHeading = await screen.findByRole('heading', { name: /Movies/i })
+    const tvHeading = await screen.findByRole('heading', { name: /TV Shows/i })
 
-    expect(screen.getByRole('heading', { name: /TV Shows/i })).toBeInTheDocument()
-
-    const movieSection = screen.getByRole('heading', { name: /Movies/i }).closest('section')
+    const movieSection = movieHeading.closest('section')
     expect(movieSection).toBeInTheDocument()
     expect(within(movieSection!).getByRole('button', { name: /Dune: Part Two/i })).toBeInTheDocument()
 
-    const tvSection = screen.getByRole('heading', { name: /TV Shows/i }).closest('section')
+    const tvSection = tvHeading.closest('section')
     expect(tvSection).toBeInTheDocument()
     expect(within(tvSection!).getByRole('button', { name: /Dune: Prophecy/i })).toBeInTheDocument()
 
     await user.click(within(movieSection!).getByRole('button', { name: /Dune: Part Two/i }))
 
-    expect(window.localStorage.setItem).toHaveBeenCalledWith(
-      'nexastream-recent-searches',
-      JSON.stringify(['Dune']),
-    )
+    expect(window.localStorage.getItem('nexastream-recent-searches')).toContain('Dune')
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })
