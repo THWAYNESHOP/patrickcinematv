@@ -3,27 +3,23 @@ import { test, expect } from '@playwright/test'
 test.describe('Home Page', () => {
   test('should load home page', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForLoadState('networkidle')
     await expect(page).toHaveTitle(/NEXASTREAM/i)
   })
 
   test('should display hero slider', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForLoadState('networkidle')
     const mainContent = page.locator('#root')
     await expect(mainContent).toBeVisible({ timeout: 20000 })
   })
 
   test('should navigate to movies page', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForLoadState('networkidle')
     await page.goto('/movies')
     await expect(page).toHaveURL(/\/movies/)
   })
 
   test('should open search', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForLoadState('networkidle')
 
     const desktopSearchButton = page.getByTestId('desktop-search-toggle').first()
     if (await desktopSearchButton.isVisible().catch(() => false)) {
@@ -40,19 +36,7 @@ test.describe('Home Page', () => {
     }
 
     const searchInput = page.getByTestId('search-overlay-input').first()
-
-    // Try to wait for the input; if not visible, attempt keyboard shortcut as a fallback
-    try {
-      await expect(searchInput).toBeVisible({ timeout: 15000 })
-    } catch (err) {
-      // Fallback: try keyboard shortcut to open search (if available) then wait again
-      try {
-        await page.keyboard.press('/')
-      } catch (e) {
-        // ignore
-      }
-      await expect(searchInput).toBeVisible({ timeout: 10000 })
-    }
+    await expect(searchInput).toBeVisible({ timeout: 10000 })
   })
 
   test('should toggle theme', async ({ page }) => {
@@ -68,13 +52,11 @@ test.describe('Home Page', () => {
 test.describe('Home Page - Mobile', () => {
   test('should load home page on mobile', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
     await expect(page).toHaveTitle(/NEXASTREAM/i)
   })
 
   test('should navigate to movies page on mobile', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
     await page.goto('/movies')
     await expect(page).toHaveURL(/\/movies/)
   })
