@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -7,7 +7,7 @@ export type ToastType = 'success' | 'error' | 'info' | 'warning'
 interface ToastProps {
   id: string
   type: ToastType
-  message: string
+  message: ReactNode
   duration?: number
   onClose: (id: string) => void
 }
@@ -48,11 +48,15 @@ export default function Toast({ id, type, message, duration = 5000, onClose }: T
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.22 }}
           className="flex w-full items-center gap-2.5 rounded-md border border-white/10 bg-zinc-950/95 px-3 py-2.5 shadow-xl shadow-black/35 backdrop-blur-xl sm:gap-3 sm:px-4 sm:py-3"
+          role="status"
+          aria-live="polite"
         >
           <div className={`shrink-0 rounded-full p-1.5 ${colors[type]}`}>
             <Icon className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" />
           </div>
-          <p className="min-w-0 flex-1 text-xs font-semibold leading-snug text-white sm:text-sm">{message}</p>
+          <div className="min-w-0 flex-1 text-xs font-semibold leading-snug text-white sm:text-sm">
+            {message}
+          </div>
           <button
             onClick={() => {
               setIsVisible(false)
