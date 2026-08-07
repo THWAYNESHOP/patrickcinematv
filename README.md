@@ -81,11 +81,22 @@ npm install
 npm run dev
 ```
 
+This starts Vite and the local support API together. The AI chat uses the local `/api/ai` proxy during development, so use `npm run dev` instead of starting Vite alone.
+
 ## Build
 
 ```bash
 npm run build
 ```
+
+## Testing
+
+```bash
+npm test
+npm run test:e2e:chromium
+```
+
+Use `npm run test:e2e:chromium` for a quick local browser smoke test with the installed Chromium browsers. The full cross-browser suite is still available with `npm run test:e2e`; run `npx playwright install` first if Firefox or WebKit are missing locally.
 
 ## Deployment
 

@@ -1,12 +1,22 @@
 import { useState, useEffect, memo } from 'react'
 import { Link } from 'react-router-dom'
-import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Play, Info, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useTVDetection } from '../../hooks/useTVDetection'
 import type { MovieSummary } from '../../api/tmdb'
 
 interface HeroSliderProps {
   movies: MovieSummary[]
+}
+
+function getOptimizedBackdrop(backdrop?: string) {
+  if (!backdrop) return ''
+  return backdrop.replace(/\/(original|w\d+)\//, '/w1280/')
+}
+
+function formatRating(rating?: string) {
+  const score = Number(rating)
+  return Number.isFinite(score) && score > 0 ? score.toFixed(1) : null
 }
 
 function HeroSlider({ movies }: HeroSliderProps) {
@@ -43,12 +53,8 @@ function HeroSlider({ movies }: HeroSliderProps) {
   }
 
   const currentMovie = movies[currentIndex]
-
-  const optimizedBackdrop = currentMovie.backdrop
-    ? (currentMovie.backdrop.includes('w500')
-        ? currentMovie.backdrop.replace('w500', 'w1280')
-        : `${currentMovie.backdrop.replace(/\/?$/, '')}/w1280`)
-    : ''
+  const rating = formatRating(currentMovie.rating)
+  const optimizedBackdrop = getOptimizedBackdrop(currentMovie.backdrop)
 
   return (
     <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
@@ -72,9 +78,15 @@ function HeroSlider({ movies }: HeroSliderProps) {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-2 md:mb-3 lg:mb-4 text-white tracking-tight leading-tight">
               {currentMovie.title}
             </h1>
-            <div className="flex items-center gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4 lg:mb-6 text-xs md:text-sm lg:text-base">
-              <span className="text-green-400 font-semibold">{currentMovie.rating}% Match</span>
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4 lg:mb-6 text-xs md:text-sm lg:text-base">
+              {rating && (
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/15 px-2 py-1 font-semibold text-accent">
+                  <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden="true" />
+                  {rating}
+                </span>
+              )}
               {currentMovie.year && <span className="text-gray-400">{currentMovie.year}</span>}
+              <span className="text-gray-400">{currentIndex + 1} of {movies.length}</span>
             </div>
             <p className="text-gray-200 text-xs md:text-sm lg:text-lg mb-4 md:mb-6 lg:mb-8 line-clamp-2 md:line-clamp-3 leading-relaxed">
               {currentMovie.overview}
@@ -105,7 +117,7 @@ function HeroSlider({ movies }: HeroSliderProps) {
         aria-label="Previous slide"
         role="button"
         tabIndex={0}
-        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
+        className="absolute left-2 top-[34%] -translate-y-1/2 p-2 md:left-4 md:top-1/2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" aria-hidden="true" />
       </button>
@@ -114,11 +126,30 @@ function HeroSlider({ movies }: HeroSliderProps) {
         aria-label="Next slide"
         role="button"
         tabIndex={0}
-        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
+        className="absolute right-2 top-[34%] -translate-y-1/2 p-2 md:right-4 md:top-1/2 md:p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all duration-300 z-10 border border-white/20 hover:border-white/40 group min-w-[40px] min-h-[40px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-white transition-colors" aria-hidden="true" />
       </button>
 
+      {movies.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 md:bottom-6">
+          {movies.map((movie, index) => (
+            <button
+              key={movie.id}
+              type="button"
+              onClick={() => {
+                triggerHaptic('light')
+                setCurrentIndex(index)
+              }}
+              className={`hero-slider-dot h-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary ${
+                index === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+              }`}
+              aria-label={`Show slide ${index + 1}: ${movie.title}`}
+              aria-current={index === currentIndex ? 'true' : undefined}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

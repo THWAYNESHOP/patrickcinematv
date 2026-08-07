@@ -9,7 +9,7 @@ const mockMovies: MovieSummary[] = [
     id: 1,
     title: 'Test Movie 1',
     poster: 'https://example.com/poster1.jpg',
-    backdrop: 'https://example.com/backdrop1.jpg',
+    backdrop: 'https://image.tmdb.org/t/p/w500/backdrop1.jpg',
     overview: 'Test overview 1',
     rating: '8.5',
     year: 2024,
@@ -41,8 +41,9 @@ describe('HeroSlider', () => {
     
     expect(screen.getByText('Test Movie 1')).toBeInTheDocument()
     expect(screen.getByText('Test overview 1')).toBeInTheDocument()
-    expect(screen.getByText('8.5% Match')).toBeInTheDocument()
+    expect(screen.getByText('8.5')).toBeInTheDocument()
     expect(screen.getByText('2024')).toBeInTheDocument()
+    expect(screen.getByText('1 of 2')).toBeInTheDocument()
   })
 
   it('renders play and more info buttons', () => {
@@ -96,10 +97,29 @@ describe('HeroSlider', () => {
     expect(image?.getAttribute('src')).toContain('w1280')
   })
 
+  it('does not append image sizes to custom backdrop URLs', () => {
+    renderWithRouter(
+      <HeroSlider
+        movies={[
+          {
+            ...mockMovies[0],
+            backdrop: 'https://example.com/custom-backdrop.jpg',
+          },
+        ]}
+      />
+    )
+
+    expect(screen.getByAltText('Test Movie 1')).toHaveAttribute(
+      'src',
+      'https://example.com/custom-backdrop.jpg',
+    )
+  })
+
   it('has proper accessibility attributes', () => {
     renderWithRouter(<HeroSlider movies={mockMovies} />)
     
     expect(screen.getByLabelText('Previous slide')).toBeInTheDocument()
     expect(screen.getByLabelText('Next slide')).toBeInTheDocument()
+    expect(screen.getByLabelText('Show slide 1: Test Movie 1')).toBeInTheDocument()
   })
 })

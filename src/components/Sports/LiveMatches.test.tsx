@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import LiveMatches from './LiveMatches'
@@ -38,6 +38,10 @@ function renderWithRouter(component: React.ReactElement) {
 describe('LiveMatches', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders loading skeleton initially', () => {
@@ -146,6 +150,23 @@ describe('LiveMatches', () => {
       const images = screen.getAllByRole('img')
       expect(images.length).toBeGreaterThan(0)
     })
+  })
+
+  it('does not warn when the sports API returns repeated match ids', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(sportsApi, 'getLiveMatches').mockResolvedValue([
+      mockMatches[0],
+      {
+        ...mockMatches[0],
+        title: 'Match 1 alternate stream',
+        sources: [{ source: 'streamed', id: 'match1-alt' }],
+      },
+    ])
+
+    renderWithRouter(<LiveMatches />)
+
+    expect(await screen.findAllByText('Team A')).toHaveLength(2)
+    expect(consoleError.mock.calls.some(([message]) => String(message).includes('same key'))).toBe(false)
   })
 
   it('has proper link to match details', async () => {

@@ -387,6 +387,7 @@ export default function Home() {
               })}
               type="movie"
               showProgress
+              viewAllTo="/watch-history"
               carouselId={carouselId('Continue Watching')}
               {...carouselStateProps}
             />
@@ -445,6 +446,7 @@ export default function Home() {
             items={trendingMovies}
             type="movie"
             loading={heroLoading}
+            viewAllTo="/trending"
             carouselId={carouselId('Trending Today')}
             {...carouselStateProps}
           />
@@ -505,6 +507,7 @@ export default function Home() {
                 items={sortByRating(teenRomance)}
                 type="movie"
                 loading={catalogLoading}
+                viewAllTo="/movies"
                 carouselId={carouselId('Teen Romance')}
                 {...carouselStateProps}
               />
@@ -517,6 +520,7 @@ export default function Home() {
                 items={kDrama}
                 type="tv"
                 loading={catalogLoading}
+                viewAllTo="/tv"
                 carouselId={carouselId('Korean Dramas')}
                 {...carouselStateProps}
               />
@@ -529,6 +533,7 @@ export default function Home() {
                 items={actionAdventure}
                 type="movie"
                 loading={catalogLoading}
+                viewAllTo="/movies"
                 carouselId={carouselId('Action & Adventure')}
                 {...carouselStateProps}
               />
@@ -541,6 +546,7 @@ export default function Home() {
                 items={comedy}
                 type="movie"
                 loading={catalogLoading}
+                viewAllTo="/movies"
                 carouselId={carouselId('Comedy')}
                 {...carouselStateProps}
               />
@@ -553,6 +559,7 @@ export default function Home() {
                 items={anime}
                 type="tv"
                 loading={catalogLoading}
+                viewAllTo="/anime"
                 carouselId={carouselId('Anime')}
                 {...carouselStateProps}
               />
@@ -579,6 +586,7 @@ export default function Home() {
             items={myList.length > 0 ? myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type })) : trendingMovies.slice(0, 5)}
             type="movie"
             loading={primaryLoading && myList.length === 0}
+            viewAllTo="/my-list"
             carouselId={carouselId('My List')}
             {...carouselStateProps}
           />

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="pnpm">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/pnpm.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

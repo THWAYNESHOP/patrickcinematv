@@ -61,20 +61,20 @@ function isPlaceholder(value) {
   return typeof value === 'string' && PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value))
 }
 
-if (!DARAJA_CONSUMER_KEY || !DARAJA_CONSUMER_SECRET || !DARAJA_BUSINESS_SHORT_CODE || !DARAJA_PASSKEY || !DARAJA_CALLBACK_URL) {
-  console.error('Missing one or more DARAJA_* environment variables.')
-  process.exit(1)
-}
-
-if (
+const missingDarajaConfig = !DARAJA_CONSUMER_KEY || !DARAJA_CONSUMER_SECRET || !DARAJA_BUSINESS_SHORT_CODE || !DARAJA_PASSKEY || !DARAJA_CALLBACK_URL
+const placeholderDarajaConfig =
   isPlaceholder(DARAJA_CONSUMER_KEY) ||
   isPlaceholder(DARAJA_CONSUMER_SECRET) ||
   isPlaceholder(DARAJA_BUSINESS_SHORT_CODE) ||
   isPlaceholder(DARAJA_PASSKEY) ||
   isPlaceholder(DARAJA_CALLBACK_URL)
-) {
-  console.error('One or more DARAJA_* environment variables are still using placeholder values. Update .env.local with your actual Daraja sandbox or production credentials.')
-  process.exit(1)
+
+if (missingDarajaConfig) {
+  console.warn('Missing one or more DARAJA_* environment variables. Support payment requests will return a configuration error.')
+}
+
+if (placeholderDarajaConfig) {
+  console.warn('One or more DARAJA_* environment variables are still using placeholder values. Support payment requests will return a configuration error.')
 }
 
 app.use(express.json())
@@ -430,6 +430,12 @@ function getPassword(timestamp) {
 
 app.post('/api/support/stk-push', async (req, res) => {
   try {
+    if (missingDarajaConfig || placeholderDarajaConfig) {
+      return res.status(500).json({
+        error: 'Support payments are not configured. Update the DARAJA_* environment variables before sending STK Push requests.',
+      })
+    }
+
     const { phoneNumber, amount, accountReference = 'NEXASTREAM_SUPPORT', transactionDesc = 'Support NEXASTREAM' } = req.body
 
     if (!phoneNumber || !amount) {

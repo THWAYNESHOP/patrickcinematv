@@ -114,14 +114,22 @@ export default function LiveMatches({ limit, sport, variant = 'live' }: LiveMatc
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
-      {matches.map((match) => {
+      {matches.map((match, index) => {
         // Use the first available source if available
         const firstSource = match.sources && match.sources.length > 0 ? match.sources[0] : null
         const isLive = variant === 'live'
+        const matchKey = [
+          variant,
+          match.id,
+          firstSource?.source,
+          firstSource?.id,
+          match.date,
+          index,
+        ].filter(Boolean).join('-')
         
         return (
           <Link
-            key={match.id}
+            key={matchKey}
             to={firstSource ? `/sports/${firstSource.source}/${firstSource.id}` : `/sports/${match.id}`}
             className="group glass rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-glow backdrop-blur-md active:scale-95 hover:-translate-y-1"
           >

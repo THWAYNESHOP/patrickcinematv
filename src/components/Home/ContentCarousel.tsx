@@ -11,6 +11,7 @@ interface ContentCarouselProps {
   title: string
   items: MovieSummary[]
   type: 'movie' | 'tv' | 'anime' | 'sports'
+  viewAllTo?: string
   showProgress?: boolean
   loading?: boolean
   carouselId?: string
@@ -144,6 +145,7 @@ export default function ContentCarousel({
   title,
   items,
   type,
+  viewAllTo,
   showProgress = false,
   loading = false,
   carouselId,
@@ -299,8 +301,21 @@ export default function ContentCarousel({
 
   return (
     <div className="mb-12 md:mb-16">
-      <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3">
-        <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h2>
+      <div className="mb-4 md:mb-6 flex items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="truncate text-xl font-bold text-white tracking-tight md:text-2xl lg:text-3xl">{title}</h2>
+          {!loading && items.length > 0 && (
+            <p className="mt-1 text-xs font-medium text-gray-500 md:text-sm">{items.length} titles</p>
+          )}
+        </div>
+        {viewAllTo && (
+          <Link
+            to={viewAllTo}
+            className="shrink-0 text-sm font-semibold text-gray-300 transition-colors hover:text-white tv-focusable tv-touch-target"
+          >
+            View All
+          </Link>
+        )}
       </div>
       <div className="relative group">
         {loading ? (
@@ -332,7 +347,7 @@ export default function ContentCarousel({
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className={`flex gap-5 overflow-x-auto scrollbar-hide pb-4 ${performanceMode ? '' : 'scroll-smooth'}`}
+              className={`flex gap-4 overflow-x-auto scrollbar-hide pb-4 pr-8 sm:gap-5 ${performanceMode ? '' : 'scroll-smooth'}`}
             >
               {carouselItems}
             </div>
