@@ -26,11 +26,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const genId = useCallback(() => {
     try {
-      // @ts-ignore - lib.dom types may include crypto.randomUUID in newer TS, but guard at runtime
-      if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
-        return (crypto as any).randomUUID()
+      // @ts-expect-error - lib.dom types may include crypto.randomUUID in newer TS, but guard at runtime
+      if (typeof crypto !== 'undefined' && typeof (crypto as { randomUUID: () => string }).randomUUID === 'function') {
+        return (crypto as { randomUUID: () => string }).randomUUID()
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
     return Math.random().toString(36).substring(2, 9)
