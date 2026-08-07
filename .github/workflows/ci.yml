@@ -67,6 +67,13 @@ jobs:
     - name: Build
       run: npm run build
 
+    - name: Start dev server
+      uses: mxschmitt/action-start-server@v2
+      with:
+        command: npm run dev
+        port: 5173
+        timeout: 120
+
     - name: Run E2E tests
       run: npx playwright test
 
