@@ -316,6 +316,57 @@ const laziziEpisodes: AyanaEpisode[] = [
   },
 ]
 
+const secondFamilyEpisodes: AyanaEpisode[] = [
+  {
+    id: 'episode-1',
+    title: 'Episode 1',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/tO4M-lw_fav8l',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-2',
+    title: 'Episode 2',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/n-Z_EhKyM5plH',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-3',
+    title: 'Episode 3',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/OIYo_R8ki-RL9',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-4',
+    title: 'Episode 4',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/6p_iu-APoAg4v',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-5',
+    title: 'Episode 5',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/U_lgI-eNM1nXr',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-6',
+    title: 'Episode 6',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/BIpcKfl-ji_GN',
+    date: '2026-08-08',
+    runtime: '45 min',
+  },
+]
+
 const sortEpisodes = (episodes: AyanaEpisode[]) => [...episodes].sort((a, b) => {
   const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime()
   if (dateDiff !== 0) return dateDiff
@@ -326,6 +377,7 @@ const getSeriesEpisodes = (seriesId?: string): AyanaEpisode[] => {
   if (seriesId === 'lulu') return sortEpisodes(luluEpisodes)
   if (seriesId === 'lazizi') return sortEpisodes(laziziEpisodes)
   if (seriesId === 'ayana') return sortEpisodes(ayanaEpisodes)
+  if (seriesId === 'second-family') return sortEpisodes(secondFamilyEpisodes)
   return []
 }
 
@@ -381,7 +433,10 @@ export default function KenyanSeriesDetails() {
   const getYoutubeEmbedUrl = (youtubeUrl?: string, disableSubtitles = false, shouldMute = false) => {
     if (!youtubeUrl) return ''
 
-    const youtubeMatch = youtubeUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]+)/)
+    const trimmedUrl = youtubeUrl.trim()
+    if (trimmedUrl.includes('fembed.co/embed/')) return trimmedUrl
+
+    const youtubeMatch = trimmedUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([\w-]+)/)
     if (!youtubeMatch?.[1]) return ''
 
     const params = new URLSearchParams()

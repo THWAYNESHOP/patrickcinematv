@@ -310,4 +310,35 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getByTitle(/episode player/i)).toBeInTheDocument()
     expect(screen.getAllByText(/AYANA \| Citizen TV \| Wednesday 8th July \| Part 1/i).length).toBeGreaterThan(0)
   })
+
+  it('shows the new Second Family Episode 1 entry', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/second-family']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/Episode 1/i).length).toBeGreaterThan(0)
+  })
+
+  it('loads the provided embed URL for Second Family Episode 1', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/second-family']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /play episode/i }))
+
+    const iframe = screen.getByTitle(/episode player/i)
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/tO4M-lw_fav8l'))
+  })
 })
