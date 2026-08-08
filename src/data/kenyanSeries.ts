@@ -60,6 +60,21 @@ export const kenyanSeriesItems: KenyanSeriesItem[] = [
     overview: 'As hidden truths resurface, forbidden love, family rivalries, betrayal, and political ambition collide, threatening to destroy the empire he has spent a lifetime building.',
     displayOrder: 3,
   },
+  {
+    id: 'second-family',
+    title: 'SECOND FAMILY',
+    description: 'When Sinde discovers that her father has secretly built another family, a shocking revelation sets two families on a collision course.',
+    poster: '/secondfamily.jpeg',
+    youtubeUrl: 'https://youtu.be/ECg7IiPYLc0?si=XN7U4mOm74ib6cKn',
+    trailerUrl: 'https://youtu.be/ECg7IiPYLc0?si=XN7U4mOm74ib6cKn',
+    tag: 'New',
+    genre: 'Drama • Family • Romance',
+    year: 2026,
+    runtime: 'Approx. 45 min/ep',
+    backdrop: '/secondfamily.jpeg',
+    overview: 'When Sinde discovers that her father has secretly built another family, a shocking revelation sets two families on a collision course. As buried secrets come to light, love, betrayal, inheritance and power struggles threaten to tear everyone apart. With loyalties constantly changing, Sinde must navigate a world of family secrets and difficult choices while fighting for her place in her father\'s legacy.',
+    displayOrder: 4,
+  },
 ]
 
 export function getKenyanSeriesItem(id?: string) {
