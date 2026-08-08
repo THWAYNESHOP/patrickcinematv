@@ -44,9 +44,10 @@ describe('Home', () => {
     )
 
     expect(screen.queryByText(/Featured series/i)).not.toBeInTheDocument()
-    expect(await screen.findAllByRole('img', { name: /AYANA|Lulu|Lazizi/i })).toHaveLength(3)
+    expect(await screen.findAllByRole('img', { name: /AYANA|Lulu|Lazizi|SECOND FAMILY/i })).toHaveLength(4)
     expect(screen.getByRole('link', { name: /AYANA/i })).toHaveAttribute('href', '/kenyan-series/ayana')
     expect(screen.getByRole('link', { name: /Lulu/i })).toHaveAttribute('href', '/kenyan-series/lulu')
     expect(screen.getByRole('link', { name: /Lazizi/i })).toHaveAttribute('href', '/kenyan-series/lazizi')
+    expect(screen.getByRole('link', { name: /SECOND FAMILY/i })).toHaveAttribute('href', '/kenyan-series/second-family')
   })
 })

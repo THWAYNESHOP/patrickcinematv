@@ -403,7 +403,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-3 sm:gap-4">
-            {getOrderedKenyanSeriesItems().slice(0, 3).map((item) => {
+            {getOrderedKenyanSeriesItems().slice(0, 4).map((item) => {
               const userRating = getAverageRatingForMedia(item.id)
               const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
               return (
