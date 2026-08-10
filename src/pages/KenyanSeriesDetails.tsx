@@ -365,6 +365,38 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
     date: '2026-08-08',
     runtime: '45 min',
   },
+  {
+    id: 'episode-7',
+    title: 'Episode 7',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/iYs_X4PG-RUjd',
+    date: '2026-08-09',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-8',
+    title: 'Episode 8',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/tYd-QGx_wAEjx',
+    date: '2026-08-10',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-9',
+    title: 'Episode 9',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/2Q-7USFEuJ_Ta',
+    date: '2026-08-11',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-10',
+    title: 'Episode 10',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/4-hrHhHypC_wO',
+    date: '2026-08-12',
+    runtime: '45 min',
+  },
 ]
 
 const sortEpisodes = (episodes: AyanaEpisode[]) => [...episodes].sort((a, b) => {

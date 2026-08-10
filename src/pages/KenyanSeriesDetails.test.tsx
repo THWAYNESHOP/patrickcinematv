@@ -311,6 +311,20 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/AYANA \| Citizen TV \| Wednesday 8th July \| Part 1/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Second Family Episode 7 entry', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/second-family']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/Episode 7/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the new Second Family Episode 1 entry', () => {
     render(
       <ToastProvider>
