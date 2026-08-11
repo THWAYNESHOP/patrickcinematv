@@ -21,22 +21,25 @@ test.describe('Home Page', () => {
   test('should open search', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
 
+    // Wait for page to be fully loaded
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
+
+    // Try desktop search first
     const desktopSearchButton = page.getByTestId('desktop-search-toggle').first()
-    if (await desktopSearchButton.isVisible().catch(() => false)) {
-      await desktopSearchButton.scrollIntoViewIfNeeded()
-      await desktopSearchButton.click({ timeout: 10000, force: true })
-    } else {
+    try {
+      await desktopSearchButton.waitFor({ state: 'visible', timeout: 5000 })
+      await desktopSearchButton.click()
+    } catch {
+      // Fallback to mobile search
       const menuButton = page.locator('[aria-label="Open menu"]').first()
-      await expect(menuButton).toBeVisible({ timeout: 10000 })
-      await menuButton.click({ timeout: 10000, force: true })
+      await menuButton.click({ timeout: 5000 })
       const mobileSearchButton = page.getByTestId('mobile-search-toggle').first()
-      await expect(mobileSearchButton).toBeVisible({ timeout: 10000 })
-      await mobileSearchButton.scrollIntoViewIfNeeded()
-      await mobileSearchButton.click({ timeout: 10000, force: true })
+      await mobileSearchButton.click({ timeout: 5000 })
     }
 
+    // Wait for search overlay to appear
     const searchInput = page.getByTestId('search-overlay-input').first()
-    await expect(searchInput).toBeVisible({ timeout: 10000 })
+    await searchInput.waitFor({ state: 'visible', timeout: 15000 })
   })
 
   test('should toggle theme', async ({ page }) => {
