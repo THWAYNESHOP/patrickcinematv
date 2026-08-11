@@ -339,7 +339,7 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/Episode 1/i).length).toBeGreaterThan(0)
   })
 
-  it('loads the provided embed URL for Second Family Episode 1', () => {
+  it('loads the provided embed URL for Second Family Episode 10', () => {
     render(
       <ToastProvider>
         <MemoryRouter initialEntries={['/kenyan-series/second-family']}>
@@ -353,6 +353,6 @@ describe('KenyanSeriesDetails', () => {
     fireEvent.click(screen.getByRole('button', { name: /play episode/i }))
 
     const iframe = screen.getByTitle(/episode player/i)
-    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/tO4M-lw_fav8l'))
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/4-hrHhHypC_wO'))
   })
 })
