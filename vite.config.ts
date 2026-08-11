@@ -206,6 +206,26 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
+          // Named chunks from lazy imports
+          if (id.includes('pages/Home')) return 'home'
+          if (id.includes('pages/Movies')) return 'movies'
+          if (id.includes('pages/TVSeries')) return 'tv'
+          if (id.includes('pages/Sports')) return 'sports'
+          if (id.includes('pages/LiveTV')) return 'live-tv'
+          if (id.includes('pages/Anime')) return 'anime'
+          if (id.includes('pages/KenyanSeries')) return 'kenyan-series'
+          if (id.includes('pages/Trending')) return 'trending'
+          if (id.includes('pages/MyList')) return 'my-list'
+          if (id.includes('pages/Profile')) return 'profile'
+          if (id.includes('pages/Queue')) return 'queue'
+          if (id.includes('pages/WatchHistory')) return 'watch-history'
+          if (id.includes('pages/Settings')) return 'settings'
+          if (id.includes('pages/MovieDetails') || id.includes('pages/TVDetails')) return 'details'
+          if (id.includes('pages/SportsPlayer') || id.includes('pages/WatchPage')) return 'player'
+          if (id.includes('pages/Contact') || id.includes('pages/Privacy') || id.includes('pages/Terms') || id.includes('pages/Dmca')) return 'legal'
+          if (id.includes('pages/Support')) return 'support'
+          if (id.includes('pages/NotFound')) return 'not-found'
+          
           // React core
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
             return 'react-vendor'
