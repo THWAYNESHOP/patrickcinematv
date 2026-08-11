@@ -166,6 +166,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 16,
   },
+  {
+    id: 'part-17',
+    title: '11TH AUGUST PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/ytRm-ScUi_NVe',
+    date: '2026-08-11',
+    runtime: '45 min',
+    part: 17,
+  },
+  {
+    id: 'part-18',
+    title: '11TH AUGUST PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/LKu-El4_Ibjvo',
+    date: '2026-08-11',
+    runtime: '45 min',
+    part: 18,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -314,6 +332,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     date: '2026-07-13',
     runtime: '27 min',
   },
+  {
+    id: 'episode-23',
+    title: '11TH AUGUST',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://fembed.co/embed/UvCc-dks3_S1h',
+    date: '2026-08-11',
+    runtime: '27 min',
+  },
 ]
 
 const secondFamilyEpisodes: AyanaEpisode[] = [
@@ -395,6 +421,22 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
     thumbnail: '/secondfamily.jpeg',
     youtubeUrl: 'https://fembed.co/embed/4-hrHhHypC_wO',
     date: '2026-08-12',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-11',
+    title: 'Episode 11',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/v8v_y-K6MN49g',
+    date: '2026-08-13',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-12',
+    title: 'Episode 12',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/m-gXBNn_jPs86',
+    date: '2026-08-14',
     runtime: '45 min',
   },
 ]
