@@ -22,6 +22,13 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /visual\.spec\.ts/,
+    },
+    {
+      name: 'visual',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /visual\.spec\.ts/,
     },
   ],
 
