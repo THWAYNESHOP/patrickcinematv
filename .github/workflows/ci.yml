@@ -68,12 +68,6 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Start dev server
-      run: |
-        npm run dev &
-        echo $! > server.pid
-        timeout 120 sh -c 'until curl -s http://localhost:5173 > /dev/null; do sleep 1; done' || echo "Server started or timeout reached"
-
     - name: Run E2E tests
       run: npx playwright test
 
@@ -84,14 +78,6 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 7
-
-    - name: Stop dev server
-      if: always()
-      run: |
-        if [ -f server.pid ]; then
-          kill $(cat server.pid) || true
-          rm server.pid
-        fi
 
   security:
     runs-on: ubuntu-latest

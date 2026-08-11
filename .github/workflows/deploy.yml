@@ -50,15 +50,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: |
-          npm run dev &
-          echo $! > server.pid
-          timeout 120 sh -c 'until curl -s http://localhost:5173 > /dev/null; do sleep 1; done' || echo "Server started or timeout reached"
-          npm run test:e2e
-          if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
-            rm server.pid
-          fi
+        run: npm run test:e2e
 
   build:
     runs-on: ubuntu-latest
