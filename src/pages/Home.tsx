@@ -418,6 +418,11 @@ export default function Home() {
                     alt={item.title}
                     className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
                   />
+                  {item.tag && (
+                    <div className="absolute top-2 left-2 rounded-md bg-primary px-2 py-0.5">
+                      <span className="text-[10px] font-bold text-black">{item.tag}</span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100">
                     <Play className="h-10 w-10 text-primary sm:h-12 sm:w-12" fill="white" />
                   </div>

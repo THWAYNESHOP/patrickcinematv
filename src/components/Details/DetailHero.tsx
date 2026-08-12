@@ -46,7 +46,7 @@ export default function DetailHero({
   return (
     <div
       ref={heroRef}
-      className="relative flex items-end min-h-[80vh] md:min-h-[85vh] bg-cover bg-center overflow-hidden"
+      className="relative flex items-end min-h-[45vh] md:min-h-[55vh] bg-cover bg-center overflow-hidden"
       style={{ 
         backgroundImage: `url(${backdrop})`,
         imageRendering: '-webkit-optimize-contrast',
