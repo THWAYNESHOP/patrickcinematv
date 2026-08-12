@@ -184,6 +184,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 18,
   },
+  {
+    id: 'part-19',
+    title: '11TH TUESDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/ytRm-ScUi_NVe',
+    date: '2026-08-11',
+    runtime: '45 min',
+    part: 19,
+  },
+  {
+    id: 'part-20',
+    title: '11TH TUESDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/LKu-El4_Ibjvo',
+    date: '2026-08-11',
+    runtime: '45 min',
+    part: 20,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -333,8 +351,16 @@ const laziziEpisodes: AyanaEpisode[] = [
     runtime: '27 min',
   },
   {
+    id: 'episode-19',
+    title: '10TH MONDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://fembed.co/embed/UvCc-dks3_S1h',
+    date: '2026-08-11',
+    runtime: '27 min',
+  },
+  {
     id: 'episode-20',
-    title: '12TH AUGUST TUESDAY',
+    title: '11TH TUESDAY',
     thumbnail: '/lazizi.jpg',
     youtubeUrl: 'https://fembed.co/embed/3srG_53i-V302',
     date: '2026-08-12',
@@ -424,6 +450,22 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
   },
   {
+    id: 'episode-11',
+    title: 'Episode 11',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/v8v_y-K6MN49g',
+    date: '2026-08-12',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-12',
+    title: 'Episode 12',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/m-gXBNn_jPs86',
+    date: '2026-08-12',
+    runtime: '45 min',
+  },
+  {
     id: 'episode-13',
     title: 'Episode 13',
     thumbnail: '/secondfamily.jpeg',
@@ -434,6 +476,15 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
 ]
 
 const sortEpisodes = (episodes: AyanaEpisode[]) => [...episodes].sort((a, b) => {
+  // For Second Family, sort by episode number extracted from ID in descending order
+  const aEpisodeNum = parseInt(a.id.replace('episode-', ''))
+  const bEpisodeNum = parseInt(b.id.replace('episode-', ''))
+  
+  if (!isNaN(aEpisodeNum) && !isNaN(bEpisodeNum)) {
+    return bEpisodeNum - aEpisodeNum
+  }
+  
+  // For other series, sort by date descending, then by part
   const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime()
   if (dateDiff !== 0) return dateDiff
   return (a.part ?? 0) - (b.part ?? 0)
