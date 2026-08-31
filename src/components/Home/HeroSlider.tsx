@@ -29,12 +29,12 @@ function HeroSlider({ movies }: HeroSliderProps) {
   const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
 
   const handleCardClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (e?: React.MouseEvent<HTMLElement>) => {
       // Check if user is logged in
       if (!user) {
-        e.preventDefault()
-        e.stopPropagation()
-        
+        e?.preventDefault()
+        e?.stopPropagation()
+
         // Store the pending navigation and open auth modal
         const movie = movies[currentIndex]
         setPendingCardNavigation({
