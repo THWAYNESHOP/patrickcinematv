@@ -760,10 +760,24 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
+    interface TmdbCreditResponse {
+      id: number
+      title?: string
+      name?: string
+      poster_path?: string | null
+      release_date?: string
+      first_air_date?: string
+      vote_average?: number
+      media_type: 'movie' | 'tv'
+      character?: string
+      job?: string
+      episode_count?: number
+    }
+
     const credits = Array.isArray(response.data?.cast) ? response.data.cast : []
     const result: PersonCredit[] = credits
-      .filter((credit: any) => credit.media_type === 'movie' || credit.media_type === 'tv')
-      .map((credit: any) => ({
+      .filter((credit: TmdbCreditResponse) => credit.media_type === 'movie' || credit.media_type === 'tv')
+      .map((credit: TmdbCreditResponse) => ({
         id: credit.id,
         title: credit.title,
         name: credit.name,
@@ -797,8 +811,16 @@ export const tmdbApi = {
       timeout: 10000,
     })
 
+    interface TmdbPersonResponse {
+      id: number
+      name: string
+      biography?: string
+      profile_path?: string | null
+      known_for_department?: string
+    }
+
     return Array.isArray(response.data?.results)
-      ? response.data.results.map((person: any) => ({
+      ? response.data.results.map((person: TmdbPersonResponse) => ({
           id: person.id,
           name: person.name,
           biography: person.biography || '',

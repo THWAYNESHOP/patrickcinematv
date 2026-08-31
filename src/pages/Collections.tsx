@@ -6,11 +6,13 @@ import { tmdbApi } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
 
+import type { LucideIcon } from 'lucide-react'
+
 interface Collection {
   id: string
   name: string
   description: string
-  icon: any
+  icon: LucideIcon
   color: string
   fetchParams: {
     with_genres?: number

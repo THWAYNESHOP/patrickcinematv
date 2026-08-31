@@ -40,7 +40,7 @@ export default function PersonalizedFavorites({
       })
       .sort((a, b) => (b.userRating || 0) - (a.userRating || 0))
       .slice(0, limit)
-      .map(({ userRating, ...item }) => item as MovieSummary)
+      .map(({ userRating: _userRating, ...item }) => item as MovieSummary)
   }, [myList.length, limit, getAverageRatingForMedia])
 
   if (contentForCarousel.length === 0) {

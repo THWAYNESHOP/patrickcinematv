@@ -137,14 +137,14 @@ function HeroSlider({ movies }: HeroSliderProps) {
               ) : (
                 <>
                   <button
-                    onClick={handleCardClick as any}
+                    onClick={() => handleCardClick()}
                     className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
                   >
                     <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
                     Play
                   </button>
                   <button
-                    onClick={handleCardClick as any}
+                    onClick={() => handleCardClick()}
                     className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
                   >
                     <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />

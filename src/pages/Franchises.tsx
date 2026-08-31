@@ -5,11 +5,13 @@ import ContentCarousel from '../components/Home/ContentCarousel'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
 
+import type { LucideIcon } from 'lucide-react'
+
 interface Franchise {
   id: number
   name: string
   description: string
-  icon: any
+  icon: LucideIcon
   color: string
   collectionId: number
 }
@@ -101,8 +103,18 @@ export default function Franchises() {
       
       const data = await response.json()
       
+      interface TmdbMovieResponse {
+        id: number
+        title: string
+        poster_path?: string | null
+        backdrop_path?: string | null
+        overview?: string
+        vote_average?: number
+        release_date?: string
+      }
+
       // Convert parts to MovieSummary format
-      const movies: MovieSummary[] = (data.parts || []).map((movie: any) => ({
+      const movies: MovieSummary[] = (data.parts || []).map((movie: TmdbMovieResponse) => ({
         id: movie.id,
         title: movie.title,
         poster: movie.poster_path 

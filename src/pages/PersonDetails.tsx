@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Calendar, MapPin, ExternalLink, Film, Award, User as UserIcon } from 'lucide-react'
 import ContentCarousel from '../components/Home/ContentCarousel'
-import { tmdbApi, type PersonDetails, type PersonCredit } from '../api/tmdb'
+import { tmdbApi, type PersonDetails as PersonDetailsType, type PersonCredit } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
 
 export default function PersonDetails() {
   const { id } = useParams<{ id: string }>()
-  const [person, setPerson] = useState<PersonDetails | null>(null)
+  const [person, setPerson] = useState<PersonDetailsType | null>(null)
   const [credits, setCredits] = useState<PersonCredit[]>([])
   const [loading, setLoading] = useState(true)
   const toast = useToast()

@@ -6,10 +6,12 @@ import { tmdbApi } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
 
+import type { LucideIcon } from 'lucide-react'
+
 interface Mood {
   id: string
   name: string
-  icon: any
+  icon: LucideIcon
   description: string
   genres: number[]
   color: string

@@ -69,7 +69,7 @@ function MediaRail({ title, items, type, basePath }: MediaRailProps) {
           ) : (
             <button
               key={item.id}
-              onClick={(e) => handleCardClick(e as any, item.id)}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleCardClick(e, item.id)}
               className="group flex-shrink-0 w-28 sm:w-32 md:w-40 snap-start text-left"
             >
               <div className="relative rounded-xl overflow-hidden border border-white/5 group-hover:border-primary/40 transition-all duration-300 group-hover:-translate-y-1 shadow-lg group-hover:shadow-glow">
