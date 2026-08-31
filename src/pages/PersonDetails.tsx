@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Calendar, MapPin, ExternalLink, Film, Tv, Star, Award, User as UserIcon } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { Calendar, MapPin, ExternalLink, Film, Award, User as UserIcon } from 'lucide-react'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import { tmdbApi, type PersonDetails, type PersonCredit } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
-import { useMyList } from '../hooks/useMyList'
 
 export default function PersonDetails() {
   const { id } = useParams<{ id: string }>()
@@ -14,7 +12,6 @@ export default function PersonDetails() {
   const [credits, setCredits] = useState<PersonCredit[]>([])
   const [loading, setLoading] = useState(true)
   const toast = useToast()
-  const { addToMyList, removeFromMyList } = useMyList()
 
   const fetchPersonData = useCallback(async () => {
     if (!id) return
@@ -38,22 +35,6 @@ export default function PersonDetails() {
   useEffect(() => {
     fetchPersonData()
   }, [fetchPersonData])
-
-  const toggleMyList = useCallback((item: MovieSummary, inMyList: boolean) => {
-    const itemId = String(item.id)
-    if (inMyList) {
-      removeFromMyList(itemId)
-      return
-    }
-    addToMyList({
-      id: itemId,
-      title: item.title,
-      poster: item.poster,
-      rating: item.rating,
-      year: item.year,
-      type: item.type || 'movie',
-    })
-  }, [addToMyList, removeFromMyList])
 
   const movieCredits = credits.filter(c => c.media_type === 'movie')
   const tvCredits = credits.filter(c => c.media_type === 'tv')
@@ -111,9 +92,9 @@ export default function PersonDetails() {
 
   const age = calculateAge(person.birthday, person.deathday)
 
-  const DepartmentIcon = person.known_for_department === 'Acting' ? User : 
+  const DepartmentIcon = person.known_for_department === 'Acting' ? UserIcon : 
                         person.known_for_department === 'Directing' ? Film : 
-                        person.known_for_department === 'Writing' ? Award : User
+                        person.known_for_department === 'Writing' ? Award : UserIcon
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4">

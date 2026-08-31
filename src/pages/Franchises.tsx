@@ -1,9 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Film, Sparkles, Crown, Sword, Shield, Rocket, Ghost, Flame, Zap } from 'lucide-react'
+import { Sparkles, Crown, Shield, Rocket, Ghost, Flame, Zap } from 'lucide-react'
 import ContentCarousel from '../components/Home/ContentCarousel'
-import { tmdbApi } from '../api/tmdb'
 import type { MovieSummary } from '../api/tmdb'
 import { useToast } from '../hooks/useToast'
 

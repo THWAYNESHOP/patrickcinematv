@@ -42,6 +42,7 @@ export interface MovieSummary {
   year?: number
   type?: 'movie' | 'tv' | 'anime' | 'sports'
   progress?: number
+  popularity?: number
 }
 
 export interface PlatformCatalog {
@@ -732,7 +733,7 @@ export const tmdbApi = {
       id: data.id,
       name: data.name,
       biography: data.biography || 'No biography available.',
-      profile: data.profile_path ? getOptimizedImageUrl(data.profile_path, 'h632') : 'https://via.placeholder.com/300x450?text=No+Image',
+      profile: data.profile_path ? getOptimizedImageUrl(data.profile_path, 'w500') : 'https://via.placeholder.com/300x450?text=No+Image',
       birthday: data.birthday,
       deathday: data.deathday,
       place_of_birth: data.place_of_birth,
@@ -775,7 +776,7 @@ export const tmdbApi = {
         job: credit.job,
         episode_count: credit.episode_count,
       }))
-      .sort((a, b) => {
+      .sort((a: PersonCredit, b: PersonCredit) => {
         const dateA = a.release_date || a.first_air_date || ''
         const dateB = b.release_date || b.first_air_date || ''
         return dateB.localeCompare(dateA)
@@ -801,7 +802,7 @@ export const tmdbApi = {
           id: person.id,
           name: person.name,
           biography: person.biography || '',
-          profile: person.profile_path ? getOptimizedImageUrl(person.profile_path, 'h632') : 'https://via.placeholder.com/300x450?text=No+Image',
+          profile: person.profile_path ? getOptimizedImageUrl(person.profile_path, 'w500') : 'https://via.placeholder.com/300x450?text=No+Image',
           known_for_department: person.known_for_department,
         }))
       : []

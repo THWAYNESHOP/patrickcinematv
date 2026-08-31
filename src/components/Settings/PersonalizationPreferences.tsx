@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Save, RotateCcw } from 'lucide-react'
-import { useStore } from '../store/useStore'
+import { useStore } from '../../store/useStore'
 
 interface PersonalizationSettings {
   showRecommendedForYou: boolean

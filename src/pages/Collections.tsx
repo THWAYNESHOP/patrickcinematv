@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Film, Clock, Star, TrendingUp, Award, Heart, Zap, Crown, Flame } from 'lucide-react'
 import ContentCarousel from '../components/Home/ContentCarousel'

@@ -34,16 +34,19 @@ export default function BecauseYouWatched({
   }, [watchHistory, allContent.length])
 
   // Generate recommendations based on recently watched
-  const recommendations = useBecauseYouWatched(recentlyWatchedItem, allContent)
+  const recommendations = useBecauseYouWatched(recentlyWatchedItem || null, allContent)
 
   if (!recentlyWatchedItem || !recommendations || recommendations.length === 0) {
     return null
   }
 
-  const contentForCarousel: MovieSummary[] = recommendations.slice(0, limit).map(item => ({
-    ...item,
-    rating: String(getAverageRatingForMedia(String(item.id)) || item.rating || '0'),
-  }))
+  const contentForCarousel: MovieSummary[] = recommendations
+    .slice(0, limit)
+    .filter((item): item is MovieSummary => item != null)
+    .map(item => ({
+      ...item,
+      rating: String(getAverageRatingForMedia(String(item.id)) || item.rating || '0'),
+    }))
 
   return (
     <section className="mb-10 md:mb-12">
