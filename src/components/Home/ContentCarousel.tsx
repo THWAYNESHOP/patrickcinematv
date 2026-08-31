@@ -45,6 +45,10 @@ const CarouselCard = function CarouselCard({
   performanceMode = false,
 }: CarouselCardProps) {
   const inMyList = useStore((state) => state.isInMyList(String(item.id)))
+  const user = useStore((state) => state.user)
+  const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
+  const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+  const navigatePath = `/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`
 
   const handleMyList = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -68,72 +72,124 @@ const CarouselCard = function CarouselCard({
     onPrefetch?.(item)
   }, [carouselId, item, onPrefetch, performanceMode, setFocusedCardId])
 
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (!user) {
+        e.preventDefault?.()
+        e.stopPropagation?.()
+        setPendingCardNavigation({
+          type: itemType,
+          id: String(item.id),
+        })
+        setIsAuthModalOpen(true)
+        return
+      }
+
+      if (carouselId) {
+        setFocusedCardId?.(carouselId, String(item.id))
+      }
+    },
+    [user, itemType, item.id, carouselId, setFocusedCardId, setPendingCardNavigation, setIsAuthModalOpen],
+  )
+
+  const cardContent = (
+    <>
+      <div className={`bg-darkSurface rounded-xl overflow-hidden border border-white/5 hover:border-white/10 ${
+        performanceMode
+          ? 'transition-none'
+          : 'transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow'
+      }`}>
+        <div className="relative aspect-[2/3]">
+          <img
+            src={item.poster}
+            srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
+            sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
+            alt={item.title}
+            width={192}
+            height={288}
+            decoding="async"
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+          <div className={`absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 flex items-center justify-center ${
+            performanceMode ? 'transition-none' : 'transition-opacity duration-300'
+          }`}>
+            <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
+          </div>
+          {showProgress && typeof item.progress === 'number' && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+              <div className="h-full bg-primary" style={{ width: `${Math.min(item.progress, 100)}%` }} />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleMyList}
+            className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
+            aria-label={inMyList ? `Remove ${item.title} from My List` : `Add ${item.title} to My List`}
+          >
+            {inMyList ? (
+              <Check className="w-4 h-4 text-white" />
+            ) : (
+              <Plus className="w-4 h-4 text-white" />
+            )}
+          </button>
+        </div>
+        <div className="p-2 md:p-3">
+          <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
+              <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
+              <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
+            </div>
+            {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
+            {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+
+  const commonProps = {
+    onMouseEnter: handleMouseEnter,
+    onFocus: handleFocus,
+    onTouchStart: performanceMode ? undefined : handleMouseEnter,
+  }
+
+  if (!user) {
+    return (
+      <div
+        key={item.id}
+        className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card cursor-pointer block"
+        data-carousel-card-id={item.id}
+        role="button"
+        tabIndex={0}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          handleCardClick(e)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleCardClick(e as unknown as React.MouseEvent<HTMLElement>)
+          }
+        }}
+        {...commonProps}
+      >
+        {cardContent}
+      </div>
+    )
+  }
+
   return (
     <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
       <Link
-        to={`/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`}
+        to={navigatePath}
+        onClick={handleCardClick as React.MouseEventHandler<HTMLAnchorElement>}
         className="block"
-        onMouseEnter={handleMouseEnter}
-        onFocus={handleFocus}
-        onTouchStart={performanceMode ? undefined : handleMouseEnter}
-        onClick={() => {
-          if (carouselId) {
-            setFocusedCardId?.(carouselId, String(item.id))
-          }
-        }}
+        {...commonProps}
       >
-        <div className={`bg-darkSurface rounded-xl overflow-hidden border border-white/5 hover:border-white/10 ${
-          performanceMode
-            ? 'transition-none'
-            : 'transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow'
-        }`}>
-          <div className="relative aspect-[2/3]">
-            <img
-              src={item.poster}
-              srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
-              sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
-              alt={item.title}
-              width={192}
-              height={288}
-              decoding="async"
-              loading="lazy"
-              className="w-full h-full object-cover"
-            />
-            <div className={`absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 flex items-center justify-center ${
-              performanceMode ? 'transition-none' : 'transition-opacity duration-300'
-            }`}>
-              <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
-            </div>
-            {showProgress && typeof item.progress === 'number' && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
-                <div className="h-full bg-primary" style={{ width: `${Math.min(item.progress, 100)}%` }} />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={handleMyList}
-              className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
-              aria-label={inMyList ? `Remove ${item.title} from My List` : `Add ${item.title} to My List`}
-            >
-              {inMyList ? (
-                <Check className="w-4 h-4 text-white" />
-              ) : (
-                <Plus className="w-4 h-4 text-white" />
-              )}
-            </button>
-          </div>
-          <div className="p-2 md:p-3">
-            <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
-                <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
-                <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
-              </div>
-              {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
-              {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
-            </div>
-          </div>
-        </div>
+        {cardContent}
       </Link>
     </div>
   )

@@ -1,0 +1,16 @@
+# robots.txt for NEXASTREAM
+
+User-agent: *
+Allow: /
+
+# Disallow API endpoints
+Disallow: /api/
+Disallow: /api/stream
+Disallow: /api/support
+Disallow: /api/ai
+
+# Sitemap
+Sitemap: https://nexastream.com/sitemap.xml
+
+# Crawl-delay (optional, polite crawling)
+Crawl-delay: 1

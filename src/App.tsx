@@ -238,11 +238,11 @@ function AppContent() {
 function App() {
   return (
     <ToastProvider>
-      <ErrorBoundary>
-        <Router>
+      <Router>
+        <ErrorBoundary>
           <AppContent />
-        </Router>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </Router>
     </ToastProvider>
   )
 }

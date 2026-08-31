@@ -66,6 +66,35 @@ export interface CastMember {
   profile?: string
 }
 
+export interface PersonDetails {
+  id: number
+  name: string
+  biography: string
+  profile: string
+  birthday?: string
+  deathday?: string
+  place_of_birth?: string
+  known_for_department: string
+  also_known_as?: string[]
+  gender?: number
+  imdb_id?: string
+  homepage?: string
+}
+
+export interface PersonCredit {
+  id: number
+  title?: string
+  name?: string
+  poster: string
+  release_date?: string
+  first_air_date?: string
+  vote_average?: number
+  media_type: 'movie' | 'tv'
+  character?: string
+  job?: string
+  episode_count?: number
+}
+
 interface TmdbMovie {
   id: number
   imdb_id?: string
@@ -596,6 +625,42 @@ export const tmdbApi = {
     return result
   },
 
+  async discoverMovies(params: Record<string, string | number | boolean | undefined>): Promise<MovieSummary[]> {
+    const cacheKey = `discover-movies-${JSON.stringify(params)}`
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    const response = await axios.get(`${TMDB_API_BASE}/discover/movie`, {
+      params: getTmdbRequestParams(params),
+      timeout: 10000,
+    })
+
+    const result = Array.isArray(response.data?.results)
+      ? response.data.results.map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' }))
+      : []
+
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async discoverTV(params: Record<string, string | number | boolean | undefined>): Promise<MovieSummary[]> {
+    const cacheKey = `discover-tv-${JSON.stringify(params)}`
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    const response = await axios.get(`${TMDB_API_BASE}/discover/tv`, {
+      params: getTmdbRequestParams(params),
+      timeout: 10000,
+    })
+
+    const result = Array.isArray(response.data?.results)
+      ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
+      : []
+
+    setCached(cacheKey, result)
+    return result
+  },
+
   async getMovieVideos(id: string): Promise<TmdbVideo[]> {
     const response = await axios.get(`${TMDB_API_BASE}/movie/${id}/videos`, {
       params: getTmdbRequestParams({
@@ -648,5 +713,97 @@ export const tmdbApi = {
 
     setCached(cacheKey, response.data)
     return response.data
+  },
+
+  async getPersonDetails(personId: number): Promise<PersonDetails> {
+    const cacheKey = `person-details-${personId}`
+    const cached = getCached<PersonDetails>(cacheKey)
+    if (cached) return cached
+
+    const response = await axios.get(`${TMDB_API_BASE}/person/${personId}`, {
+      params: getTmdbRequestParams({
+        language: 'en-US',
+      }),
+      timeout: 10000,
+    })
+
+    const data = response.data
+    const result: PersonDetails = {
+      id: data.id,
+      name: data.name,
+      biography: data.biography || 'No biography available.',
+      profile: data.profile_path ? getOptimizedImageUrl(data.profile_path, 'h632') : 'https://via.placeholder.com/300x450?text=No+Image',
+      birthday: data.birthday,
+      deathday: data.deathday,
+      place_of_birth: data.place_of_birth,
+      known_for_department: data.known_for_department,
+      also_known_as: data.also_known_as,
+      gender: data.gender,
+      imdb_id: data.imdb_id,
+      homepage: data.homepage,
+    }
+
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async getPersonCredits(personId: number): Promise<PersonCredit[]> {
+    const cacheKey = `person-credits-${personId}`
+    const cached = getCached<PersonCredit[]>(cacheKey)
+    if (cached) return cached
+
+    const response = await axios.get(`${TMDB_API_BASE}/person/${personId}/combined_credits`, {
+      params: getTmdbRequestParams({
+        language: 'en-US',
+      }),
+      timeout: 10000,
+    })
+
+    const credits = Array.isArray(response.data?.cast) ? response.data.cast : []
+    const result: PersonCredit[] = credits
+      .filter((credit: any) => credit.media_type === 'movie' || credit.media_type === 'tv')
+      .map((credit: any) => ({
+        id: credit.id,
+        title: credit.title,
+        name: credit.name,
+        poster: credit.poster_path ? getOptimizedImageUrl(credit.poster_path, 'w500') : 'https://via.placeholder.com/300x450?text=No+Image',
+        release_date: credit.release_date,
+        first_air_date: credit.first_air_date,
+        vote_average: credit.vote_average,
+        media_type: credit.media_type,
+        character: credit.character,
+        job: credit.job,
+        episode_count: credit.episode_count,
+      }))
+      .sort((a, b) => {
+        const dateA = a.release_date || a.first_air_date || ''
+        const dateB = b.release_date || b.first_air_date || ''
+        return dateB.localeCompare(dateA)
+      })
+
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async searchPeople(query: string): Promise<PersonDetails[]> {
+    const response = await axios.get(`${TMDB_API_BASE}/search/person`, {
+      params: getTmdbRequestParams({
+        language: 'en-US',
+        query,
+        page: 1,
+        include_adult: false,
+      }),
+      timeout: 10000,
+    })
+
+    return Array.isArray(response.data?.results)
+      ? response.data.results.map((person: any) => ({
+          id: person.id,
+          name: person.name,
+          biography: person.biography || '',
+          profile: person.profile_path ? getOptimizedImageUrl(person.profile_path, 'h632') : 'https://via.placeholder.com/300x450?text=No+Image',
+          known_for_department: person.known_for_department,
+        }))
+      : []
   },
 }

@@ -1,1 +1,75 @@
-if(!self.define){let s,e={};const n=(n,i)=>(n=new URL(n+".js",i).href,e[n]||new Promise(e=>{if("document"in self){const s=document.createElement("script");s.src=n,s.onload=e,document.head.appendChild(s)}else s=n,importScripts(n),e()}).then(()=>{let s=e[n];if(!s)throw new Error(`Module ${n} didn’t register its module`);return s}));self.define=(i,l)=>{const t=s||("document"in self?document.currentScript.src:"")||location.href;if(e[t])return;let r={};const a=s=>n(s,t),o={module:{uri:t},exports:r,require:a};e[t]=Promise.all(i.map(s=>o[s]||a(s))).then(s=>(l(...s),r))}}define(["./workbox-cf8cf23e"],function(s){"use strict";self.skipWaiting(),s.clientsClaim(),s.precacheAndRoute([{url:"registerSW.js",revision:"1872c500de691dce40960bb85481de07"},{url:"index.html",revision:"e619b2e3fd5d52a54e3728db0b75f89a"},{url:"assets/watch-history-BVe6ZnSq.js",revision:null},{url:"assets/utils-vendor-DI-kRWDY.js",revision:null},{url:"assets/tv-v69yxA7w.js",revision:null},{url:"assets/trending-D4Pi4nve.js",revision:null},{url:"assets/support-DOyG8wVa.js",revision:null},{url:"assets/supabase-vendor-CvSrsT45.js",revision:null},{url:"assets/sports-DsKw2YqV.js",revision:null},{url:"assets/settings-CM2Y22c9.js",revision:null},{url:"assets/sentry-vendor-CYf2wBe1.js",revision:null},{url:"assets/rolldown-runtime-DOG2APjf.js",revision:null},{url:"assets/react-vendor-GM8b-z2c.js",revision:null},{url:"assets/queue-D6c4Pza1.js",revision:null},{url:"assets/profile-DHuKTTT4.js",revision:null},{url:"assets/player-M0w-w-FG.js",revision:null},{url:"assets/not-found-LTVV_7jD.js",revision:null},{url:"assets/my-list-Dyczecae.js",revision:null},{url:"assets/movies-CayIo2_4.js",revision:null},{url:"assets/live-tv-C9eW73-w.js",revision:null},{url:"assets/legal-DWM7_bPi.js",revision:null},{url:"assets/kenyan-series-DMXuIyPj.js",revision:null},{url:"assets/index-Sm9tAWD1.js",revision:null},{url:"assets/index-CRH-0hbh.css",revision:null},{url:"assets/home-ClJMklPU.js",revision:null},{url:"assets/details-BawZDnso.js",revision:null},{url:"assets/AuthRuntime-dLgOkHg5.js",revision:null},{url:"assets/AuthModal-BLT_UA60.js",revision:null},{url:"assets/anime-B9XSoT2S.js",revision:null},{url:"assets/animation-vendor-CIL5_Xr3.js",revision:null},{url:"icon-192.svg",revision:"e367c608520f7975e40c80268c80aa61"},{url:"icon-512.svg",revision:"5cd8342c3a0e258a4a242fd91a4cb40d"},{url:"manifest.webmanifest",revision:"b5acfa973caee8109ab3e80e17bdcc5d"}],{}),s.cleanupOutdatedCaches(),s.registerRoute(new s.NavigationRoute(s.createHandlerBoundToURL("/index.html"),{denylist:[/^\/api/]})),s.registerRoute(/^https:\/\/image\.tmdb\.org\/.*/i,new s.CacheFirst({cacheName:"tmdb-images-cache",plugins:[new s.ExpirationPlugin({maxEntries:200,maxAgeSeconds:2592e3}),new s.CacheableResponsePlugin({statuses:[0,200]}),new s.RangeRequestsPlugin]}),"GET"),s.registerRoute(/^\/.*\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/i,new s.CacheFirst({cacheName:"static-images-cache",plugins:[new s.ExpirationPlugin({maxEntries:100,maxAgeSeconds:2592e3}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET"),s.registerRoute(/\.(?:js|css)$/i,new s.StaleWhileRevalidate({cacheName:"static-resources-cache",plugins:[new s.ExpirationPlugin({maxEntries:50,maxAgeSeconds:604800}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET"),s.registerRoute(/^https:\/\/api\.themoviedb\.org\/.*/i,new s.NetworkFirst({cacheName:"tmdb-api-cache",networkTimeoutSeconds:10,plugins:[new s.ExpirationPlugin({maxEntries:50,maxAgeSeconds:86400}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET"),s.registerRoute(/^\/api\/.*/i,new s.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:5,plugins:[new s.ExpirationPlugin({maxEntries:30,maxAgeSeconds:3600}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET"),s.registerRoute(/\.(?:mp4|webm|m3u8)$/i,new s.NetworkFirst({cacheName:"video-cache",networkTimeoutSeconds:15,plugins:[new s.ExpirationPlugin({maxEntries:20,maxAgeSeconds:86400}),new s.CacheableResponsePlugin({statuses:[0,200]}),new s.RangeRequestsPlugin]}),"GET"),s.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i,new s.CacheFirst({cacheName:"google-fonts-cache",plugins:[new s.ExpirationPlugin({maxEntries:10,maxAgeSeconds:31536e3}),new s.CacheableResponsePlugin({statuses:[0,200]})]}),"GET")});
+const CACHE_NAME = 'nexastream-v1'
+const STATIC_CACHE = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/favicon.ico'
+]
+
+const DYNAMIC_CACHE = 'nexastream-dynamic-v1'
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_CACHE)
+    })
+  )
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
+            return caches.delete(cacheName)
+          }
+        })
+      )
+    })
+  )
+})
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return
+  }
+
+  // Skip cross-origin requests
+  if (url.origin !== location.origin) {
+    return
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      // Return cached response if available
+      if (cachedResponse) {
+        return cachedResponse
+      }
+
+      // Otherwise fetch from network
+      return fetch(event.request).then((response) => {
+        // Don't cache non-successful responses
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response
+        }
+
+        // Clone the response
+        const responseToCache = response.clone()
+
+        // Cache the fetched response
+        caches.open(DYNAMIC_CACHE).then((cache) => {
+          cache.put(event.request, responseToCache)
+        })
+
+        return response
+      }).catch(() => {
+        // If network fails, try to return from static cache
+        return caches.match(event.request)
+      })
+    })
+  )
+})

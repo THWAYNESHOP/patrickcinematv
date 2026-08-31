@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { useState, FormEvent, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { useStore } from '../../store/useStore'
 
 interface AuthModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export default function AuthModal({ onClose }: AuthModalProps) {
+  const navigate = useNavigate()
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -18,6 +21,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [successMessage, setSuccessMessage] = useState('')
 
   const { signIn, signUp, resetPassword, signInWithGoogle, signInWithGithub } = useAuth()
+  const pendingCardNavigation = useStore((state) => state.pendingCardNavigation)
+  const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
 
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
@@ -34,7 +39,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500']
   const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong']
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setSuccessMessage('')
@@ -43,7 +48,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     try {
       if (mode === 'login') {
         await signIn(email, password)
-        onClose()
+
+        // If there's a pending card click, navigate to it
+        if (pendingCardNavigation) {
+          const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
+          setPendingCardNavigation(null)
+          onClose()
+          navigate(cardPath)
+        } else {
+          onClose()
+        }
       } else if (mode === 'register') {
         if (password !== confirmPassword) {
           setError('Passwords do not match')
@@ -56,7 +70,17 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           return
         }
         await signUp(email, password, name)
-        setSuccessMessage('Account created! Please check your email to verify your account.')
+
+        // If there's a pending card click, navigate to it after signup
+        if (pendingCardNavigation) {
+          const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
+          setPendingCardNavigation(null)
+          onClose()
+          navigate(cardPath)
+        } else {
+          setSuccessMessage('Account created! Please check your email to verify your account.')
+          onClose()
+        }
         setLoading(false)
       } else if (mode === 'forgot') {
         await resetPassword(email)
@@ -87,7 +111,16 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       } else {
         await signInWithGithub()
       }
-      onClose()
+
+      // If there's a pending card click, navigate to it
+      if (pendingCardNavigation) {
+        const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
+        setPendingCardNavigation(null)
+        onClose()
+        navigate(cardPath)
+      } else {
+        onClose()
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || 'Social sign in failed')
@@ -99,8 +132,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   }
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" 
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       data-auth-modal="true"
       role="dialog"
       aria-modal="true"

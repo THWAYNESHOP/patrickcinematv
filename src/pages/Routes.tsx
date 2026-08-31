@@ -29,6 +29,12 @@ const Dmca = lazy(() => import(/* webpackChunkName: "legal" */ './Dmca'))
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ './NotFound'))
 const Support = lazy(() => import(/* webpackChunkName: "support" */ './Support'))
 const WatchPage = lazy(() => import(/* webpackChunkName: "player" */ './WatchPage'))
+// Discovery pages
+const MoodRecommendations = lazy(() => import(/* webpackChunkName: "discovery" */ './MoodRecommendations'))
+const Collections = lazy(() => import(/* webpackChunkName: "discovery" */ './Collections'))
+const PersonDetails = lazy(() => import(/* webpackChunkName: "discovery" */ './PersonDetails'))
+const Franchises = lazy(() => import(/* webpackChunkName: "discovery" */ './Franchises'))
+const ReleaseCalendar = lazy(() => import(/* webpackChunkName: "discovery" */ './ReleaseCalendar'))
 
 export default function AppRoutes() {
   const location = useLocation()
@@ -46,6 +52,11 @@ export default function AppRoutes() {
           <Route path="/kenyan-series" element={<PageTransition><KenyanSeries /></PageTransition>} />
           <Route path="/kenyan-series/:id" element={<PageTransition><KenyanSeriesDetails /></PageTransition>} />
           <Route path="/trending" element={<PageTransition><Trending /></PageTransition>} />
+          <Route path="/mood-recommendations" element={<PageTransition><MoodRecommendations /></PageTransition>} />
+          <Route path="/collections" element={<PageTransition><Collections /></PageTransition>} />
+          <Route path="/person/:id" element={<PageTransition><PersonDetails /></PageTransition>} />
+          <Route path="/franchises" element={<PageTransition><Franchises /></PageTransition>} />
+          <Route path="/release-calendar" element={<PageTransition><ReleaseCalendar /></PageTransition>} />
           <Route path="/my-list" element={<PageTransition><MyList /></PageTransition>} />
           <Route path="/queue" element={<PageTransition><Queue /></PageTransition>} />
           <Route path="/watch-history" element={<PageTransition><WatchHistory /></PageTransition>} />

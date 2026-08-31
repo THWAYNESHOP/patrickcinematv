@@ -1,8 +1,9 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Info, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
 import { useTVDetection } from '../../hooks/useTVDetection'
+import { useStore } from '../../store/useStore'
 import type { MovieSummary } from '../../api/tmdb'
 
 interface HeroSliderProps {
@@ -23,6 +24,28 @@ function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
+  const user = useStore((state) => state.user)
+  const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
+  const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Check if user is logged in
+      if (!user) {
+        e.preventDefault()
+        e.stopPropagation()
+        
+        // Store the pending navigation and open auth modal
+        const movie = movies[currentIndex]
+        setPendingCardNavigation({
+          type: 'movie',
+          id: String(movie.id),
+        })
+        setIsAuthModalOpen(true)
+      }
+    },
+    [user, movies, currentIndex, setPendingCardNavigation, setIsAuthModalOpen],
+  )
 
   useEffect(() => {
     // Don't start timers when there are no movies
@@ -92,20 +115,43 @@ function HeroSlider({ movies }: HeroSliderProps) {
               {currentMovie.overview}
             </p>
             <div className="flex flex-wrap gap-2 md:gap-3 lg:gap-4">
-              <Link
-                to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
-              >
-                <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
-                Play
-              </Link>
-              <Link
-                to={`/movie/${currentMovie.id}`}
-                className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
-              >
-                <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                More Info
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to={`/movie/${currentMovie.id}`}
+                    onClick={handleCardClick}
+                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
+                  >
+                    <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
+                    Play
+                  </Link>
+                  <Link
+                    to={`/movie/${currentMovie.id}`}
+                    onClick={handleCardClick}
+                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
+                  >
+                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                    More Info
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleCardClick as any}
+                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
+                  >
+                    <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
+                    Play
+                  </button>
+                  <button
+                    onClick={handleCardClick as any}
+                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
+                  >
+                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                    More Info
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

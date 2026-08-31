@@ -86,6 +86,12 @@ interface AppState {
   };
   setUser: (user: AppState['user']) => void;
 
+  // Auth Modal State for protected content
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  pendingCardNavigation: null | { type: 'movie' | 'tv' | 'anime' | 'sports'; id: string };
+  setPendingCardNavigation: (nav: AppState['pendingCardNavigation']) => void;
+
   // Notification preferences
   notificationPreferences: {
     sports: boolean;
@@ -259,6 +265,16 @@ export const useStore = create<AppState>()(
       user: null,
       setUser: (user) => {
         set({ user });
+      },
+
+      // Auth Modal State
+      isAuthModalOpen: false,
+      setIsAuthModalOpen: (open) => {
+        set({ isAuthModalOpen: open });
+      },
+      pendingCardNavigation: null,
+      setPendingCardNavigation: (nav) => {
+        set({ pendingCardNavigation: nav });
       },
 
       // Notification preferences

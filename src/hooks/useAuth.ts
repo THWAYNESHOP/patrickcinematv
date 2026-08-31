@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, sendPasswordResetEmail, updateProfile, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendEmailVerification, type ActionCodeSettings, type User } from 'firebase/auth';
 import { app } from '../firebase';
 
@@ -78,7 +78,7 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, fullName?: string) => {
     const auth = getAuthInstance();
     if (!auth) {
       throw new Error('Firebase auth is unavailable');
@@ -97,33 +97,33 @@ export function useAuth() {
     }
 
     return userCredential;
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const auth = getAuthInstance();
     if (!auth) {
       throw new Error('Firebase auth is unavailable');
     }
     return await signInWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const auth = getAuthInstance();
     if (!auth) {
       return;
     }
     await firebaseSignOut(auth);
-  };
+  }, []);
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     const auth = getAuthInstance();
     if (!auth) {
       return;
     }
     await sendPasswordResetEmail(auth, email);
-  };
+  }, []);
 
-  const sendVerificationEmail = async () => {
+  const sendVerificationEmail = useCallback(async () => {
     const auth = getAuthInstance();
     if (!auth) {
       return;
@@ -132,32 +132,32 @@ export function useAuth() {
     if (currentUser) {
       await sendVerificationEmailToUser(currentUser);
     }
-  };
+  }, []);
 
-  const isEmailVerified = () => {
+  const isEmailVerified = useCallback(() => {
     const auth = getAuthInstance();
     return auth?.currentUser?.emailVerified || false;
-  };
+  }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     const auth = getAuthInstance();
     if (!auth) {
       throw new Error('Firebase auth is unavailable');
     }
     const provider = new GoogleAuthProvider();
     return await signInWithPopup(auth, provider);
-  };
+  }, []);
 
-  const signInWithGithub = async () => {
+  const signInWithGithub = useCallback(async () => {
     const auth = getAuthInstance();
     if (!auth) {
       throw new Error('Firebase auth is unavailable');
     }
     const provider = new GithubAuthProvider();
     return await signInWithPopup(auth, provider);
-  };
+  }, []);
 
-  const updateUserProfile = async (updates: { displayName?: string; photoURL?: string }) => {
+  const updateUserProfile = useCallback(async (updates: { displayName?: string; photoURL?: string }) => {
     const auth = getAuthInstance();
     if (!auth || !auth.currentUser) {
       throw new Error('No user is signed in');
@@ -166,7 +166,7 @@ export function useAuth() {
     await updateProfile(auth.currentUser, updates);
     // Refresh the local user state
     setUser({ ...auth.currentUser });
-  };
+  }, []);
 
   return {
     user,

@@ -93,12 +93,13 @@ function NavDropdown({ label, items, isActive, onNavigate }: NavDropdownProps) {
 export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [settingsTourSeen, setSettingsTourSeen] = useState(false)
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
   const { user: firebaseUser } = useAuth()
   const user = useStore((state) => state.user)
+  const isAuthOpen = useStore((state) => state.isAuthModalOpen)
+  const setIsAuthOpen = useStore((state) => state.setIsAuthModalOpen)
 
   useEffect(() => {
     const SETTINGS_TOUR_KEY = 'nexastream-settings-tour'
@@ -117,15 +118,22 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
     { name: 'Livestreams', path: '/live-tv' },
   ]
 
+  const discoverItems: NavItem[] = [
+    { name: 'Mood Recommendations', path: '/mood-recommendations' },
+    { name: 'Collections', path: '/collections' },
+    { name: 'Franchises', path: '/franchises' },
+    { name: 'Release Calendar', path: '/release-calendar' },
+    { name: 'Trending', path: '/trending' },
+  ]
+
   const mobileGroups = [
     { label: null, items: [{ name: 'Home', path: '/' }] },
     { label: 'Browse', items: browseItems },
     { label: 'Live', items: liveItems },
+    { label: 'Discover', items: discoverItems },
     {
-      label: 'Discover',
+      label: 'Library',
       items: [
-        { name: 'Trending', path: '/trending' },
-        { name: 'Support', path: '/support' },
         { name: 'My List', path: '/my-list' },
         { name: 'Queue', path: '/queue' },
         { name: 'Watch History', path: '/watch-history' },
@@ -217,12 +225,12 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
                 isActive={isActive}
                 onNavigate={() => {}}
               />
-              <Link to="/trending" className={navLinkClass('/trending')}>
-                Trending
-              </Link>
-              <Link to="/support" className={navLinkClass('/support')}>
-                Support
-              </Link>
+              <NavDropdown
+                label="Discover"
+                items={discoverItems}
+                isActive={isActive}
+                onNavigate={() => {}}
+              />
               <Link to="/my-list" className={navLinkClass('/my-list')}>
                 My List
               </Link>

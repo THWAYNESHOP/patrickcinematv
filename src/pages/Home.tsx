@@ -6,6 +6,10 @@ import HeroSlider from '../components/Home/HeroSlider'
 import ContentCarousel from '../components/Home/ContentCarousel'
 import LiveMatches from '../components/Sports/LiveMatches'
 import RecommendedForYou from '../components/RecommendedForYou'
+import BecauseYouWatched from '../components/BecauseYouWatched'
+import ContinueWatchingCarousel from '../components/ContinueWatchingCarousel'
+import PersonalizedFavorites from '../components/PersonalizedFavorites'
+import TrendingInYourGenre from '../components/TrendingInYourGenre'
 import { tmdbApi } from '../api/tmdb'
 import { useMyList } from '../hooks/useMyList'
 import { useContinueWatching } from '../hooks/useContinueWatching'
@@ -107,6 +111,9 @@ export default function Home() {
   const { myList } = useMyList()
   const { continueWatching } = useContinueWatching()
   const { getAverageRatingForMedia } = useStore()
+  const user = useStore((state) => state.user)
+  const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+  const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
   const toast = useToast()
   const { getCarouselPosition, setCarouselPosition, getFocusedCardId, setFocusedCardId } = usePageState('Home')
   const maxCarouselItems = isTVPerformanceMode ? 8 : 20
@@ -241,8 +248,8 @@ export default function Home() {
             disneyCatalog,
             appleCatalog,
           ] = await Promise.all([
-            tmdbApi.getMoviesByGenre(10749).catch(() => []),
-            tmdbApi.getTVByGenre(10749).catch(() => []),
+            tmdbApi.discoverMovies({ with_genres: 10749, sort_by: 'popularity.desc' }).catch(() => []),
+            tmdbApi.discoverTV({ with_genres: 10749, sort_by: 'popularity.desc' }).catch(() => []),
             tmdbApi.getTVByOriginCountry('KR').catch(() => []),
             tmdbApi.getMoviesByGenre(28).catch(() => []),
             tmdbApi.getMoviesByGenre(35).catch(() => []),
@@ -406,43 +413,111 @@ export default function Home() {
             {getOrderedKenyanSeriesItems().slice(0, 4).map((item) => {
               const userRating = getAverageRatingForMedia(item.id)
               const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
-              return (
-              <Link
-                key={item.id}
-                to={`/kenyan-series/${item.id}`}
-                className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48"
-              >
-                <div className="relative aspect-[2/3] overflow-hidden">
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
-                  />
-                  {item.tag && (
-                    <div className="absolute top-2 left-2 rounded-md bg-primary px-2 py-0.5">
-                      <span className="text-[10px] font-bold text-black">{item.tag}</span>
+              
+              return user ? (
+                <Link
+                  key={item.id}
+                  to={`/kenyan-series/${item.id}`}
+                  className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48"
+                >
+                  <div className="relative aspect-[2/3] overflow-hidden">
+                    <img
+                      src={item.poster}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
+                    />
+                    {item.tag && (
+                      <div className="absolute top-2 left-2 rounded-md bg-primary px-2 py-0.5">
+                        <span className="text-[10px] font-bold text-black">{item.tag}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100">
+                      <Play className="h-10 w-10 text-primary sm:h-12 sm:w-12" fill="white" />
                     </div>
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100">
-                    <Play className="h-10 w-10 text-primary sm:h-12 sm:w-12" fill="white" />
                   </div>
-                </div>
-                <div className="p-2.5 sm:p-3">
-                  <h3 className="truncate text-sm font-semibold text-white sm:text-base">{item.title}</h3>
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <div className="flex items-center gap-1 rounded-md border border-accent/30 bg-accent/20 px-2 py-0.5">
-                      <Star className="h-3 w-3 fill-accent text-accent" />
-                      <span className="text-[11px] font-bold text-accent">{rating}</span>
+                  <div className="p-2.5 sm:p-3">
+                    <h3 className="truncate text-sm font-semibold text-white sm:text-base">{item.title}</h3>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 rounded-md border border-accent/30 bg-accent/20 px-2 py-0.5">
+                        <Star className="h-3 w-3 fill-accent text-accent" />
+                        <span className="text-[11px] font-bold text-accent">{rating}</span>
+                      </div>
+                      {item.year && <span className="text-[11px] text-gray-500">•</span>}
+                      {item.year && <span className="text-[11px] text-gray-500">{item.year}</span>}
                     </div>
-                    {item.year && <span className="text-[11px] text-gray-500">•</span>}
-                    {item.year && <span className="text-[11px] text-gray-500">{item.year}</span>}
+                    <p className="mt-1 text-xs text-gray-400">Tap to open</p>
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">Tap to open</p>
-                </div>
-              </Link>
-            )})}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setPendingCardNavigation({
+                      type: 'tv' as const,
+                      id: String(item.id),
+                    })
+                    setIsAuthModalOpen(true)
+                  }}
+                  className="group/card flex w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-darkSurface shadow-lg shadow-black/20 transition duration-300 hover:scale-[1.02] hover:border-white/10 hover:shadow-card-hover sm:w-44 md:w-48 text-left"
+                >
+                  <div className="relative aspect-[2/3] overflow-hidden">
+                    <img
+                      src={item.poster}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
+                    />
+                    {item.tag && (
+                      <div className="absolute top-2 left-2 rounded-md bg-primary px-2 py-0.5">
+                        <span className="text-[10px] font-bold text-black">{item.tag}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100">
+                      <Play className="h-10 w-10 text-primary sm:h-12 sm:w-12" fill="white" />
+                    </div>
+                  </div>
+                  <div className="p-2.5 sm:p-3">
+                    <h3 className="truncate text-sm font-semibold text-white sm:text-base">{item.title}</h3>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <div className="flex items-center gap-1 rounded-md border border-accent/30 bg-accent/20 px-2 py-0.5">
+                        <Star className="h-3 w-3 fill-accent text-accent" />
+                        <span className="text-[11px] font-bold text-accent">{rating}</span>
+                      </div>
+                      {item.year && <span className="text-[11px] text-gray-500">•</span>}
+                      {item.year && <span className="text-[11px] text-gray-500">{item.year}</span>}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-400">Tap to open</p>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </section>
+
+        {/* Personalized Sections */}
+        {user && (
+          <>
+            {/* Because You Watched */}
+            <BecauseYouWatched
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Because You Watched')}
+              {...carouselStateProps}
+            />
+
+            {/* Trending in Your Genres */}
+            <TrendingInYourGenre
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Trending In Your Genre')}
+              {...carouselStateProps}
+            />
+
+            {/* Your Favorites */}
+            <PersonalizedFavorites
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Your Favorites')}
+              {...carouselStateProps}
+            />
+          </>
+        )}
 
         {/* Trending Today */}
         <section className="mb-10 md:mb-12">
@@ -453,6 +528,19 @@ export default function Home() {
             loading={heroLoading}
             viewAllTo="/trending"
             carouselId={carouselId('Trending Today')}
+            {...carouselStateProps}
+          />
+        </section>
+
+        {/* Teen Romance */}
+        <section className="mb-10 md:mb-12">
+          <ContentCarousel
+            title="Teen Romance"
+            items={teenRomance}
+            type="movie"
+            loading={catalogLoading}
+            viewAllTo="/movies"
+            carouselId={carouselId('Teen Romance')}
             {...carouselStateProps}
           />
         </section>
@@ -505,19 +593,6 @@ export default function Home() {
 
         {showExtendedHomeContent && (
           <>
-            {/* Teen Romance */}
-            <section className="mb-10 md:mb-12">
-              <ContentCarousel
-                title="Teen Romance - Top Rated Movies & Series"
-                items={sortByRating(teenRomance)}
-                type="movie"
-                loading={catalogLoading}
-                viewAllTo="/movies"
-                carouselId={carouselId('Teen Romance')}
-                {...carouselStateProps}
-              />
-            </section>
-
             {/* Korean Dramas */}
             <section className="mb-10 md:mb-12">
               <ContentCarousel

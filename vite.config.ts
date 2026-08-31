@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 const supportPortFile = resolve(__dirname, '.support-server-port')
 const supportPort = existsSync(supportPortFile)
@@ -185,6 +186,12 @@ export default defineConfig({
           }
         ]
       }
+    }),
+    visualizer({
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'bundle-analysis.html',
     })
   ],
   resolve: {

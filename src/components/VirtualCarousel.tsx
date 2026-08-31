@@ -1,7 +1,9 @@
+import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Play, Star } from 'lucide-react'
 
 import type { MovieSummary } from '../api/tmdb'
+import { useStore } from '../store/useStore'
 
 interface VirtualCarouselProps {
   items: MovieSummary[]
@@ -13,6 +15,25 @@ export default function VirtualCarousel({ items, type, showProgress }: VirtualCa
   const itemWidth = 176 // w-44
   const gap = 20 // gap-5
   const totalItemWidth = itemWidth + gap
+  const user = useStore((state) => state.user)
+  const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
+  const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, itemId: string | number) => {
+      if (!user) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        setPendingCardNavigation({
+          type: type as 'movie' | 'tv' | 'anime' | 'sports',
+          id: String(itemId),
+        })
+        setIsAuthModalOpen(true)
+      }
+    },
+    [user, type, setPendingCardNavigation, setIsAuthModalOpen],
+  )
 
   return (
     <div className="w-full overflow-x-auto scrollbar-hide">
@@ -21,6 +42,7 @@ export default function VirtualCarousel({ items, type, showProgress }: VirtualCa
           <Link
             key={item.id}
             to={`/${type === 'tv' ? 'tv' : type === 'anime' ? 'anime' : 'movie'}/${item.id}`}
+            onClick={(e) => handleCardClick(e, item.id)}
             className="flex-shrink-0 group/card tv-focusable"
             style={{ width: itemWidth }}
           >
