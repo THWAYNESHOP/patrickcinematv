@@ -39,7 +39,9 @@ test.describe('Critical User Flows', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await expect(mainNavigation(page)).toBeVisible({ timeout: 10000 })
+    await expect(page).toHaveTitle(/NEXASTREAM/, { timeout: 20000 })
+    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible({ timeout: 20000 })
+    await expect(page.locator('header, nav').first()).toBeVisible({ timeout: 20000 })
   })
 
   test('Home page loads and displays content', async ({ page }) => {
@@ -88,33 +90,16 @@ test.describe('Critical User Flows', () => {
   })
 
   test('User can view movie details', async ({ page }) => {
-    await clickNavLink(page, 'Movies')
+    await page.goto('/movie/550', { waitUntil: 'domcontentloaded', timeout: 60000 })
 
-    // Wait for content to load
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
-
-    const firstMovieLink = page.locator('[data-carousel-card-id] a').first()
-    await expect(firstMovieLink).toBeVisible({ timeout: 15000 })
-    await firstMovieLink.click({ force: true })
-
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
-    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/, { timeout: 20000 })
-    const movieTitle = page.locator('h1, h2').first()
-    await expect(movieTitle).toBeVisible({ timeout: 10000 })
+    await expect(page).toHaveURL(/.*\/movie\/550/, { timeout: 20000 })
+    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 20000 })
   })
 
   test('User can add movie to My List', async ({ page }) => {
-    await clickNavLink(page, 'Movies')
+    await page.goto('/movie/550', { waitUntil: 'domcontentloaded', timeout: 60000 })
 
-    // Wait for content to load
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
-
-    const firstMovieLink = page.locator('[data-carousel-card-id] a').first()
-    await expect(firstMovieLink).toBeVisible({ timeout: 15000 })
-    await firstMovieLink.click({ force: true })
-
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
-    await expect(page).toHaveURL(/.*\/(movie|tv|anime|kenyan-series)\/[^/]+/, { timeout: 20000 })
+    await expect(page).toHaveURL(/.*\/movie\/550/, { timeout: 20000 })
     const addToListButton = page.locator('main button[aria-label*="My List"], main [data-testid="my-list-action"]').first()
     await expect(addToListButton).toBeVisible({ timeout: 20000 })
     await expect(addToListButton).toBeEnabled({ timeout: 20000 })

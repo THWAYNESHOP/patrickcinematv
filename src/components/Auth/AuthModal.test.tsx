@@ -22,7 +22,7 @@ describe('AuthModal', () => {
       resetPassword: vi.fn().mockResolvedValue(undefined),
       signInWithGoogle: vi.fn().mockResolvedValue(undefined),
       signInWithGithub: vi.fn().mockResolvedValue(undefined),
-    } as any)
+    } as ReturnType<typeof authHooks.useAuth>)
     useStore.setState({
       user: null,
       pendingCardNavigation: null,
@@ -93,7 +93,7 @@ describe('AuthModal', () => {
       resetPassword: vi.fn(),
       signInWithGoogle: vi.fn(),
       signInWithGithub: vi.fn(),
-    } as any)
+    } as ReturnType<typeof authHooks.useAuth>)
 
     useStore.setState({
       user: null,
