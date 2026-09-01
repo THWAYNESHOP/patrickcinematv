@@ -448,9 +448,12 @@ export default function Home() {
                   </div>
                 </Link>
               ) : (
-                <button
+                <a
                   key={item.id}
-                  onClick={() => {
+                  href={`/kenyan-series/${item.id}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     setPendingCardNavigation({
                       type: 'tv' as const,
                       id: String(item.id),
@@ -486,7 +489,7 @@ export default function Home() {
                     </div>
                     <p className="mt-1 text-xs text-gray-400">Tap to open</p>
                   </div>
-                </button>
+                </a>
               )
             })}
           </div>

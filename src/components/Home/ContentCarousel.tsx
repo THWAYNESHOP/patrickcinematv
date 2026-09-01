@@ -157,26 +157,25 @@ const CarouselCard = function CarouselCard({
 
   if (!user) {
     return (
-      <div
-        key={item.id}
-        className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card cursor-pointer block"
-        data-carousel-card-id={item.id}
-        role="button"
-        tabIndex={0}
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          handleCardClick(e)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+      <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
+        <a
+          href={navigatePath}
+          onClick={(e) => {
             e.preventDefault()
-            handleCardClick(e as unknown as React.MouseEvent<HTMLElement>)
-          }
-        }}
-        {...commonProps}
-      >
-        {cardContent}
+            e.stopPropagation()
+            handleCardClick(e)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              handleCardClick(e as unknown as React.MouseEvent<HTMLElement>)
+            }
+          }}
+          className="block"
+          {...commonProps}
+        >
+          {cardContent}
+        </a>
       </div>
     )
   }

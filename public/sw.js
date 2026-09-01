@@ -52,8 +52,10 @@ self.addEventListener('fetch', (event) => {
 
       // Otherwise fetch from network
       return fetch(event.request).then((response) => {
-        // Don't cache non-successful responses
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+        const hasNullBodyStatus = response.status === 204 || response.status === 205 || response.status === 304
+
+        // Don't cache non-successful responses or responses that cannot carry a body
+        if (!response || response.status !== 200 || response.type !== 'basic' || hasNullBodyStatus) {
           return response
         }
 

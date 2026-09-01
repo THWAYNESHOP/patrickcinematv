@@ -167,6 +167,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     part: 16,
   },
   {
+    id: 'part-21',
+    title: '1ST TUESDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/GCUsjy-Y_0X9k',
+    date: '2026-08-01',
+    runtime: '45 min',
+    part: 21,
+  },
+  {
+    id: 'part-22',
+    title: '1ST TUESDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/GCUsjy-Y_0X9k',
+    date: '2026-08-01',
+    runtime: '45 min',
+    part: 22,
+  },
+  {
     id: 'part-17',
     title: '12TH WEDNESDAY PART 1',
     thumbnail: '/ayana.jpg',
@@ -366,6 +384,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     date: '2026-08-12',
     runtime: '27 min',
   },
+  {
+    id: 'episode-21',
+    title: '1ST TUESDAY FULL EPISODE',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://fembed.co/embed/2evoq_rS2G-3X',
+    date: '2026-09-01',
+    runtime: '27 min',
+  },
 ]
 
 const secondFamilyEpisodes: AyanaEpisode[] = [
@@ -471,6 +497,22 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
     thumbnail: '/secondfamily.jpeg',
     youtubeUrl: 'https://fembed.co/embed/Ts2-hqZWx_gWl',
     date: '2026-08-15',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-41',
+    title: 'Episode 41',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/P-Rt_JnwRHI2z',
+    date: '2026-09-01',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-42',
+    title: 'Episode 42',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/1kjzTH_k-D8FG',
+    date: '2026-09-01',
     runtime: '45 min',
   },
 ]

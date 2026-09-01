@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,6 +10,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ onClose }: AuthModalProps) {
   const navigate = useNavigate()
+  const user = useStore((state) => state.user)
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -23,6 +24,24 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const { signIn, signUp, resetPassword, signInWithGoogle, signInWithGithub } = useAuth()
   const pendingCardNavigation = useStore((state) => state.pendingCardNavigation)
   const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+
+  const completePendingNavigation = useCallback(() => {
+    if (!pendingCardNavigation) {
+      onClose()
+      return
+    }
+
+    const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
+    setPendingCardNavigation(null)
+    onClose()
+    navigate(cardPath)
+  }, [pendingCardNavigation, navigate, onClose, setPendingCardNavigation])
+
+  useEffect(() => {
+    if (user && pendingCardNavigation) {
+      completePendingNavigation()
+    }
+  }, [user, pendingCardNavigation, completePendingNavigation])
 
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
@@ -48,14 +67,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     try {
       if (mode === 'login') {
         await signIn(email, password)
-
-        // If there's a pending card click, navigate to it
-        if (pendingCardNavigation) {
-          const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
-          setPendingCardNavigation(null)
-          onClose()
-          navigate(cardPath)
-        } else {
+        if (!pendingCardNavigation) {
           onClose()
         }
       } else if (mode === 'register') {
@@ -71,13 +83,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         }
         await signUp(email, password, name)
 
-        // If there's a pending card click, navigate to it after signup
-        if (pendingCardNavigation) {
-          const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
-          setPendingCardNavigation(null)
-          onClose()
-          navigate(cardPath)
-        } else {
+        if (!pendingCardNavigation) {
           setSuccessMessage('Account created! Please check your email to verify your account.')
           onClose()
         }
@@ -112,13 +118,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         await signInWithGithub()
       }
 
-      // If there's a pending card click, navigate to it
-      if (pendingCardNavigation) {
-        const cardPath = `/${pendingCardNavigation.type}/${pendingCardNavigation.id}`
-        setPendingCardNavigation(null)
-        onClose()
-        navigate(cardPath)
-      } else {
+      if (!pendingCardNavigation) {
         onClose()
       }
     } catch (err: unknown) {

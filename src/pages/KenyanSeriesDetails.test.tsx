@@ -148,6 +148,20 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/17TH FRIDAY FULL EPISODE/i).length).toBeGreaterThan(0)
   })
 
+  it('shows the new Ayana 1st Tuesday Part 1 episode', () => {
+    render(
+      <ToastProvider>
+        <MemoryRouter initialEntries={['/kenyan-series/ayana']}>
+          <Routes>
+            <Route path="/kenyan-series/:id" element={<KenyanSeriesDetails />} />
+          </Routes>
+        </MemoryRouter>
+      </ToastProvider>
+    )
+
+    expect(screen.getAllByText(/1ST TUESDAY PART 1/i).length).toBeGreaterThan(0)
+  })
+
   it('shows the Lulu page without Ayana branding', () => {
     render(
       <ToastProvider>
@@ -339,7 +353,7 @@ describe('KenyanSeriesDetails', () => {
     expect(screen.getAllByText(/Episode 1/i).length).toBeGreaterThan(0)
   })
 
-  it('loads the provided embed URL for Second Family Episode 12', () => {
+  it('loads the latest provided embed URL for Second Family', () => {
     render(
       <ToastProvider>
         <MemoryRouter initialEntries={['/kenyan-series/second-family']}>
@@ -353,6 +367,6 @@ describe('KenyanSeriesDetails', () => {
     fireEvent.click(screen.getByRole('button', { name: /play episode/i }))
 
     const iframe = screen.getByTitle(/episode player/i)
-    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/m-gXBNn_jPs86'))
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/1kjzTH_k-D8FG'))
   })
 })

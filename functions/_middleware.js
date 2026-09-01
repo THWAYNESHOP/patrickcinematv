@@ -18,7 +18,12 @@ export async function onRequest(context) {
   // Add security headers
   const response = await context.next()
   
-  const newResponse = new Response(response.body, response)
+  const shouldHaveBody = response.status !== 204 && response.status !== 205 && response.status !== 304 && response.body !== null
+  const newResponse = new Response(shouldHaveBody ? response.body : null, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  })
   newResponse.headers.set('Access-Control-Allow-Origin', '*')
   newResponse.headers.set('X-Content-Type-Options', 'nosniff')
   newResponse.headers.set('X-Frame-Options', 'DENY')
