@@ -1,1 +1,1 @@
-npm test
+npm test -- --pool=forks --maxWorkers=1

@@ -30,6 +30,18 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: /visual\.spec\.ts/,
     },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /visual\.spec\.ts/,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /visual\.spec\.ts/,
+    },
   ],
 
   webServer: {
