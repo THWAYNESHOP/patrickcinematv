@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Settings, PiIcon, Gauge, Hd } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Settings, PiIcon, Gauge, Hd, Monitor } from 'lucide-react'
+import { ScalingMode, SCALING_MODES } from '../../types/player'
 
 interface PlayerControlsProps {
   isPlaying: boolean
@@ -10,6 +11,7 @@ interface PlayerControlsProps {
   volume: number
   playbackSpeed: number
   quality: string
+  scalingMode?: ScalingMode
   onPlayPause: () => void
   onMute: () => void
   onFullscreen: () => void
@@ -17,6 +19,7 @@ interface PlayerControlsProps {
   onVolumeChange: (volume: number) => void
   onPlaybackSpeedChange: (speed: number) => void
   onQualityChange: (quality: string) => void
+  onScalingModeChange?: (mode: ScalingMode) => void
   onPiP?: () => void
   showPiP?: boolean
 }
@@ -30,6 +33,7 @@ export default function PlayerControls({
   volume,
   playbackSpeed,
   quality,
+  scalingMode = 'fit',
   onPlayPause,
   onMute,
   onFullscreen,
@@ -37,6 +41,7 @@ export default function PlayerControls({
   onVolumeChange,
   onPlaybackSpeedChange,
   onQualityChange,
+  onScalingModeChange,
   onPiP,
   showPiP = true,
 }: PlayerControlsProps) {
@@ -44,6 +49,7 @@ export default function PlayerControls({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [showQualityMenu, setShowQualityMenu] = useState(false)
+  const [showScalingMenu, setShowScalingMenu] = useState(false)
   const controlsRef = useRef<HTMLDivElement>(null)
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -223,6 +229,55 @@ export default function PlayerControls({
               </div>
             )}
           </div>
+
+          {/* Scaling Mode */}
+          {onScalingModeChange && (
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowScalingMenu(!showScalingMenu)
+                  setShowQualityMenu(false)
+                  setShowSpeedMenu(false)
+                }}
+                className="text-white hover:text-primary transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-black rounded"
+                aria-label="Scaling mode"
+                aria-expanded={showScalingMenu}
+                aria-haspopup="true"
+              >
+                <Monitor className="w-5 h-5" aria-hidden="true" />
+                <span className="text-xs uppercase font-medium">{scalingMode}</span>
+              </button>
+              {showScalingMenu && (
+                <div
+                  className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-md rounded-xl p-1.5 shadow-2xl border border-white/10 min-w-[140px] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                  role="menu"
+                  aria-label="Scaling options"
+                >
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Aspect Ratio</div>
+                  {SCALING_MODES.map((mode) => (
+                    <button
+                      key={mode.value}
+                      onClick={() => {
+                        onScalingModeChange(mode.value)
+                        setShowScalingMenu(false)
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                        mode.value === scalingMode
+                          ? 'bg-primary text-white font-semibold'
+                          : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                      role="menuitem"
+                      aria-label={`Set scaling to ${mode.label}`}
+                      aria-selected={mode.value === scalingMode}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Playback Speed */}
           <div className="relative">
