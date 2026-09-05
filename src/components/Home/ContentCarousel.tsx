@@ -1,6 +1,7 @@
 ﻿import { memo, useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Play, Star, Plus, Check } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { CardSkeleton } from '../Skeleton'
 import type { MovieSummary } from '../../api/tmdb'
 import { useHapticFeedback } from '../../hooks/useHapticFeedback'
@@ -21,6 +22,9 @@ interface ContentCarouselProps {
   setFocusedCardId?: (carouselId: string, cardId: string) => void
   onPrefetch?: (item: MovieSummary) => void
   performanceMode?: boolean
+  variant?: 'poster' | 'landscape'
+  showRanking?: boolean
+  rightContent?: React.ReactNode
 }
 
 interface CarouselCardProps {
@@ -32,6 +36,9 @@ interface CarouselCardProps {
   carouselId?: string
   setFocusedCardId?: (carouselId: string, cardId: string) => void
   performanceMode?: boolean
+  variant?: 'poster' | 'landscape'
+  showRanking?: boolean
+  index?: number
 }
 
 const CarouselCard = function CarouselCard({
@@ -43,12 +50,17 @@ const CarouselCard = function CarouselCard({
   carouselId,
   setFocusedCardId,
   performanceMode = false,
+  variant = 'poster',
+  showRanking = false,
+  index = 0,
 }: CarouselCardProps) {
   const inMyList = useStore((state) => state.isInMyList(String(item.id)))
   const user = useStore((state) => state.user)
   const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
   const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
   const navigatePath = `/${itemType === 'tv' ? 'tv' : itemType === 'anime' ? 'anime' : 'movie'}/${item.id}`
+  const isLandscape = variant === 'landscape'
+  const displayImage = isLandscape ? (item.backdrop || item.poster) : item.poster
 
   const handleMyList = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -93,28 +105,44 @@ const CarouselCard = function CarouselCard({
   )
 
   const cardContent = (
-    <>
-      <div className={`bg-darkSurface rounded-xl overflow-hidden border border-white/5 hover:border-white/10 ${
-        performanceMode
-          ? 'transition-none'
-          : 'transition-all duration-300 hover:scale-105 hover:shadow-card-hover hover:shadow-glow'
+    <motion.div
+      initial={false}
+      whileHover={{ scale: 1.05, y: -5 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="flex flex-col gap-3 group/card"
+    >
+      <div className={`relative bg-darkSurface rounded-2xl overflow-hidden border border-white/5 group-hover/card:border-white/20 shadow-2xl transition-all duration-300 ${
+        performanceMode ? '' : 'group-hover/card:shadow-[0_0_30px_rgba(229,9,20,0.15)]'
       }`}>
-        <div className="relative aspect-[2/3]">
+        {showRanking && (
+          <div className="absolute top-2 left-2 z-20 pointer-events-none select-none">
+            <div className="bg-primary/90 backdrop-blur-md px-1.5 py-0.5 rounded shadow-lg border border-white/10">
+              <span className="text-[8px] font-black text-white tracking-tighter uppercase italic">
+                TOP {String(index + 1).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className={`relative ${isLandscape ? 'aspect-video' : 'aspect-[2/3]'}`}>
           <img
-            src={item.poster}
-            srcSet={`${item.poster}?w=300 300w, ${item.poster}?w=500 500w`}
-            sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"
+            src={displayImage}
+            srcSet={isLandscape
+              ? `${displayImage}?w=500 500w, ${displayImage}?w=800 800w`
+              : `${displayImage}?w=300 300w, ${displayImage}?w=500 500w`}
+            sizes={isLandscape
+              ? "(max-width: 640px) 240px, (max-width: 768px) 320px, 400px"
+              : "(max-width: 640px) 144px, (max-width: 768px) 176px, 192px"}
             alt={item.title}
-            width={192}
-            height={288}
+            width={isLandscape ? 400 : 192}
+            height={isLandscape ? 225 : 288}
             decoding="async"
             loading="lazy"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
           />
-          <div className={`absolute inset-0 bg-black/70 opacity-0 group-hover/card:opacity-100 flex items-center justify-center ${
-            performanceMode ? 'transition-none' : 'transition-opacity duration-300'
-          }`}>
-            <Play className="w-10 h-10 sm:w-14 sm:h-14 text-primary" fill="white" />
+          <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 flex items-center justify-center transition-opacity duration-300 backdrop-blur-[2px]`}>
+            <div className="rounded-full bg-primary p-4 shadow-[0_0_20px_rgba(229,9,20,0.5)] transform scale-75 group-hover/card:scale-100 transition-transform duration-500">
+              <Play className="w-8 h-8 text-white" fill="currentColor" />
+            </div>
           </div>
           {showProgress && typeof item.progress === 'number' && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
@@ -124,7 +152,7 @@ const CarouselCard = function CarouselCard({
           <button
             type="button"
             onClick={handleMyList}
-            className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-full opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10"
+            className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-xl opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10 backdrop-blur-md border border-white/10"
             aria-label={inMyList ? `Remove ${item.title} from My List` : `Add ${item.title} to My List`}
           >
             {inMyList ? (
@@ -134,19 +162,26 @@ const CarouselCard = function CarouselCard({
             )}
           </button>
         </div>
-        <div className="p-2 md:p-3">
-          <h3 className="font-semibold text-sm md:text-base text-white truncate leading-tight">{item.title}</h3>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30">
-              <Star className="w-3 h-3 md:w-3.5 md:h-3.5 text-accent fill-accent" />
-              <span className="text-xs md:text-sm text-accent font-bold">{item.rating}</span>
-            </div>
-            {item.year && <span className="text-xs md:text-sm text-gray-500">•</span>}
-            {item.year && <span className="text-xs md:text-sm text-gray-500 font-medium">{item.year}</span>}
+      </div>
+
+      <div className="px-1">
+        <h3 className="font-black text-sm md:text-base text-white truncate leading-tight uppercase italic group-hover/card:text-primary transition-colors tracking-tight">
+          {item.title}
+        </h3>
+        <div className="flex items-center gap-2 mt-1.5 opacity-60 group-hover/card:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1">
+            <Star className="w-3 h-3 text-primary fill-primary" />
+            <span className="text-[11px] md:text-xs text-white font-black italic">{item.rating}</span>
           </div>
+          <span className="w-1 h-1 rounded-full bg-white/20" />
+          {item.year && <span className="text-[11px] md:text-xs text-white/70 font-bold">{item.year}</span>}
+          <span className="w-1 h-1 rounded-full bg-white/20" />
+          <span className="text-[10px] text-white/50 font-black uppercase tracking-tighter">
+            {itemType === 'tv' ? 'Series' : itemType === 'movie' ? 'Movie' : itemType}
+          </span>
         </div>
       </div>
-    </>
+    </motion.div>
   )
 
   const commonProps = {
@@ -155,9 +190,13 @@ const CarouselCard = function CarouselCard({
     onTouchStart: performanceMode ? undefined : handleMouseEnter,
   }
 
+  const containerClasses = isLandscape
+    ? "flex-shrink-0 w-64 sm:w-72 md:w-80 xl:w-96"
+    : "flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52"
+
   if (!user) {
     return (
-      <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
+      <div key={item.id} className={containerClasses} data-carousel-card-id={item.id}>
         <a
           href={navigatePath}
           onClick={(e) => {
@@ -181,7 +220,7 @@ const CarouselCard = function CarouselCard({
   }
 
   return (
-    <div key={item.id} className="flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52 group/card" data-carousel-card-id={item.id}>
+    <div key={item.id} className={containerClasses} data-carousel-card-id={item.id}>
       <Link
         to={navigatePath}
         onClick={handleCardClick as React.MouseEventHandler<HTMLAnchorElement>}
@@ -193,6 +232,7 @@ const CarouselCard = function CarouselCard({
     </div>
   )
 }
+
 
 const MemoizedCarouselCard = memo(CarouselCard)
 
@@ -210,6 +250,9 @@ export default function ContentCarousel({
   setFocusedCardId,
   onPrefetch,
   performanceMode = false,
+  variant = 'poster',
+  showRanking = false,
+  rightContent,
 }: ContentCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollRAFRef = useRef<number | null>(null)
@@ -243,14 +286,14 @@ export default function ContentCarousel({
   const scroll = useCallback((direction: 'left' | 'right') => {
     triggerHaptic('light')
     if (scrollRef.current) {
-      const scrollAmount = 300
+      const scrollAmount = variant === 'landscape' ? 400 : 300
       const newScrollLeft =
         direction === 'left'
           ? scrollRef.current.scrollLeft - scrollAmount
           : scrollRef.current.scrollLeft + scrollAmount
       scrollRef.current.scrollTo({ left: newScrollLeft, behavior: performanceMode ? 'auto' : 'smooth' })
     }
-  }, [performanceMode, triggerHaptic])
+  }, [performanceMode, triggerHaptic, variant])
 
   useEffect(() => {
     if (!loading && carouselId && getCarouselPosition && scrollRef.current) {
@@ -349,28 +392,35 @@ export default function ContentCarousel({
           setFocusedCardId={setFocusedCardId}
           onPrefetch={performanceMode ? undefined : onPrefetch}
           performanceMode={performanceMode}
+          variant={variant}
+          showRanking={showRanking}
+          index={index}
         />
       )),
-    [items, type, showProgress, toggleMyList, carouselId, onPrefetch, performanceMode, setFocusedCardId],
+    [items, type, showProgress, toggleMyList, carouselId, onPrefetch, performanceMode, setFocusedCardId, variant, showRanking],
   )
+
 
   return (
     <div className="mb-12 md:mb-16">
-      <div className="mb-4 md:mb-6 flex items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="truncate text-xl font-bold text-white tracking-tight md:text-2xl lg:text-3xl">{title}</h2>
-          {!loading && items.length > 0 && (
-            <p className="mt-1 text-xs font-medium text-gray-500 md:text-sm">{items.length} titles</p>
+      <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-1 h-8 bg-primary shadow-[0_0_15px_rgba(229,9,20,0.5)] rounded-full animate-pulse-slow" />
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-black text-white tracking-tighter md:text-2xl lg:text-3xl uppercase italic leading-none">{title}</h2>
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          {rightContent}
+          {viewAllTo && (
+            <Link
+              to={viewAllTo}
+              className="shrink-0 text-xs font-black uppercase tracking-widest text-gray-500 transition-colors hover:text-primary tv-focusable tv-touch-target"
+            >
+              View All
+            </Link>
           )}
         </div>
-        {viewAllTo && (
-          <Link
-            to={viewAllTo}
-            className="shrink-0 text-sm font-semibold text-gray-300 transition-colors hover:text-white tv-focusable tv-touch-target"
-          >
-            View All
-          </Link>
-        )}
       </div>
       <div className="relative group">
         {loading ? (

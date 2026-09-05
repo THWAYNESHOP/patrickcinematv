@@ -1,9 +1,20 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
-import { Radio, ArrowLeft, Minimize2, Maximize2 } from 'lucide-react'
+import { Radio, ArrowLeft, Minimize2, Maximize2, Monitor } from 'lucide-react'
 import { sportsApi, Stream } from '../api/sports'
 import { useToast } from '../hooks/useToast'
 import { sanitizeIframeSrc } from '../utils/iframe'
+import { ScalingMode, SCALING_MODES } from '../types/player'
+
+type VendorFullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void
+  msRequestFullscreen?: () => Promise<void> | void
+}
+
+type VendorFullscreenDocument = Document & {
+  webkitExitFullscreen?: () => Promise<void> | void
+  msExitFullscreen?: () => Promise<void> | void
+}
 
 export default function SportsPlayer() {
   if (import.meta.env.DEV) {
@@ -21,6 +32,8 @@ export default function SportsPlayer() {
   const playerContainerRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [scalingMode, setScalingMode] = useState<ScalingMode>('fit')
+  const [showScalingMenu, setShowScalingMenu] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
   // Toggle: when true prefer server-provided `healthScore` when available
@@ -65,65 +78,67 @@ export default function SportsPlayer() {
     }
   }
 
-  const requestPlayerFullscreen = async () => {
+  const syncFullscreenState = useCallback(() => {
+    setIsFullscreen(!!document.fullscreenElement)
+  }, [])
+
+  const toggleFullscreen = useCallback(async () => {
     const container = playerContainerRef.current
-    const iframe = iframeRef.current
-    // Try making the player container fullscreen first
-    if (container && 'requestFullscreen' in container) {
+    if (!container) return
+
+    if (!document.fullscreenElement) {
       try {
-        await container.requestFullscreen()
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as VendorFullscreenElement).webkitRequestFullscreen) {
+          await (container as VendorFullscreenElement).webkitRequestFullscreen?.()
+        } else if ((container as VendorFullscreenElement).msRequestFullscreen) {
+          await (container as VendorFullscreenElement).msRequestFullscreen?.()
+        }
+        setIsFullscreen(true)
         void lockScreenOrientation('landscape')
-        return
       } catch (error) {
-        console.warn('Container fullscreen request failed:', error)
+        console.error('Fullscreen request failed:', error)
+        setIsFullscreen(true)
       }
-    }
-
-    // Fallback: try requesting fullscreen on the iframe element itself
-    if (iframe && 'requestFullscreen' in iframe) {
-      try {
-        await iframe.requestFullscreen()
-        void lockScreenOrientation('landscape')
-        return
-      } catch (error) {
-        console.warn('Iframe fullscreen request failed:', error)
-      }
-    }
-
-    // Last resort: if the iframe exposes a postMessage API, ask it to enter fullscreen
-    try {
-      iframe?.contentWindow?.postMessage({ type: 'request-fullscreen' }, '*')
-      // orientation lock may be handled by the embedded player when it enters fullscreen
-    } catch (error) {
-      console.warn('Unable to postMessage to iframe for fullscreen:', error)
-    }
-  }
-
-  const exitPlayerFullscreen = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen()
-      if ('orientation' in screen && typeof screen.orientation?.unlock === 'function') {
-        void screen.orientation.unlock()
-      }
-    }
-  }
-
-  const syncFullscreenState = () => {
-    const fullscreenElement = document.fullscreenElement
-    // Only consider the player container itself as fullscreen. If an embedded iframe
-    // enters fullscreen on its own, we don't want the outer container to switch
-    // into the fullscreen layout (prevents uncontrolled layout stretching).
-    setIsFullscreen(fullscreenElement === playerContainerRef.current)
-  }
-
-  const toggleFullscreen = () => {
-    if (isFullscreen) {
-      exitPlayerFullscreen()
     } else {
-      requestPlayerFullscreen()
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as VendorFullscreenDocument).webkitExitFullscreen) {
+          await (document as VendorFullscreenDocument).webkitExitFullscreen?.()
+        } else if ((document as VendorFullscreenDocument).msExitFullscreen) {
+          await (document as VendorFullscreenDocument).msExitFullscreen?.()
+        }
+        setIsFullscreen(false)
+        if ('orientation' in screen && typeof screen.orientation?.unlock === 'function') {
+          void screen.orientation.unlock()
+        }
+      } catch (error) {
+        console.error('Exit fullscreen failed:', error)
+        setIsFullscreen(false)
+      }
+    }
+  }, [isFullscreen])
+
+  const getIframeTransform = () => {
+    switch (scalingMode) {
+      case 'stretch':
+        return 'scale(1.15, 1.1)'
+      case 'zoom':
+        return 'scale(1.35)'
+      case 'crop':
+        return 'scale(1.5)'
+      case '16:9':
+        return 'scale(1)'
+      case '4:3':
+        return 'scale(0.8, 1)'
+      case 'fit':
+      default:
+        return 'scale(1)'
     }
   }
-  
+
   useEffect(() => {
     document.addEventListener('fullscreenchange', syncFullscreenState)
     syncFullscreenState()
@@ -263,9 +278,9 @@ export default function SportsPlayer() {
   }
 
   const currentStream = streams[selectedStream]
-  
 
-  
+
+
 
   return (
     <div className="bg-deepBlack px-2 py-2 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
@@ -304,14 +319,46 @@ export default function SportsPlayer() {
                 Live
               </div>
               <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowScalingMenu(!showScalingMenu)}
+                    className={`inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 focus:outline-none ${
+                      showScalingMenu ? 'bg-primary border-primary' : ''
+                    }`}
+                    aria-label="Scaling mode"
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </button>
+                  {showScalingMenu && (
+                    <div className="absolute right-0 top-full mt-2 bg-black/95 backdrop-blur-md rounded-xl p-1.5 shadow-2xl border border-white/10 min-w-[120px] z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase mb-1">Scale</div>
+                      {SCALING_MODES.map((mode) => (
+                        <button
+                          key={mode.value}
+                          onClick={() => {
+                            setScalingMode(mode.value)
+                            setShowScalingMenu(false)
+                          }}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-colors ${
+                            scalingMode === mode.value
+                              ? 'bg-primary text-white font-semibold'
+                              : 'text-gray-300 hover:bg-white/10'
+                          }`}
+                        >
+                          {mode.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={toggleFullscreen}
-                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm"
                   aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10"
                 >
                   {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
                 </button>
               </div>
             </div>
@@ -326,10 +373,12 @@ export default function SportsPlayer() {
                   width: '100%',
                   height: '100%',
                   minWidth: '100%',
-                  minHeight: '100%'
+                  minHeight: '100%',
+                  transform: getIframeTransform(),
+                  transformOrigin: 'center center',
+                  transition: 'transform 0.3s ease',
                 }}
                 frameBorder="0"
-                allowFullScreen
                 allow="autoplay; encrypted-media"
               />
             </div>
