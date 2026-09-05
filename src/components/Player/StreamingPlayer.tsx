@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Maximize2, Minimize2 } from 'lucide-react'
+import { Minimize2, Maximize2, Monitor } from 'lucide-react'
 import { STREAMING_PROVIDERS } from '../../lib/streamingProviders'
 import { useTVDetection } from '../../hooks/useTVDetection'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { getPlayerRetryDecision } from './playerRetry'
 import PlayerControls from './PlayerControls'
+import { ScalingMode, SCALING_MODES } from '../../types/player'
 
 const MAX_PLAYBACK_DURATION = 24 * 60 * 60 // 24 hours in seconds
+
+type VendorFullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void
+  msRequestFullscreen?: () => Promise<void> | void
+}
+
+type VendorFullscreenDocument = Document & {
+  webkitExitFullscreen?: () => Promise<void> | void
+  msExitFullscreen?: () => Promise<void> | void
+}
 
 function isValidPlaybackTime(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= MAX_PLAYBACK_DURATION
@@ -36,7 +47,8 @@ export default function StreamingPlayer({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement)
-  const [isStretched, setIsStretched] = useState(false)
+  const [scalingMode, setScalingMode] = useState<ScalingMode>('fit')
+  const [showScalingMenu, setShowScalingMenu] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeError, setIframeError] = useState(false)
   const [loadTimeout, setLoadTimeout] = useState(false)
@@ -58,11 +70,11 @@ export default function StreamingPlayer({
   const [lastClickTime, setLastClickTime] = useState(0)
   const [isBuffering, setIsBuffering] = useState(false)
   const [networkQuality, setNetworkQuality] = useState<'excellent' | 'good' | 'fair' | 'poor'>('good')
-  
+
   // Touch gesture state
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
   const initialPinchDistanceRef = useRef<number | null>(null)
-  
+
   // Analytics tracking
   const watchStartTimeRef = useRef<number | null>(null)
   const totalWatchTimeRef = useRef(0)
@@ -123,6 +135,10 @@ export default function StreamingPlayer({
       { type: 'PLAYER_COMMAND', command: 'quality', quality: newQuality },
       '*'
     )
+  }, [])
+
+  const handleScalingModeChange = useCallback((mode: ScalingMode) => {
+    setScalingMode(mode)
   }, [])
 
   // Network quality monitoring
@@ -213,13 +229,13 @@ export default function StreamingPlayer({
     const interval = setInterval(() => {
       const now = Date.now()
       const timeSinceLastSend = now - lastAnalyticsSendRef.current
-      
+
       if (timeSinceLastSend >= 60000) { // Send every minute
-        const currentSessionTime = watchStartTimeRef.current 
-          ? now - watchStartTimeRef.current 
+        const currentSessionTime = watchStartTimeRef.current
+          ? now - watchStartTimeRef.current
           : 0
         const totalWatchTime = totalWatchTimeRef.current + currentSessionTime
-        
+
         // In a real implementation, you would send this to your analytics service
         const analyticsData = {
           providerId,
@@ -230,15 +246,15 @@ export default function StreamingPlayer({
           networkQuality,
           isBuffering
         }
-        
+
         if (import.meta.env.DEV) {
           console.log('Analytics:', analyticsData)
         }
-        
+
         lastAnalyticsSendRef.current = now
       }
     }, 10000) // Check every 10 seconds
-    
+
     return () => clearInterval(interval)
   }, [providerId, currentTime, duration, quality, networkQuality, isBuffering])
 
@@ -246,11 +262,11 @@ export default function StreamingPlayer({
   useEffect(() => {
     const cleanup = () => {
       const now = Date.now()
-      const currentSessionTime = watchStartTimeRef.current 
-        ? now - watchStartTimeRef.current 
+      const currentSessionTime = watchStartTimeRef.current
+        ? now - watchStartTimeRef.current
         : 0
       const totalWatchTime = totalWatchTimeRef.current + currentSessionTime
-      
+
       if (import.meta.env.DEV && totalWatchTime > 0) {
         const finalAnalytics = {
           providerId,
@@ -261,7 +277,7 @@ export default function StreamingPlayer({
         console.log('Final Analytics:', finalAnalytics)
       }
     }
-    
+
     return cleanup
   }, [providerId, quality, networkQuality])
 
@@ -274,12 +290,6 @@ export default function StreamingPlayer({
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
-
-  useEffect(() => {
-    if (isFullscreen) {
-      setIsStretched(false)
-    }
-  }, [isFullscreen])
 
   // Handle postMessage events from all providers for progress tracking
   useEffect(() => {
@@ -411,10 +421,10 @@ export default function StreamingPlayer({
           const currentProviderIndex = providerOrder.indexOf(providerId)
           const nextProviderIndex = (currentProviderIndex + 1) % providerOrder.length
           const nextProvider = providerOrder[nextProviderIndex]
-          
+
           setAutoSwitchAttempt((prev) => prev + 1)
           onProviderSwitch?.(nextProvider)
-          
+
           // Reset error state for new provider
           setIframeError(false)
           setLoadTimeout(false)
@@ -444,6 +454,42 @@ export default function StreamingPlayer({
     setRetryAttempt(0)
     setIsRetrying(false)
   }, [src, providerId])
+
+  const toggleFullscreen = useCallback(async () => {
+    const container = containerRef.current
+    if (!container) return
+
+    if (!document.fullscreenElement) {
+      try {
+        if (container.requestFullscreen) {
+          await container.requestFullscreen()
+        } else if ((container as VendorFullscreenElement).webkitRequestFullscreen) {
+          await (container as VendorFullscreenElement).webkitRequestFullscreen?.()
+        } else if ((container as VendorFullscreenElement).msRequestFullscreen) {
+          await (container as VendorFullscreenElement).msRequestFullscreen?.()
+        }
+        setIsFullscreen(true)
+      } catch (error) {
+        console.error('Fullscreen request failed:', error)
+        // Fallback to CSS-only fullscreen
+        setIsFullscreen(true)
+      }
+    } else {
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as VendorFullscreenDocument).webkitExitFullscreen) {
+          await (document as VendorFullscreenDocument).webkitExitFullscreen?.()
+        } else if ((document as VendorFullscreenDocument).msExitFullscreen) {
+          await (document as VendorFullscreenDocument).msExitFullscreen?.()
+        }
+        setIsFullscreen(false)
+      } catch (error) {
+        console.error('Exit fullscreen failed:', error)
+        setIsFullscreen(false)
+      }
+    }
+  }, [isFullscreen])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -490,7 +536,7 @@ export default function StreamingPlayer({
           break
         case 'f':
           e.preventDefault()
-          setIsFullscreen(!isFullscreen)
+          toggleFullscreen()
           break
         case '0':
         case '1':
@@ -512,25 +558,25 @@ export default function StreamingPlayer({
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [currentTime, duration, volume, isPlaying, isMuted, isFullscreen, handlePlayPause, handleMute, handleSeek, handleVolumeChange])
+  }, [currentTime, duration, volume, isPlaying, isMuted, isFullscreen, handlePlayPause, handleMute, handleSeek, handleVolumeChange, toggleFullscreen])
 
   const vidLinkUrl = src
 
   const vendorAttrs: Partial<React.IframeHTMLAttributes<HTMLIFrameElement>> = {
-    // Cross-browser fullscreen attribute (React uses allowFullScreen)
-    allowFullScreen: true,
+    // Cross-browser fullscreen attribute disabled to force NexaStream UI visibility
+    allowFullScreen: false,
   }
 
   const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const now = Date.now()
     const timeSinceLastClick = now - lastClickTime
-    
+
     if (timeSinceLastClick < 300) {
       // Double click detected
       const rect = e.currentTarget.getBoundingClientRect()
       const clickX = e.clientX - rect.left
       const centerX = rect.width / 2
-      
+
       if (clickX < centerX) {
         // Left side - seek backward 10 seconds
         handleSeek(Math.max(0, currentTime - 10))
@@ -565,7 +611,7 @@ export default function StreamingPlayer({
     if (e.touches.length === 1 && touchStartRef.current) {
       const dx = e.touches[0].clientX - touchStartRef.current.x
       const dy = e.touches[0].clientY - touchStartRef.current.y
-      
+
       // Horizontal swipe detection (seek)
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
         e.preventDefault()
@@ -575,7 +621,7 @@ export default function StreamingPlayer({
       const dx = e.touches[0].clientX - e.touches[1].clientX
       const dy = e.touches[0].clientY - e.touches[1].clientY
       const currentDistance = Math.sqrt(dx * dx + dy * dy)
-      
+
       if (Math.abs(currentDistance - initialPinchDistanceRef.current) > 30) {
         e.preventDefault()
       }
@@ -588,7 +634,7 @@ export default function StreamingPlayer({
       const dx = touchEnd.clientX - touchStartRef.current.x
       const dy = touchEnd.clientY - touchStartRef.current.y
       const dt = Date.now() - touchStartRef.current.time
-      
+
       // Swipe detection (horizontal swipe for seeking)
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50 && dt < 300) {
         const seekAmount = Math.abs(dx) / 50 * 10 // Scale swipe distance to seek time
@@ -598,7 +644,7 @@ export default function StreamingPlayer({
           handleSeek(Math.max(0, currentTime - seekAmount))
         }
       }
-      
+
       touchStartRef.current = null
     } else if (e.touches.length === 0) {
       initialPinchDistanceRef.current = null
@@ -616,6 +662,24 @@ export default function StreamingPlayer({
       }
     } catch (error) {
       console.error('PiP error:', error)
+    }
+  }
+
+  const getIframeTransform = () => {
+    switch (scalingMode) {
+      case 'stretch':
+        return 'scale(1.15, 1.1)'
+      case 'zoom':
+        return 'scale(1.35)'
+      case 'crop':
+        return 'scale(1.5)'
+      case '16:9':
+        return 'scale(1)'
+      case '4:3':
+        return 'scale(0.8, 1)'
+      case 'fit':
+      default:
+        return 'scale(1)'
     }
   }
 
@@ -649,16 +713,49 @@ export default function StreamingPlayer({
         onTouchEnd={handleTouchEnd}
       >
         <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowScalingMenu(!showScalingMenu)
+              }}
+              aria-label="Aspect Ratio"
+              className={`inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 ${
+                showScalingMenu ? 'bg-primary border-primary' : ''
+              }`}
+            >
+              <Monitor className="h-4 w-4" />
+            </button>
+            {showScalingMenu && (
+              <div className="absolute right-0 top-full mt-2 bg-black/95 backdrop-blur-md rounded-xl p-1.5 shadow-2xl border border-white/10 min-w-[120px] z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase mb-1">Fit Mode</div>
+                {SCALING_MODES.map((mode) => (
+                  <button
+                    key={mode.value}
+                    onClick={() => {
+                      setScalingMode(mode.value)
+                      setShowScalingMenu(false)
+                    }}
+                    className={`w-full text-left px-3 py-1.5 rounded-lg text-[11px] transition-colors ${
+                      scalingMode === mode.value
+                        ? 'bg-primary text-white font-semibold'
+                        : 'text-gray-300 hover:bg-white/10'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
-            onClick={() => setIsStretched((prev) => !prev)}
-            aria-label={isStretched ? 'Fit video' : 'Stretch video'}
-            aria-pressed={isStretched}
-            title={isStretched ? 'Fit video' : 'Stretch video'}
-            disabled={isFullscreen}
-            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10"
           >
-            {isStretched ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
         </div>
         {!iframeLoaded && !iframeError && (
@@ -679,7 +776,7 @@ export default function StreamingPlayer({
               </div>
               <p className="text-red-500 font-semibold mb-2">Content Not Available</p>
               <p className="text-gray-400 text-sm mb-4">
-                {loadTimeout 
+                {loadTimeout
                   ? `This content could not be loaded from ${provider?.displayName || 'this server'}.`
                   : "The video source is currently unavailable."}
               </p>
@@ -707,12 +804,11 @@ export default function StreamingPlayer({
             position: 'absolute',
             width: '100%',
             height: '100%',
-            transform: isFullscreen || !isStretched ? 'scale(1)' : 'scale(1.2)',
+            transform: getIframeTransform(),
             transformOrigin: 'center center',
             transition: 'transform 0.3s ease',
           }}
           frameBorder="0"
-          allowFullScreen
           allow="autoplay; encrypted-media; picture-in-picture"
           referrerPolicy="no-referrer-when-downgrade"
           title={`${provider?.displayName || 'Streaming'} Player`}
@@ -766,13 +862,15 @@ export default function StreamingPlayer({
             volume={volume}
             playbackSpeed={playbackSpeed}
             quality={quality}
+            scalingMode={scalingMode}
             onPlayPause={handlePlayPause}
             onMute={handleMute}
-            onFullscreen={() => setIsFullscreen(!isFullscreen)}
+            onFullscreen={toggleFullscreen}
             onSeek={handleSeek}
             onVolumeChange={handleVolumeChange}
             onPlaybackSpeedChange={handlePlaybackSpeedChange}
             onQualityChange={handleQualityChange}
+            onScalingModeChange={handleScalingModeChange}
             onPiP={handlePiP}
           />
         )}
