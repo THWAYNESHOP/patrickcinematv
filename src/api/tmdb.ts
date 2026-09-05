@@ -43,6 +43,8 @@ export interface MovieSummary {
   type?: 'movie' | 'tv' | 'anime' | 'sports'
   progress?: number
   popularity?: number
+  genreIds?: number[]
+  voteCount?: number
 }
 
 export interface PlatformCatalog {
@@ -104,6 +106,9 @@ interface TmdbMovie {
   poster_path?: string
   backdrop_path?: string
   vote_average?: number
+  vote_count?: number
+  popularity?: number
+  genre_ids?: number[]
   release_date?: string
   first_air_date?: string
   media_type?: 'movie' | 'tv' | 'person'
@@ -169,6 +174,9 @@ function toMovieSummary(movie: TmdbMovie): MovieSummary {
     rating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
     year: date ? Number(date.slice(0, 4)) : undefined,
     type,
+    popularity: movie.popularity,
+    genreIds: movie.genre_ids,
+    voteCount: movie.vote_count,
   }
 }
 
@@ -196,6 +204,7 @@ function toMediaDetails(media: TmdbMovie, type: 'movie' | 'tv'): MediaDetails {
 const PROVIDER_IDS: Record<string, number> = {
   Netflix: 8,
   'Prime Video': 9,
+  Max: 1899,
   'Paramount+': 531,
   'Apple TV+': 350,
   Hulu: 15,
@@ -284,6 +293,34 @@ export const tmdbApi = {
       ? response.data.results.map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' }))
       : []
     
+    setCached(cacheKey, result)
+    return result
+  },
+
+  async getTrendingTeenRomanceWeekly(): Promise<MovieSummary[]> {
+    const cacheKey = 'trending-teen-romance-weekly-v1'
+    const cached = getCached<MovieSummary[]>(cacheKey)
+    if (cached) return cached
+
+    const [movieResponse, tvResponse] = await Promise.all([
+      axios.get(`${TMDB_API_BASE}/trending/movie/week`, {
+        params: getTmdbRequestParams({ language: 'en-US' }),
+        timeout: 10000,
+      }),
+      axios.get(`${TMDB_API_BASE}/trending/tv/week`, {
+        params: getTmdbRequestParams({ language: 'en-US' }),
+        timeout: 10000,
+      }),
+    ])
+
+    const candidates = [
+      ...(Array.isArray(movieResponse.data?.results) ? movieResponse.data.results : [])
+        .map((movie: TmdbMovie) => toMovieSummary({ ...movie, media_type: 'movie' })),
+      ...(Array.isArray(tvResponse.data?.results) ? tvResponse.data.results : [])
+        .map((show: TmdbMovie) => toMovieSummary({ ...show, media_type: 'tv' })),
+    ]
+
+    const result = candidates.filter((item) => item.genreIds?.includes(16) !== true)
     setCached(cacheKey, result)
     return result
   },
@@ -445,78 +482,35 @@ export const tmdbApi = {
       : []
   },
 
-  async getPlatformCatalog(platform: string): Promise<PlatformCatalog> {
-    const cacheKey = `platform-catalog-${platform.toLowerCase()}`
+  async getPlatformCatalog(platform: string, pageCount = 5): Promise<PlatformCatalog> {
+    const cacheKey = `platform-catalog-v2-${platform.toLowerCase()}-${pageCount}`
     const cached = getCached<PlatformCatalog>(cacheKey)
     if (cached) return cached
 
     const providerId = PROVIDER_IDS[platform]
 
-    if (!providerId) {
-      const [moviesResponse, tvResponse] = await Promise.all([
-        axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
-          params: getTmdbRequestParams({
-            language: 'en-US',
-            sort_by: 'popularity.desc',
-            page: 1,
-            region: 'US',
-          }),
-          timeout: 10000,
-        }),
-        axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
-          params: getTmdbRequestParams({
-            language: 'en-US',
-            sort_by: 'popularity.desc',
-            page: 1,
-            with_origin_country: 'US',
-          }),
-          timeout: 10000,
-        }),
-      ])
-
-      const result = {
-        movies: Array.isArray(moviesResponse.data?.results)
-          ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
-          : [],
-        tv: Array.isArray(tvResponse.data?.results)
-          ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
-          : [],
-      }
-
-      setCached(cacheKey, result)
-      return result
+    const discoverParams = {
+      language: 'en-US',
+      sort_by: 'popularity.desc',
+      ...(providerId ? { with_watch_providers: providerId, watch_region: 'US' } : { region: 'US' }),
     }
-
-    const [moviesResponse, tvResponse] = await Promise.all([
-      axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
-        params: getTmdbRequestParams({
-          language: 'en-US',
-          sort_by: 'popularity.desc',
-          page: 1,
-          with_watch_providers: providerId,
-          watch_region: 'US',
-        }),
+    const pages = Array.from({ length: Math.max(1, pageCount) }, (_, index) => index + 1)
+    const [movieResponses, tvResponses] = await Promise.all([
+      Promise.all(pages.map((page) => axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/movie`, {
+        params: getTmdbRequestParams({ ...discoverParams, page }),
         timeout: 10000,
-      }),
-      axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
-        params: getTmdbRequestParams({
-          language: 'en-US',
-          sort_by: 'popularity.desc',
-          page: 1,
-          with_watch_providers: providerId,
-          watch_region: 'US',
-        }),
+      }))),
+      Promise.all(pages.map((page) => axios.get<TmdbDiscoverResponse>(`${TMDB_API_BASE}/discover/tv`, {
+        params: getTmdbRequestParams({ ...discoverParams, page }),
         timeout: 10000,
-      }),
+      }))),
     ])
 
     const result = {
-      movies: Array.isArray(moviesResponse.data?.results)
-        ? moviesResponse.data.results.map((movie) => toMovieSummary({ ...movie, media_type: 'movie' }))
-        : [],
-      tv: Array.isArray(tvResponse.data?.results)
-        ? tvResponse.data.results.map((show) => toMovieSummary({ ...show, media_type: 'tv' }))
-        : [],
+      movies: movieResponses.flatMap((response) => response.data?.results || [])
+        .map((movie) => toMovieSummary({ ...movie, media_type: 'movie' })),
+      tv: tvResponses.flatMap((response) => response.data?.results || [])
+        .map((show) => toMovieSummary({ ...show, media_type: 'tv' })),
     }
 
     setCached(cacheKey, result)
@@ -627,7 +621,7 @@ export const tmdbApi = {
   },
 
   async discoverMovies(params: Record<string, string | number | boolean | undefined>): Promise<MovieSummary[]> {
-    const cacheKey = `discover-movies-${JSON.stringify(params)}`
+    const cacheKey = `discover-movies-v2-${JSON.stringify(params)}`
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
@@ -645,7 +639,7 @@ export const tmdbApi = {
   },
 
   async discoverTV(params: Record<string, string | number | boolean | undefined>): Promise<MovieSummary[]> {
-    const cacheKey = `discover-tv-${JSON.stringify(params)}`
+    const cacheKey = `discover-tv-v2-${JSON.stringify(params)}`
     const cached = getCached<MovieSummary[]>(cacheKey)
     if (cached) return cached
 
