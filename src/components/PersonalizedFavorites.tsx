@@ -17,31 +17,27 @@ export default function PersonalizedFavorites({
   carouselStateProps = {},
   limit = 10,
 }: PersonalizedFavoritesProps) {
-  const myList = useStore((state) => state.myList)
-  const getAverageRatingForMedia = useStore((state) => state.getAverageRatingForMedia)
+  const reviews = useStore((state) => state.reviews)
 
   const contentForCarousel: MovieSummary[] = useMemo(() => {
-    if (!myList || myList.length === 0) return []
+    if (!reviews || reviews.length === 0) return []
 
-    // Sort by rating (highest first) and limit
-    return myList
-      .map(item => {
-        const matchedContent = allContent.find(content => String(content.id) === item.id)
-        const userRating = getAverageRatingForMedia(item.id)
-        
+    return reviews
+      .filter((review) => review.rating >= 4)
+      .sort((a, b) => b.rating - a.rating || b.createdAt - a.createdAt)
+      .slice(0, limit)
+      .map((review) => {
+        const matchedContent = allContent.find(content => String(content.id) === review.mediaId)
+
         return {
-          id: item.id,
-          title: item.title,
-          poster: item.poster,
-          type: item.type,
-          rating: userRating > 0 ? String(userRating.toFixed(1)) : String(matchedContent?.rating || '0'),
-          userRating,
+          id: review.mediaId,
+          title: review.mediaTitle,
+          poster: review.mediaPoster,
+          type: review.mediaType,
+          rating: matchedContent?.rating || review.rating.toFixed(1),
         }
       })
-      .sort((a, b) => (b.userRating || 0) - (a.userRating || 0))
-      .slice(0, limit)
-      .map(({ userRating: _userRating, ...item }) => item as MovieSummary)
-  }, [myList.length, limit, getAverageRatingForMedia])
+  }, [allContent, limit, reviews])
 
   if (contentForCarousel.length === 0) {
     return null
@@ -55,7 +51,7 @@ export default function PersonalizedFavorites({
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-white">Your Favorites</h2>
             <p className="text-sm text-gray-400 mt-0.5">
-              {myList.length} item{myList.length !== 1 ? 's' : ''} in your list
+              Based on your highest-rated titles
             </p>
           </div>
         </div>

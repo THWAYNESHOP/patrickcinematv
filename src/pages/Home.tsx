@@ -555,7 +555,7 @@ export default function Home() {
         )}
 
         {/* Ranked discovery appears immediately after the hero. */}
-        <section className="mb-12 md:mb-28">
+        <section className="mb-8 md:mb-12">
           <ContentCarousel
             title="Top 10 Today"
             items={trendingType === 'movie' ? trendingMovies : popularTV}
@@ -563,6 +563,7 @@ export default function Home() {
             loading={heroLoading}
             viewAllTo={trendingType === 'movie' ? '/trending' : '/tv'}
             carouselId={carouselId('Top 10 Today')}
+            variant="poster"
             showRanking
             rightContent={<TypeToggle current={trendingType} onChange={setTrendingType} />}
             {...carouselStateProps}
@@ -571,7 +572,7 @@ export default function Home() {
 
         {/* Continue Watching */}
         {continueWatching.length > 0 && (
-          <section className="mb-20 md:mb-28">
+          <section className="mb-8 md:mb-12">
             <ContentCarousel
               title="Resume Watching"
               items={continueWatching.map(item => {
@@ -595,8 +596,8 @@ export default function Home() {
         )}
 
         {/* Kenyan Series spotlight */}
-        <section className="mb-20 md:mb-28">
-          <div className="mb-8 flex items-end justify-between">
+        <section className="mb-8 md:mb-12">
+          <div className="mb-4 flex items-end justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-primary shadow-[0_0_15px_rgba(229,9,20,0.5)] rounded-full" />
               <h2 className="text-2xl font-black text-white md:text-4xl lg:text-5xl tracking-tighter uppercase italic">Kenyan Originals</h2>
@@ -605,7 +606,7 @@ export default function Home() {
               View All
             </Link>
           </div>
-          <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-8">
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
             {getOrderedKenyanSeriesItems().slice(0, 4).map((item, idx) => {
               const userRating = getAverageRatingForMedia(item.id)
               const rating = userRating > 0 ? userRating.toFixed(1) : '8.5'
@@ -682,34 +683,28 @@ export default function Home() {
         {/* Personalized Sections */}
         {user && (
           <>
-            <section className="mb-20 md:mb-28">
-              <BecauseYouWatched
-                allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
-                carouselId={carouselId('Because You Watched')}
-                {...carouselStateProps}
-              />
-            </section>
+            <BecauseYouWatched
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Because You Watched')}
+              {...carouselStateProps}
+            />
 
-            <section className="mb-20 md:mb-28">
-              <TrendingInYourGenre
-                allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
-                carouselId={carouselId('Trending In Your Genre')}
-                {...carouselStateProps}
-              />
-            </section>
+            <TrendingInYourGenre
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Trending In Your Genre')}
+              {...carouselStateProps}
+            />
 
-            <section className="mb-20 md:mb-28">
-              <PersonalizedFavorites
-                allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
-                carouselId={carouselId('Your Favorites')}
-                {...carouselStateProps}
-              />
-            </section>
+            <PersonalizedFavorites
+              allContent={[...featuredMovies, ...trendingMovies, ...popularTV, ...actionAdventure, ...comedy]}
+              carouselId={carouselId('Your Favorites')}
+              {...carouselStateProps}
+            />
           </>
         )}
 
         {/* Teen Romance */}
-        <section className="mb-20 md:mb-28">
+        <section className="mb-12 md:mb-20">
           <ContentCarousel
             title="Teen Romance"
             items={[...curatedTeenRomance, ...teenRomance]}
@@ -721,7 +716,7 @@ export default function Home() {
           />
         </section>
 
-        <section className="mb-20 md:mb-28">
+        <section className="mb-8 md:mb-12">
           <ContentCarousel
             title="Romance"
             items={teenRomance}
@@ -733,7 +728,7 @@ export default function Home() {
           />
         </section>
 
-        <section className="mb-20 md:mb-28">
+        <section className="mb-8 md:mb-12">
           <RecommendedForYou
             allContent={[
               ...featuredMovies,
@@ -756,7 +751,7 @@ export default function Home() {
         </section>
 
         {/* Live Sports */}
-        <section className="mb-20 md:mb-28">
+        <section className="mb-8 md:mb-12">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-primary shadow-[0_0_15px_rgba(229,9,20,0.5)] rounded-full" />
@@ -790,7 +785,7 @@ export default function Home() {
         {showExtendedHomeContent && (
           <>
             {/* Korean Dramas */}
-            <section className="mb-20 md:mb-28">
+            <section className="mb-12 md:mb-20">
               <ContentCarousel
                 title="K-Drama"
                 items={kDrama}
@@ -803,7 +798,7 @@ export default function Home() {
             </section>
 
             {/* Action & Adventure */}
-            <section className="mb-20 md:mb-28">
+            <section className="mb-12 md:mb-20">
               <ContentCarousel
                 title="Action Movies"
                 items={actionAdventure}
@@ -816,7 +811,7 @@ export default function Home() {
             </section>
 
             {/* Comedy - Landscape */}
-            <section className="mb-20 md:mb-28">
+            <section className="mb-12 md:mb-20">
               <ContentCarousel
                 title="Comedy Highlights"
                 items={comedy}
@@ -862,7 +857,7 @@ export default function Home() {
         <section className="mb-20 md:mb-28">
           <ContentCarousel
             title="My Collection"
-            items={myList.length > 0 ? myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type })) : trendingMovies.slice(0, 5)}
+            items={myList.map(m => ({ id: Number(m.id), title: m.title, poster: m.poster, rating: m.rating ?? '0', year: m.year, type: m.type }))}
             type="movie"
             loading={primaryLoading && myList.length === 0}
             viewAllTo="/my-list"

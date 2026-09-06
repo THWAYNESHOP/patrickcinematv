@@ -107,9 +107,9 @@ const CarouselCard = function CarouselCard({
   const cardContent = (
     <motion.div
       initial={false}
-      whileHover={{ scale: 1.05, y: -5 }}
+      whileHover={{ scale: 1.03, y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className="flex flex-col gap-3 group/card"
+      className="flex flex-col gap-2.5 group/card"
     >
       <div className={`relative bg-darkSurface rounded-2xl overflow-hidden border border-white/5 group-hover/card:border-white/20 shadow-2xl transition-all duration-300 ${
         performanceMode ? '' : 'group-hover/card:shadow-[0_0_30px_rgba(229,9,20,0.15)]'
@@ -139,9 +139,15 @@ const CarouselCard = function CarouselCard({
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
           />
-          <div className={`absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 flex items-center justify-center transition-opacity duration-300 backdrop-blur-[2px]`}>
-            <div className="rounded-full bg-primary p-4 shadow-[0_0_20px_rgba(229,9,20,0.5)] transform scale-75 group-hover/card:scale-100 transition-transform duration-500">
-              <Play className="w-8 h-8 text-white" fill="currentColor" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-[10px] font-black uppercase tracking-wider text-white">Watch now</p>
+                <p className="mt-1 truncate text-[10px] text-white/65">{item.year || 'New release'} · {itemType === 'tv' ? 'Series' : 'Movie'}</p>
+              </div>
+              <div className="shrink-0 rounded-full bg-primary p-2.5 shadow-[0_0_20px_rgba(229,9,20,0.5)] transition-transform duration-300 group-hover/card:scale-110">
+                <Play className="h-4 w-4 text-white" fill="currentColor" />
+              </div>
             </div>
           </div>
           {showProgress && typeof item.progress === 'number' && (
@@ -152,7 +158,7 @@ const CarouselCard = function CarouselCard({
           <button
             type="button"
             onClick={handleMyList}
-            className="absolute top-2 right-2 p-2 bg-black/60 hover:bg-primary rounded-xl opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10 backdrop-blur-md border border-white/10"
+            className="absolute right-2 top-2 z-10 rounded-xl border border-white/10 bg-black/60 p-2 opacity-0 backdrop-blur-md transition-all duration-300 hover:bg-primary group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={inMyList ? `Remove ${item.title} from My List` : `Add ${item.title} to My List`}
           >
             {inMyList ? (
@@ -165,10 +171,10 @@ const CarouselCard = function CarouselCard({
       </div>
 
       <div className="px-1">
-        <h3 className="font-black text-sm md:text-base text-white truncate leading-tight uppercase italic group-hover/card:text-primary transition-colors tracking-tight">
+        <h3 className="truncate text-xs font-black uppercase italic leading-tight tracking-tight text-white transition-colors group-hover/card:text-primary group-focus-within/card:text-primary sm:text-sm md:text-base">
           {item.title}
         </h3>
-        <div className="flex items-center gap-2 mt-1.5 opacity-60 group-hover/card:opacity-100 transition-opacity">
+        <div className="mt-1 flex items-center gap-1.5 opacity-60 transition-opacity group-hover/card:opacity-100">
           <div className="flex items-center gap-1">
             <Star className="w-3 h-3 text-primary fill-primary" />
             <span className="text-[11px] md:text-xs text-white font-black italic">{item.rating}</span>
@@ -191,8 +197,8 @@ const CarouselCard = function CarouselCard({
   }
 
   const containerClasses = isLandscape
-    ? "flex-shrink-0 w-64 sm:w-72 md:w-80 xl:w-96"
-    : "flex-shrink-0 w-36 sm:w-44 md:w-48 xl:w-52"
+    ? "flex-shrink-0 w-48 sm:w-56 md:w-64 xl:w-72"
+    : "flex-shrink-0 w-32 sm:w-36 md:w-40 xl:w-44"
 
   if (!user) {
     return (
@@ -250,7 +256,7 @@ export default function ContentCarousel({
   setFocusedCardId,
   onPrefetch,
   performanceMode = false,
-  variant = 'poster',
+  variant = 'landscape',
   showRanking = false,
   rightContent,
 }: ContentCarouselProps) {
@@ -402,7 +408,7 @@ export default function ContentCarousel({
 
 
   return (
-    <div className="mb-12 md:mb-16">
+    <div className="mb-8 md:mb-12">
       <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-1 h-8 bg-primary shadow-[0_0_15px_rgba(229,9,20,0.5)] rounded-full animate-pulse-slow" />
