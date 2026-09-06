@@ -252,19 +252,17 @@ export default function TVDetails() {
         const selectedTrailer = officialTrailer || trailer || teaser
 
         if (selectedTrailer) {
-          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=${playbackPreferences.autoplay ? 1 : 0}&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
           if (import.meta.env.DEV) {
             console.log("Selected Trailer:", selectedTrailer)
             console.log("Trailer Embed URL:", embedUrl)
           }
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
-          if (playbackPreferences.autoplay) {
-            // Show trailer after 2 seconds only when autoplay is enabled
-            setTimeout(() => {
-              setShowTrailer(true)
-            }, 2000)
-          }
+          // Delay the cinematic trailer reveal so the details remain readable first.
+          setTimeout(() => {
+            setShowTrailer(true)
+          }, 2000)
         } else {
           if (import.meta.env.DEV) {
             console.warn("No suitable trailer found")
@@ -345,11 +343,6 @@ export default function TVDetails() {
       year: tv.year,
       type: 'tv',
     })
-  }
-
-  const handleTrailer = () => {
-    setShowTrailer(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleShare = async () => {
@@ -436,7 +429,6 @@ export default function TVDetails() {
           <Play className="w-5 h-5 fill-black" />
           Play
         </PlayButton>
-        <IconAction icon={<Play className="w-5 h-5" />} label="Trailer" onClick={handleTrailer} />
         <IconAction
           icon={inMyList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           label={inMyList ? 'In My List' : 'My List'}

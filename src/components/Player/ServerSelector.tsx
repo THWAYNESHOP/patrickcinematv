@@ -9,8 +9,7 @@ interface ServerSelectorProps {
 
 interface ServerHealth {
   providerId: string
-  latency: number
-  quality: 'excellent' | 'good' | 'fair' | 'poor'
+  status: 'available'
   lastChecked: number
 }
 
@@ -24,19 +23,9 @@ export default function ServerSelector({ selectedProviderId, onProviderChange }:
       const healthData: Record<string, ServerHealth> = {}
 
       for (const provider of providers) {
-        const baseLatency = Math.random() * 200 + 50
-        const latency = Math.round(baseLatency)
-
-        let quality: 'excellent' | 'good' | 'fair' | 'poor'
-        if (latency < 100) quality = 'excellent'
-        else if (latency < 150) quality = 'good'
-        else if (latency < 200) quality = 'fair'
-        else quality = 'poor'
-
         healthData[provider.id] = {
           providerId: provider.id,
-          latency,
-          quality,
+          status: 'available',
           lastChecked: Date.now(),
         }
       }
@@ -62,7 +51,7 @@ export default function ServerSelector({ selectedProviderId, onProviderChange }:
           title={`Current streaming source: ${selectedProvider.displayName}`}
         >
           {selectedProvider.displayName}
-          {selectedHealth ? ` · ${selectedHealth.latency}ms` : ''}
+          {selectedHealth ? ' · Available' : ''}
         </button>
         <button
           type="button"

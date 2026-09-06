@@ -219,7 +219,10 @@ function TrendingCarousel({ channels, onChannelClick }: { channels: CDNChannel[]
     <section className="space-y-4">
       <div className="flex items-center gap-2">
         <TrendingUp className="w-6 h-6 text-primary" />
-        <h2 className="text-2xl font-bold text-white">Trending Live</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-white">Most Watched Right Now</h2>
+          <p className="mt-1 text-sm text-gray-400">Popular channels people are watching live.</p>
+        </div>
       </div>
 
       <div className="relative">
@@ -272,7 +275,7 @@ export default function IPTVPlayer() {
                 url: channel.url,
                 image: channel.logo || '',
                 status: 'online',
-                viewers: Math.floor(Math.random() * 1000),
+                viewers: 0,
               });
             });
           });
@@ -306,7 +309,7 @@ export default function IPTVPlayer() {
               url: channel.url,
               image: channel.logo || '',
               status: 'online',
-              viewers: Math.floor(Math.random() * 1000),
+              viewers: 0,
             });
           });
         });
@@ -375,6 +378,11 @@ export default function IPTVPlayer() {
   const trendingChannels = useMemo(() => {
     return [...channels].sort((a, b) => b.viewers - a.viewers).slice(0, 10);
   }, [channels]);
+
+  const liveChannelCount = useMemo(
+    () => channels.filter((channel) => ['live', 'online', 'active'].includes(channel.status.toLowerCase())).length,
+    [channels],
+  );
 
   const visibleChannels = useMemo(() => {
     const categoryChannels =
@@ -473,6 +481,12 @@ export default function IPTVPlayer() {
           <p className="text-gray-400 max-w-xl text-sm sm:text-base mb-8">
             Premium live TV and sports from around the world. Thousands of channels in one place.
           </p>
+
+          <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-gray-400">
+            <span><strong className="text-white">{channels.length.toLocaleString()}</strong> channels</span>
+            <span><strong className="text-primary">{liveChannelCount.toLocaleString()}</strong> live now</span>
+            <span><strong className="text-white">{sportsEvents.length.toLocaleString()}</strong> sports events</span>
+          </div>
 
           {/* Search */}
           <div className="relative max-w-2xl">
