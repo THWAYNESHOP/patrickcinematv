@@ -53,7 +53,7 @@ function MobileNav({ isPlayerPage = false }: MobileNavProps) {
               className={linkClasses}
             >
               <Icon className={iconClasses} />
-              <span className={labelClasses}>{item.name}</span>
+              <span className={`${labelClasses} hidden sm:inline`}>{item.name}</span>
             </Link>
           )
         })}

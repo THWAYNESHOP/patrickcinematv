@@ -44,7 +44,7 @@ export default function WatchPage() {
             This watch page uses your own player and a normalized stream adapter so movies, live TV, and sports can all share one playback path.
           </p>
         </div>
-        <CustomVideoPlayer src={source.streamUrl} title={source.title} poster={source.poster} streamType={source.streamType} />
+        <CustomVideoPlayer src={source.streamUrl} poster={source.poster} streamType={source.streamType} />
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
           <p className="font-medium text-white">Normalized source</p>
           <p className="mt-1">Provider: {source.provider || 'demo'}</p>

@@ -179,16 +179,19 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
   }
 
   const userLabel = user?.name || user?.email?.split('@')[0] || 'Account'
-  const themeLabel = theme === 'dark' ? 'Dark mode' : theme === 'light' ? 'Light mode' : 'System mode'
   const themeIcon = theme === 'dark' ? <Sun className="w-5 h-5 transition-all duration-300" /> : theme === 'light' ? <Moon className="w-5 h-5 transition-all duration-300" /> : <Laptop className="w-5 h-5 transition-all duration-300" />
   const showSettingsBadge = !settingsTourSeen
 
   const navClass = isPlayerPage
-    ? 'fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-2'
-    : `fixed top-0 left-0 right-0 z-50 transition-all duration-300 pt-safe-top ${
+    ? 'fixed top-0 left-0 right-0 z-50 transition-all duration-500 pt-safe-top bg-deepBlack/95 backdrop-blur-2xl border-b border-white/5 py-2'
+    : 'fixed top-0 left-0 right-0 z-50 transition-colors duration-500 pt-safe-top flex justify-center w-full pointer-events-none py-4'
+
+  const navContainerClass = isPlayerPage
+    ? `container mx-auto px-3 sm:px-6 md:px-12 lg:px-16`
+    : `container mx-auto px-4 sm:px-6 md:px-12 lg:px-16 pointer-events-auto transition-colors duration-500 max-w-[95%] lg:max-w-[90%] rounded-2xl py-3 ${
         isScrolled
-          ? 'bg-deepBlack/95 backdrop-blur-xl border-b border-white/5 py-3 shadow-lg'
-          : 'bg-gradient-to-b from-deepBlack/95 via-deepBlack/80 to-transparent py-4 md:py-5'
+          ? 'bg-deepBlack/80 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50'
+          : 'bg-transparent border border-transparent'
       }`
 
   return (
@@ -199,17 +202,20 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       >
         Skip to content
       </a>
-      <div className={`container mx-auto ${isPlayerPage ? 'px-3' : 'px-4'} sm:px-6 md:px-12 lg:px-16`}>
+      <div className={navContainerClass}>
         <div className="flex items-center justify-between gap-4">
-          {/* Left: logo + desktop nav */}
-          <div className="flex items-center gap-6 lg:gap-10 min-w-0">
+          {/* Left: logo */}
+          <div className="flex items-center shrink-0">
             <Link to="/" className="flex shrink-0 items-center group tv-focusable tv-touch-target">
-              <span className="text-xl md:text-2xl font-extrabold text-white tracking-wider uppercase transition-all duration-300 group-hover:tracking-[0.12em]">
+              <span className="text-xl md:text-3xl font-black text-white tracking-tighter uppercase transition-all duration-300 group-hover:text-primary">
                 <span className="text-primary">NEXA</span>STREAM
               </span>
             </Link>
+          </div>
 
-            <div className="hidden lg:flex items-center gap-6">
+          {/* Right: desktop nav + account */}
+          <div className="flex items-center justify-end gap-6 lg:gap-8 w-full">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
               <Link to="/" className={navLinkClass('/')}>
                 Home
               </Link>
@@ -234,202 +240,169 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
               <Link to="/my-list" className={navLinkClass('/my-list')}>
                 My List
               </Link>
-              <Link to="/settings" className={navLinkClass('/settings')}>
-                <span className="inline-flex items-center gap-2">
-                  Settings
-                  {showSettingsBadge && (
-                    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
-                      New
-                    </span>
-                  )}
-                </span>
-              </Link>
             </div>
-          </div>
 
-          {/* Right: account + utilities */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {user ? (
-              <>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {user ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="hidden md:flex rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
+                    aria-label="Profile"
+                    title="Profile"
+                  >
+                    <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="md" />
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold transition-all duration-300 hover:bg-primaryHover hover:scale-105 shadow-lg shadow-primary/20 tv-focusable tv-touch-target"
+                >
+                  <User className="w-4 h-4" />
+                  Sign In
+                </button>
+              )}
+
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="hidden sm:flex p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
+                aria-label="Open search"
+                data-testid="desktop-search-toggle"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="lg:hidden p-2.5 rounded-xl hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
+                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              >
+                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+
+              {/* Mobile Profile Toggle */}
+              {user ? (
                 <Link
                   to="/profile"
-                  className="hidden md:flex rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="sm:hidden rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
                   aria-label="Profile"
                   title="Profile"
                 >
-                  <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="md" />
+                  <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="sm" />
                 </Link>
-                <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-4 pr-1.5 py-1">
-                  <span className="text-sm text-gray-300 max-w-[120px] truncate" title={user.email || undefined}>
-                    {userLabel}
-                  </span>
-                  <button
-                    onClick={handleSignOut}
-                    className="p-2 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
-                    aria-label="Sign out"
-                    title="Sign out"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/30 text-white text-sm font-semibold transition-all duration-300 tv-focusable tv-touch-target"
-              >
-                <User className="w-4 h-4" />
-                Sign In
-              </button>
-            )}
-
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="hidden sm:flex p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
-              aria-label="Open search"
-              data-testid="desktop-search-toggle"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-
-            <button
-              onClick={toggleTheme}
-              className="hidden sm:flex p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] items-center justify-center tv-focusable tv-touch-target"
-              aria-label={`Switch theme mode. Current mode: ${themeLabel}`}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </button>
-
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center tv-focusable tv-touch-target"
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
-            {/* Mobile Sign In / Profile (visible only on small screens) */}
-            {user ? (
-              <Link
-                to="/profile"
-                onClick={() => setIsMenuOpen(false)}
-                className="sm:hidden rounded-full hover:bg-white/10 transition-all duration-300 tv-focusable tv-touch-target"
-                aria-label="Profile"
-                title="Profile"
-              >
-                <Avatar src={firebaseUser?.photoURL} alt={firebaseUser?.displayName || 'User'} size="sm" />
-              </Link>
-            ) : (
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="sm:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center tv-focusable tv-touch-target"
-                aria-label="Sign in"
-                title="Sign In"
-              >
-                <User className="w-5 h-5" />
-              </button>
-            )}
+              ) : (
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="sm:hidden p-2.5 rounded-full hover:bg-white/10 transition-all duration-300 text-gray-300 hover:text-white min-w-[40px] min-h-[40px] flex items-center justify-center tv-focusable tv-touch-target"
+                  aria-label="Sign in"
+                  title="Sign In"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden mt-4 max-h-[calc(100dvh-7rem)] overflow-y-auto bg-darkSurface/95 backdrop-blur-xl rounded-xl p-4 border border-white/10 shadow-2xl">
-            {mobileGroups.map((group, groupIndex) => (
-              <div
-                key={group.label ?? 'home'}
-                className={groupIndex > 0 ? 'mt-4 pt-4 border-t border-white/10' : ''}
-              >
-                {group.label && (
-                  <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                    {group.label}
-                  </p>
-                )}
-                <div className="space-y-0.5">
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`block py-3 px-3 rounded-lg transition-all duration-300 min-h-[44px] flex items-center tv-focusable tv-touch-target ${
-                        isActive(item.path)
-                          ? 'bg-primary/10 text-white font-semibold'
-                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="lg:hidden fixed top-20 left-4 right-4 max-h-[calc(100dvh-7rem)] overflow-y-auto bg-darkSurface/95 backdrop-blur-2xl rounded-2xl p-4 border border-white/10 shadow-2xl z-[60]">
+          {mobileGroups.map((group, groupIndex) => (
+            <div
+              key={group.label ?? 'home'}
+              className={groupIndex > 0 ? 'mt-4 pt-4 border-t border-white/10' : ''}
+            >
+              {group.label && (
+                <p className="px-3 mb-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block py-3 px-3 rounded-xl transition-all duration-300 min-h-[44px] flex items-center tv-focusable tv-touch-target ${
+                      isActive(item.path)
+                        ? 'bg-primary/10 text-white font-black italic'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
               </div>
-            ))}
+            </div>
+          ))}
 
-            <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
-              <Link
+          <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
+            <Link
               to="/settings"
               onClick={() => setIsMenuOpen(false)}
-              className={`block w-full py-3 px-3 rounded-lg transition-all duration-300 min-h-[44px] tv-focusable tv-touch-target ${
+              className={`block w-full py-3 px-3 rounded-xl transition-all duration-300 min-h-[44px] tv-focusable tv-touch-target ${
                 isActive('/settings')
-                  ? 'bg-primary/10 text-white font-semibold'
+                  ? 'bg-primary/10 text-white font-black italic'
                   : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
             >
               <span className="inline-flex items-center justify-between w-full gap-3">
                 <span>Settings</span>
                 {showSettingsBadge && (
-                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-white">
                     New
                   </span>
                 )}
               </span>
             </Link>
             <button
+              onClick={() => {
+                setIsMenuOpen(false)
+                setIsSearchOpen(true)
+              }}
+              className="w-full flex items-center gap-3 py-3 px-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target"
+              data-testid="mobile-search-toggle"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+              Search
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center gap-3 py-3 px-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target sm:hidden"
+            >
+              {themeIcon}
+              {theme === 'dark' ? 'Light mode' : theme === 'light' ? 'System mode' : 'Dark mode'}
+            </button>
+            {user ? (
+              <button
                 onClick={() => {
                   setIsMenuOpen(false)
-                  setIsSearchOpen(true)
+                  void handleSignOut()
                 }}
-                className="w-full flex items-center gap-3 py-3 px-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target"
-                data-testid="mobile-search-toggle"
-                aria-label="Search"
+                className="w-full flex items-center gap-3 py-3 px-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target"
               >
-                <Search className="w-5 h-5" />
-                Search
+                <LogOut className="w-5 h-5" />
+                Sign out ({userLabel})
               </button>
+            ) : (
               <button
-                onClick={toggleTheme}
-                className="w-full flex items-center gap-3 py-3 px-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target sm:hidden"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  setIsAuthOpen(true)
+                }}
+                className="w-full flex items-center gap-3 py-3 px-3 rounded-xl bg-primary/10 text-white font-black italic transition-all min-h-[44px] tv-focusable tv-touch-target"
               >
-                {themeIcon}
-                {theme === 'dark' ? 'Light mode' : theme === 'light' ? 'System mode' : 'Dark mode'}
+                <User className="w-5 h-5" />
+                Sign In
               </button>
-              {user ? (
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    void handleSignOut()
-                  }}
-                  className="w-full flex items-center gap-3 py-3 px-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all min-h-[44px] tv-focusable tv-touch-target"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Sign out ({userLabel})
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    setIsAuthOpen(true)
-                  }}
-                  className="w-full flex items-center gap-3 py-3 px-3 rounded-lg bg-primary/10 text-white font-semibold transition-all min-h-[44px] tv-focusable tv-touch-target"
-                >
-                  <User className="w-5 h-5" />
-                  Sign In
-                </button>
-              )}
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
       {isAuthOpen && (

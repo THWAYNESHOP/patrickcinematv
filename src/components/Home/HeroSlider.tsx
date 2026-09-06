@@ -22,11 +22,16 @@ function formatRating(rating?: string) {
 
 function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLoaded, setIsLoaded] = useState(false)
   const { triggerHaptic } = useHapticFeedback()
   const isTV = useTVDetection()
   const user = useStore((state) => state.user)
   const setIsAuthModalOpen = useStore((state) => state.setIsAuthModalOpen)
   const setPendingCardNavigation = useStore((state) => state.setPendingCardNavigation)
+
+  useEffect(() => {
+    setIsLoaded(true)
+  }, [])
 
   const handleCardClick = useCallback(
     (e?: React.MouseEvent<HTMLElement>) => {
@@ -80,82 +85,66 @@ function HeroSlider({ movies }: HeroSliderProps) {
   const optimizedBackdrop = getOptimizedBackdrop(currentMovie.backdrop)
 
   return (
-    <div className="relative h-[50vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
-      <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100">
+    <div className="relative h-[64vh] md:h-[68vh] lg:h-[68vh] overflow-hidden bg-black">
+      <div className={`absolute inset-0 transition-all duration-1000 ease-in-out ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}>
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-linear hover:scale-110"
           style={{
             backgroundImage: `url(${optimizedBackdrop})`,
-            imageRendering: 'auto',
           } as React.CSSProperties}
         >
           <img src={optimizedBackdrop} alt={currentMovie.title} className="sr-only" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 bg-black/10 z-[5]" />
       </div>
 
-      <div className="absolute inset-0 flex items-end pb-12 md:pb-16 lg:pb-20">
-        <div className="container mx-auto px-4 md:px-8 lg:px-12">
-          <div className="max-w-xl md:max-w-2xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-2 md:mb-3 lg:mb-4 text-white tracking-tight leading-tight">
+      <div className="absolute inset-0 flex items-end pb-8 md:pb-12 z-20">
+        <div className="container mx-auto px-4 md:px-8 lg:px-16">
+          <div className="max-w-2xl">
+            <h1 className="max-w-2xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-5 text-white tracking-tight leading-[0.95] drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
               {currentMovie.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 lg:gap-4 mb-3 md:mb-4 lg:mb-6 text-xs md:text-sm lg:text-base">
+
+            <div className="flex flex-wrap items-center gap-4 mb-8 text-sm md:text-base font-bold">
               {rating && (
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/15 px-2 py-1 font-semibold text-accent">
-                  <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden="true" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
+                  <Star className="h-4 w-4 fill-white" />
                   {rating}
                 </span>
               )}
-              {currentMovie.year && <span className="text-gray-400">{currentMovie.year}</span>}
-              <span className="text-gray-400">{currentIndex + 1} of {movies.length}</span>
+              {currentMovie.year && <span className="text-white/90">{currentMovie.year}</span>}
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="text-primary tracking-widest uppercase text-[10px] md:text-xs">Trending Today</span>
             </div>
-            <p className="text-gray-200 text-xs md:text-sm lg:text-lg mb-4 md:mb-6 lg:mb-8 line-clamp-2 md:line-clamp-3 leading-relaxed">
+
+            <p className="text-gray-300 text-sm md:text-base lg:text-lg mb-10 line-clamp-3 md:line-clamp-4 leading-relaxed max-w-xl font-medium drop-shadow-lg opacity-80">
               {currentMovie.overview}
             </p>
-            <div className="flex flex-wrap gap-2 md:gap-3 lg:gap-4">
-              {user ? (
-                <>
-                  <Link
-                    to={`/movie/${currentMovie.id}`}
-                    onClick={handleCardClick}
-                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
-                  >
-                    <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
-                    Play
-                  </Link>
-                  <Link
-                    to={`/movie/${currentMovie.id}`}
-                    onClick={handleCardClick}
-                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
-                  >
-                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                    More Info
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleCardClick()}
-                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-white text-black px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 hover:bg-gray-200"
-                  >
-                    <Play className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="black" />
-                    Play
-                  </button>
-                  <button
-                    onClick={() => handleCardClick()}
-                    className="flex items-center gap-1.5 md:gap-2 lg:gap-2 bg-gray-500/70 hover:bg-gray-500/90 text-white px-4 md:px-6 lg:px-8 py-2 md:py-2.5 lg:py-3 rounded font-semibold text-xs md:text-sm lg:text-base transition-all duration-300 backdrop-blur-sm"
-                  >
-                    <Info className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                    More Info
-                  </button>
-                </>
-              )}
+
+            <div className="flex flex-wrap gap-4">
+              <Link
+                to={`/movie/${currentMovie.id}`}
+                onClick={(e) => !user && handleCardClick(e)}
+                className="flex items-center gap-3 bg-white text-black px-6 md:px-10 py-3.5 md:py-4 rounded-xl font-black text-sm md:text-base transition-all duration-300 hover:bg-primary hover:text-white hover:scale-105 shadow-2xl shadow-white/10"
+              >
+                <Play className="w-5 h-5" fill="currentColor" />
+                PLAY
+              </Link>
+              <Link
+                to={`/movie/${currentMovie.id}`}
+                onClick={(e) => !user && handleCardClick(e)}
+                className="flex items-center gap-3 bg-white/10 hover:bg-white/20 text-white px-6 md:px-10 py-3.5 md:py-4 rounded-xl font-black text-sm md:text-base transition-all duration-300 backdrop-blur-2xl border border-white/20 hover:border-white/40 shadow-2xl"
+              >
+                <Info className="w-5 h-5" />
+                SEE MORE
+              </Link>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Navigation Buttons */}
       <button

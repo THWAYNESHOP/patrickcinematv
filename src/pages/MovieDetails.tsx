@@ -99,19 +99,17 @@ export default function MovieDetails() {
         const selectedTrailer = officialTrailer || trailer || teaser
 
         if (selectedTrailer) {
-          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=${playbackPreferences.autoplay ? 1 : 0}&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
+          const embedUrl = `https://www.youtube.com/embed/${selectedTrailer.key}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&showinfo=0&cc_load_policy=0&fs=0`
           if (import.meta.env.DEV) {
             console.log("Selected Trailer:", selectedTrailer)
             console.log("Trailer Embed URL:", embedUrl)
           }
           setTrailer({ key: selectedTrailer.key, embedUrl })
 
-          if (playbackPreferences.autoplay) {
-            // Show trailer after 2 seconds only when autoplay is enabled
-            setTimeout(() => {
-              setShowTrailer(true)
-            }, 2000)
-          }
+          // Delay the cinematic trailer reveal so the details remain readable first.
+          setTimeout(() => {
+            setShowTrailer(true)
+          }, 2000)
         } else {
           if (import.meta.env.DEV) {
             console.warn("No suitable trailer found")
@@ -194,11 +192,6 @@ export default function MovieDetails() {
     })
   }
 
-  const handleTrailer = () => {
-    setShowTrailer(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   const handleShare = async () => {
     const shareData = { title: movie.title, text: movie.overview, url: window.location.href }
     try {
@@ -253,7 +246,6 @@ export default function MovieDetails() {
           <Play className="w-5 h-5 fill-black" />
           Play
         </PlayButton>
-        <IconAction icon={<Play className="w-5 h-5" />} label="Trailer" onClick={handleTrailer} />
         <IconAction
           icon={inMyList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           label={inMyList ? 'In My List' : 'My List'}
@@ -323,16 +315,14 @@ export default function MovieDetails() {
                   )}
                 </dl>
               </div>
-              <div className="rounded-2xl p-4 sm:p-5 border border-white/5 bg-darkSurface">
+              {playerError && (
+                <div className="rounded-2xl p-4 sm:p-5 border border-primary/20 bg-primary/5">
                 <h3 className="font-semibold mb-2 text-white text-sm">
-                  {playerError ? 'Content unavailable' : 'No sources yet?'}
+                  Content unavailable
                 </h3>
-                <p className="text-sm text-gray-400">
-                  {playerError 
-                    ? 'This content is not available on VidLink. Try adding it to My List and check back later, or browse recommendations below.'
-                    : 'Some brand-new or rare titles are not mirrored yet. Keep it in My List and try again later, or jump into a recommendation below while the sources catch up.'}
-                </p>
-              </div>
+                <p className="text-sm text-gray-400">This content is not available on VidLink. Try changing the source above or check back later.</p>
+                </div>
+              )}
             </aside>
           </div>
         </section>

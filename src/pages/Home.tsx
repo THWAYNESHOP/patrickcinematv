@@ -253,7 +253,7 @@ export default function Home() {
 
     let trendingToday: MovieSummary[] = fallbackMovies
     let trendingTV: MovieSummary[] = fallbackTV
-    let heroMoviesToCache: MovieSummary[] = fallbackMovies.slice(0, maxHeroItems)
+    let heroMoviesToCache: MovieSummary[]
     let popularTVToCache: MovieSummary[] = []
     let teenRomanceToCache: MovieSummary[] = []
     let kDramaToCache: MovieSummary[] = []
@@ -286,6 +286,7 @@ export default function Home() {
       }
       setFetchError('Unable to load featured content. Showing fallback items.')
       toast.error(`Home load failed: ${message}`)
+      heroMoviesToCache = fallbackMovies.slice(0, maxHeroItems)
       setFeaturedMovies(fallbackMovies.slice(0, maxHeroItems))
       setTrendingMovies(limitItems(fallbackMovies, 10))
       trendingToday = limitItems(fallbackMovies, 10)

@@ -61,7 +61,7 @@ export default function ChatbotWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end md:bottom-8 md:right-8">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 flex flex-col items-end md:bottom-8 md:right-8">
       {isOpen && (
         <div className="w-[320px] max-w-full rounded-[28px] border border-white/10 bg-darkSurface/95 shadow-2xl shadow-black/50 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4">

@@ -1,21 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Hls from 'hls.js'
-import { Pause, Play, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react'
+import PlayerControls from './PlayerControls'
+import { ScalingMode } from '../../types/player'
 
 interface CustomVideoPlayerProps {
   src: string
-  title: string
   poster?: string
   streamType?: 'hls' | 'mp4' | 'dash'
 }
 
-export default function CustomVideoPlayer({ src, title, poster, streamType = 'hls' }: CustomVideoPlayerProps) {
+export default function CustomVideoPlayer({ src, poster, streamType = 'hls' }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const [scalingMode, setScalingMode] = useState<ScalingMode>('fit')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function CustomVideoPlayer({ src, title, poster, streamType = 'hl
   }
 
   const toggleFullscreen = async () => {
-    const elem = videoRef.current?.parentElement
+    const elem = containerRef.current
     if (!elem) return
 
     if (!document.fullscreenElement) {
@@ -95,19 +99,86 @@ export default function CustomVideoPlayer({ src, title, poster, streamType = 'hl
     }
   }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const handleVolumeChange = (newVolume: number) => {
+    const video = videoRef.current
+    if (!video) return
+    video.volume = newVolume
+    setVolume(newVolume)
+    if (newVolume > 0 && isMuted) {
+      setIsMuted(false)
+      video.muted = false
+    }
   }
 
-  const progress = useMemo(() => (duration > 0 ? (currentTime / duration) * 100 : 0), [currentTime, duration])
+  const handlePlaybackSpeedChange = (speed: number) => {
+    const video = videoRef.current
+    if (!video) return
+    video.playbackRate = speed
+    setPlaybackSpeed(speed)
+  }
+
+  const handleSeek = (time: number) => {
+    const video = videoRef.current
+    if (!video) return
+    video.currentTime = time
+    setCurrentTime(time)
+  }
+
+  const handleScalingModeChange = (mode: ScalingMode) => {
+    setScalingMode(mode)
+  }
+
+
+
+  const getVideoStyle = (): React.CSSProperties => {
+    const style: React.CSSProperties = {
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'black',
+      transition: 'all 0.3s ease',
+    }
+
+    switch (scalingMode) {
+      case 'stretch':
+        style.objectFit = 'fill'
+        break
+      case 'zoom':
+        style.objectFit = 'cover'
+        break
+      case 'crop':
+        style.objectFit = 'cover'
+        style.transform = 'scale(1.2)'
+        break
+      case '16:9':
+        style.aspectRatio = '16 / 9'
+        style.objectFit = 'contain'
+        break
+      case '4:3':
+        style.aspectRatio = '4 / 3'
+        style.objectFit = 'contain'
+        break
+      case 'fit':
+      default:
+        style.objectFit = 'contain'
+        break
+    }
+
+    return style
+  }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+    <div ref={containerRef} className="relative overflow-hidden rounded-2xl border border-white/10 bg-black aspect-video">
       <video
         ref={videoRef}
-        className="aspect-video w-full bg-black"
+        style={getVideoStyle()}
         poster={poster}
         controls={false}
         playsInline
@@ -117,28 +188,32 @@ export default function CustomVideoPlayer({ src, title, poster, streamType = 'hl
           {error}
         </div>
       ) : null}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-        <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-white/20">
-          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-        </div>
-        <div className="flex items-center justify-between text-sm text-white">
-          <div className="flex items-center gap-3">
-            <button onClick={togglePlay} className="rounded-full bg-white/10 p-2 hover:bg-white/20" aria-label="Play or pause">
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-            </button>
-            <button onClick={toggleMute} className="rounded-full bg-white/10 p-2 hover:bg-white/20" aria-label="Mute or unmute">
-              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-            </button>
-            <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-white/10 px-2 py-1 text-xs">{title}</span>
-            <button onClick={toggleFullscreen} className="rounded-full bg-white/10 p-2 hover:bg-white/20" aria-label="Toggle fullscreen">
-              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-            </button>
-          </div>
-        </div>
-      </div>
+
+      <PlayerControls
+        isPlaying={isPlaying}
+        isMuted={isMuted}
+        isFullscreen={isFullscreen}
+        currentTime={currentTime}
+        duration={duration}
+        volume={volume}
+        playbackSpeed={playbackSpeed}
+        quality="HD"
+        scalingMode={scalingMode}
+        onPlayPause={togglePlay}
+        onMute={toggleMute}
+        onFullscreen={toggleFullscreen}
+        onSeek={handleSeek}
+        onVolumeChange={handleVolumeChange}
+        onPlaybackSpeedChange={handlePlaybackSpeedChange}
+        onQualityChange={() => {}}
+        onScalingModeChange={handleScalingModeChange}
+        showPiP={true}
+        onPiP={() => {
+          if (videoRef.current) {
+            videoRef.current.requestPictureInPicture().catch(console.error)
+          }
+        }}
+      />
     </div>
   )
 }

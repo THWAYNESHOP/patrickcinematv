@@ -25,7 +25,7 @@ export default function DetailHero({
   backdrop,
   poster,
   title,
-  matchPercent = 98,
+  matchPercent,
   meta,
   genres,
   overview,
@@ -46,7 +46,7 @@ export default function DetailHero({
   return (
     <div
       ref={heroRef}
-      className="relative flex items-end min-h-[45vh] md:min-h-[55vh] bg-cover bg-center overflow-hidden"
+      className="relative flex items-end min-h-[42vh] md:min-h-[50vh] bg-cover bg-center overflow-hidden"
       style={{ 
         backgroundImage: `url(${backdrop})`,
         imageRendering: '-webkit-optimize-contrast',
@@ -68,7 +68,7 @@ export default function DetailHero({
             <iframe
               src={trailer.embedUrl}
               title={`${title} Trailer`}
-              className="w-full h-full object-cover scale-110"
+              className="absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
               style={{ border: 'none' }}
@@ -85,10 +85,10 @@ export default function DetailHero({
             <img
               src={poster}
               alt={title}
-              className="w-28 self-center rounded-2xl shadow-2xl ring-1 ring-white/15 shrink-0 sm:self-auto sm:w-36 md:w-56 lg:w-64"
+              className="w-28 self-center rounded-2xl shadow-2xl ring-1 ring-white/15 shrink-0 sm:self-auto sm:w-36 md:w-48 lg:w-52"
             />
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-3 md:mb-5 text-white tracking-tight text-shadow-lg leading-[1.05]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 md:mb-4 text-white tracking-tight text-shadow-lg leading-[1.05]">
                 {title}
               </h1>
 
@@ -106,9 +106,11 @@ export default function DetailHero({
               )}
 
               <div className="flex flex-wrap items-center gap-2 md:gap-2.5 mb-4 md:mb-5">
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/20 text-primary text-xs md:text-sm font-bold">
-                  {matchPercent}% Match
-                </span>
+                {matchPercent !== undefined && (
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/20 text-primary text-xs md:text-sm font-bold">
+                    {matchPercent}% Match
+                  </span>
+                )}
                 {meta.map((m, i) => (
                   <span
                     key={i}
