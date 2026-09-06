@@ -1,0 +1,1 @@
+﻿export { Vidplay } from './index'

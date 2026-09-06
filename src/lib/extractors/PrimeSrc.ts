@@ -1,0 +1,1 @@
+﻿export { PrimeSrc } from './index'

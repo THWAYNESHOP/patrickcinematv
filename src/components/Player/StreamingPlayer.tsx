@@ -668,7 +668,7 @@ export default function StreamingPlayer({
   const getIframeTransform = () => {
     switch (scalingMode) {
       case 'stretch':
-        return 'scale(1.15, 1.1)'
+        return 'scale(1.2)'
       case 'zoom':
         return 'scale(1.35)'
       case 'crop':
@@ -749,6 +749,20 @@ export default function StreamingPlayer({
               </div>
             )}
           </div>
+          <button
+            type="button"
+            aria-label="Stretch video"
+            aria-pressed={scalingMode === 'stretch'}
+            disabled={isFullscreen}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (isFullscreen) return
+              setScalingMode((current) => (current === 'stretch' ? 'fit' : 'stretch'))
+            }}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/70 p-2 text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Monitor className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={toggleFullscreen}

@@ -17,7 +17,18 @@ import { VidsrcRu } from './extractors/VidsrcRu'
 
 export type StreamKind = 'movie' | 'tv' | 'live' | 'sports'
 
-const extractors = {
+export type StreamExtractorResult = {
+  streamUrl: string
+  streamType: 'hls' | 'mp4' | 'dash'
+  subtitles?: Array<{ label: string; url: string }>
+  headers?: Record<string, string>
+}
+
+type ExtractorImplementation = {
+  extract: (tmdbId: string, kind: 'movie' | 'tv', season: number, episode: number) => Promise<StreamExtractorResult>
+}
+
+const extractors: Record<string, ExtractorImplementation> = {
   vidsrcTo: new VidsrcTo(),
   vidsrcMe: new VidsrcMe(),
   vidplay: new Vidplay(),
@@ -275,15 +286,25 @@ async function resolveStreamSourceUncached(request: StreamRequest): Promise<Stre
           provider.name,
         )
 
+        const candidate = result as Partial<StreamExtractorResult>
+        if (
+          !candidate ||
+          typeof candidate !== 'object' ||
+          typeof candidate.streamUrl !== 'string' ||
+          !candidate.streamType
+        ) {
+          throw new Error(`${provider.name} returned an invalid stream payload`)
+        }
+
         return {
           id: request.id,
           title: request.title || normalizeTitle(request.kind),
           type: request.kind,
-          streamUrl: result.streamUrl,
-          streamType: result.streamType,
+          streamUrl: candidate.streamUrl,
+          streamType: candidate.streamType,
           provider: provider.name,
-          subtitles: result.subtitles,
-          headers: result.headers,
+          subtitles: candidate.subtitles,
+          headers: candidate.headers,
         }
       })
 

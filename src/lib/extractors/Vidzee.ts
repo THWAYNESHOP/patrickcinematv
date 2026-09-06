@@ -1,0 +1,1 @@
+﻿export { Vidzee } from './index'

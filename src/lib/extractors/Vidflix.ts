@@ -1,0 +1,1 @@
+﻿export { Vidflix } from './index'
