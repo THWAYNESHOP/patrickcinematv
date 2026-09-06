@@ -117,6 +117,7 @@ function HeroSlider({ movies }: HeroSliderProps) {
               {currentMovie.year && <span className="text-white/90">{currentMovie.year}</span>}
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-primary tracking-widest uppercase text-[10px] md:text-xs">Trending Today</span>
+              <span className="text-white/90 font-medium">{currentIndex + 1} of {movies.length}</span>
             </div>
 
             <p className="text-gray-300 text-sm md:text-base lg:text-lg mb-10 line-clamp-3 md:line-clamp-4 leading-relaxed max-w-xl font-medium drop-shadow-lg opacity-80">
@@ -130,7 +131,7 @@ function HeroSlider({ movies }: HeroSliderProps) {
                 className="flex items-center gap-3 bg-white text-black px-6 md:px-10 py-3.5 md:py-4 rounded-xl font-black text-sm md:text-base transition-all duration-300 hover:bg-primary hover:text-white hover:scale-105 shadow-2xl shadow-white/10"
               >
                 <Play className="w-5 h-5" fill="currentColor" />
-                PLAY
+                Play
               </Link>
               <Link
                 to={`/movie/${currentMovie.id}`}
@@ -138,7 +139,7 @@ function HeroSlider({ movies }: HeroSliderProps) {
                 className="flex items-center gap-3 bg-white/10 hover:bg-white/20 text-white px-6 md:px-10 py-3.5 md:py-4 rounded-xl font-black text-sm md:text-base transition-all duration-300 backdrop-blur-2xl border border-white/20 hover:border-white/40 shadow-2xl"
               >
                 <Info className="w-5 h-5" />
-                SEE MORE
+                More Info
               </Link>
             </div>
           </div>

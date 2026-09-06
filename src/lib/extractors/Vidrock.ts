@@ -1,0 +1,1 @@
+﻿export { Vidrock } from './index'

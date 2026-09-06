@@ -1,0 +1,1 @@
+﻿export { VidsrcRu } from './index'

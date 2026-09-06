@@ -1,0 +1,1 @@
+﻿export { Moviesapi } from './index'
