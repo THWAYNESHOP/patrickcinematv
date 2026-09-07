@@ -367,6 +367,6 @@ describe('KenyanSeriesDetails', () => {
     fireEvent.click(screen.getByRole('button', { name: /play episode/i }))
 
     const iframe = screen.getByTitle(/episode player/i)
-    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/1kjzTH_k-D8FG'))
+    expect(iframe).toHaveAttribute('src', expect.stringContaining('fembed.co/embed/COtKm9-C_PIHS'))
   })
 })
