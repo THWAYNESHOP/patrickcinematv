@@ -9,17 +9,9 @@ import { useMyList } from '../hooks/useMyList'
 import { useToast } from '../hooks/useToast'
 import { useStore } from '../store/useStore'
 import { getKenyanSeriesItem, getOrderedKenyanSeriesItems } from '../data/kenyanSeries'
+import { fetchKenyanSeriesEpisodes } from '../services/kenyanSeriesService'
+import type { AyanaEpisode } from '../types/kenyanSeries'
 import type { MovieSummary } from '../api/tmdb'
-
-interface AyanaEpisode {
-  id: string
-  title: string
-  thumbnail: string
-  youtubeUrl: string
-  date: string
-  runtime?: string
-  part?: number
-}
 
 const ayanaEpisodes: AyanaEpisode[] = [
   {
@@ -601,6 +593,7 @@ export default function KenyanSeriesDetails() {
   const [isMuted, setIsMuted] = useState(true)
   const [isPlayerActive, setIsPlayerActive] = useState(false)
   const [, setIsPlayerExpanded] = useState(false)
+  const [remoteEpisodes, setRemoteEpisodes] = useState<AyanaEpisode[] | null>(null)
   const item = useMemo(() => getKenyanSeriesItem(id), [id])
   const toast = useToast()
   const { addToMyList, removeFromMyList, isInMyList } = useMyList()
@@ -609,8 +602,31 @@ export default function KenyanSeriesDetails() {
   const getWatchProgress = useStore((state) => state.getWatchProgress)
   const continueWatching = useStore((state) => state.continueWatching)
 
-  const sortedEpisodes = useMemo(() => getSeriesEpisodes(item?.id), [item?.id])
+  const fallbackEpisodes = useMemo(() => getSeriesEpisodes(item?.id), [item?.id])
+  const availableEpisodes = remoteEpisodes?.length ? remoteEpisodes : fallbackEpisodes
+  const sortedEpisodes = useMemo(() => sortEpisodes(availableEpisodes), [availableEpisodes])
   const selectedEpisode = sortedEpisodes.find((episode) => episode.id === selectedEpisodeId) ?? sortedEpisodes[0]
+
+  useEffect(() => {
+    let active = true
+    setRemoteEpisodes(null)
+
+    if (!item?.id) return () => {
+      active = false
+    }
+
+    fetchKenyanSeriesEpisodes(item.id)
+      .then((episodes) => {
+        if (active && episodes.length) setRemoteEpisodes(episodes)
+      })
+      .catch(() => {
+        // The bundled catalog remains available when the content API is unavailable.
+      })
+
+    return () => {
+      active = false
+    }
+  }, [item?.id])
 
   useEffect(() => {
     if (!sortedEpisodes.length) return

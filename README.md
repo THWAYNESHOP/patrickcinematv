@@ -51,6 +51,13 @@ This project depends on several Vite environment variables for API access and in
 - `GROK_API_KEY`
 - `GROK_MODEL`
 
+Server-only Kenyan Series administration variables:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `FIREBASE_API_KEY`
+- `KENYAN_ADMIN_EMAILS` (comma-separated Firebase email addresses)
+
 ### Secure setup
 
 - Copy `.env.example` to `.env.local` for local development.
@@ -60,6 +67,15 @@ This project depends on several Vite environment variables for API access and in
 - For Firebase email verification, add your production domain to Firebase Authentication > Settings > Authorized domains.
 
 > Only variables prefixed with `VITE_` are exposed to the frontend bundle. If something must stay truly private, keep it on a server-side endpoint or Cloudflare Worker instead of the client app.
+
+### Kenyan Series episode management
+
+1. Run the Kenyan Series table section in `supabase-schema.sql` in the Supabase SQL editor.
+2. Add `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_API_KEY`, and `KENYAN_ADMIN_EMAILS` as Cloudflare Pages server-side environment variables. Do not prefix these with `VITE_`.
+3. Sign in with an email listed in `KENYAN_ADMIN_EMAILS` and open `/admin/kenyan-series`.
+4. Add or edit episodes there. Published rows are loaded automatically on the public Kenyan Series detail pages.
+
+The API validates the Firebase ID token with Firebase before using the Supabase service key. The service key is never sent to the browser. Existing bundled episodes remain as a fallback until they are migrated into Supabase.
 
 ### AI chat setup
 
@@ -123,6 +139,10 @@ Use `npm run test:e2e:chromium` for a quick local browser smoke test with the in
    - `VITE_FIREBASE_MEASUREMENT_ID`
    - `VITE_SENTRY_DSN`
    - `VITE_STREAM_PROXY_URL`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `FIREBASE_API_KEY`
+   - `KENYAN_ADMIN_EMAILS`
    - `DARAJA_ENV`
    - `DARAJA_CONSUMER_KEY`
    - `DARAJA_CONSUMER_SECRET`

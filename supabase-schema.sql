@@ -148,3 +148,34 @@ CREATE POLICY "Users can insert own watch history"
 CREATE POLICY "Users can delete own watch history"
   ON watch_history FOR DELETE
   USING (auth.uid() = user_id);
+
+-- Kenyan Series episodes are managed through the protected Firebase-to-Supabase API.
+CREATE TABLE IF NOT EXISTS kenyan_series_episodes (
+  id TEXT PRIMARY KEY,
+  series_id TEXT NOT NULL CHECK (series_id IN ('ayana', 'lulu', 'lazizi', 'second-family')),
+  title TEXT NOT NULL,
+  thumbnail TEXT,
+  video_url TEXT NOT NULL,
+  air_date DATE NOT NULL,
+  runtime TEXT,
+  part INTEGER,
+  display_order INTEGER,
+  is_published BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_kenyan_series_episodes_series_id
+  ON kenyan_series_episodes(series_id);
+CREATE INDEX IF NOT EXISTS idx_kenyan_series_episodes_published
+  ON kenyan_series_episodes(is_published);
+
+CREATE TRIGGER update_kenyan_series_episodes_updated_at
+  BEFORE UPDATE ON kenyan_series_episodes
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+ALTER TABLE kenyan_series_episodes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view published Kenyan Series episodes"
+  ON kenyan_series_episodes FOR SELECT
+  USING (is_published = TRUE);
