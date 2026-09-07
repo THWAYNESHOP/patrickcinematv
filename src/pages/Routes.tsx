@@ -13,6 +13,7 @@ const LiveTV = lazy(() => import(/* webpackChunkName: "live-tv" */ './LiveTV'))
 const Anime = lazy(() => import(/* webpackChunkName: "anime" */ './Anime'))
 const KenyanSeries = lazy(() => import(/* webpackChunkName: "kenyan-series" */ './KenyanSeries'))
 const KenyanSeriesDetails = lazy(() => import(/* webpackChunkName: "kenyan-series" */ './KenyanSeriesDetails'))
+const KenyanSeriesAdmin = lazy(() => import(/* webpackChunkName: "kenyan-series-admin" */ './KenyanSeriesAdmin'))
 const Trending = lazy(() => import(/* webpackChunkName: "trending" */ './Trending'))
 const MyList = lazy(() => import(/* webpackChunkName: "my-list" */ './MyList'))
 const Profile = lazy(() => import(/* webpackChunkName: "profile" */ './Profile'))
@@ -51,6 +52,7 @@ export default function AppRoutes() {
           <Route path="/anime" element={<PageTransition><Anime /></PageTransition>} />
           <Route path="/kenyan-series" element={<PageTransition><KenyanSeries /></PageTransition>} />
           <Route path="/kenyan-series/:id" element={<PageTransition><KenyanSeriesDetails /></PageTransition>} />
+          <Route path="/admin/kenyan-series" element={<PageTransition><KenyanSeriesAdmin /></PageTransition>} />
           <Route path="/trending" element={<PageTransition><Trending /></PageTransition>} />
           <Route path="/mood-recommendations" element={<PageTransition><MoodRecommendations /></PageTransition>} />
           <Route path="/collections" element={<PageTransition><Collections /></PageTransition>} />
