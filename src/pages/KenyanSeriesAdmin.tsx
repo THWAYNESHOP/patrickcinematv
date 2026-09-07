@@ -35,12 +35,15 @@ const seriesOptions = [
 ]
 
 export default function KenyanSeriesAdmin() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, signIn } = useAuth()
   const [episodes, setEpisodes] = useState<AdminEpisode[]>([])
   const [form, setForm] = useState<AdminEpisode>(emptyEpisode)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [signInEmail, setSignInEmail] = useState('')
+  const [signInPassword, setSignInPassword] = useState('')
+  const [signInSubmitting, setSignInSubmitting] = useState(false)
 
   const getToken = async () => {
     if (!user) throw new Error('Sign in with an admin account first.')
@@ -126,8 +129,70 @@ export default function KenyanSeriesAdmin() {
     }
   }
 
+  const handleAdminSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    setSignInSubmitting(true)
+
+    try {
+      await signIn(signInEmail.trim(), signInPassword)
+    } catch (signInError) {
+      setError(signInError instanceof Error ? signInError.message : 'Unable to sign in with that admin account.')
+    } finally {
+      setSignInSubmitting(false)
+    }
+  }
+
   if (authLoading) return <div className="min-h-screen bg-deepBlack p-8 text-white">Checking admin session...</div>
-  if (!user) return <div className="min-h-screen bg-deepBlack p-8 text-white"><h1 className="text-2xl font-bold">Kenyan Series Admin</h1><p className="mt-3 text-gray-400">Sign in with an administrator account to manage episodes.</p></div>
+  if (!user) return (
+    <div className="min-h-screen bg-deepBlack px-4 py-10 text-white sm:px-8">
+      <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+        <h1 className="text-3xl font-bold">Kenyan Series Admin</h1>
+        <p className="mt-3 text-sm text-gray-400">Sign in with an administrator account to manage episodes.</p>
+
+        <form onSubmit={handleAdminSignIn} className="mt-6 space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="admin-email" className="block text-sm font-medium text-gray-200">Email</label>
+            <input
+              id="admin-email"
+              type="email"
+              value={signInEmail}
+              onChange={(event) => setSignInEmail(event.target.value)}
+              className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none ring-0 placeholder:text-gray-500 focus:border-primary"
+              placeholder="admin@example.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="admin-password" className="block text-sm font-medium text-gray-200">Password</label>
+            <input
+              id="admin-password"
+              type="password"
+              value={signInPassword}
+              onChange={(event) => setSignInPassword(event.target.value)}
+              className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none ring-0 placeholder:text-gray-500 focus:border-primary"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          {error && <div className="rounded-lg border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-200">{error}</div>}
+
+          <button
+            type="submit"
+            disabled={signInSubmitting}
+            className="w-full rounded-lg bg-primary px-4 py-2.5 font-semibold text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {signInSubmitting ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-deepBlack px-4 py-8 text-white sm:px-8">
