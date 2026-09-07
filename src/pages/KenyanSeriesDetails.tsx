@@ -220,6 +220,24 @@ const ayanaEpisodes: AyanaEpisode[] = [
     runtime: '45 min',
     part: 20,
   },
+  {
+    id: 'part-23',
+    title: 'AYANA MONDAY PART 1',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/2gTPoMC-J_7kS',
+    date: '2026-09-07',
+    runtime: '45 min',
+    part: 23,
+  },
+  {
+    id: 'part-24',
+    title: 'AYANA MONDAY PART 2',
+    thumbnail: '/ayana.jpg',
+    youtubeUrl: 'https://fembed.co/embed/d4AM_1idBR-BU',
+    date: '2026-09-07',
+    runtime: '45 min',
+    part: 24,
+  },
 ]
 
 const luluEpisodes: AyanaEpisode[] = [
@@ -392,6 +410,14 @@ const laziziEpisodes: AyanaEpisode[] = [
     date: '2026-09-01',
     runtime: '27 min',
   },
+  {
+    id: 'episode-22',
+    title: 'LAZIZI FRIDAY',
+    thumbnail: '/lazizi.jpg',
+    youtubeUrl: 'https://fembed.co/embed/9nI7R-ap_2Ltw',
+    date: '2026-09-07',
+    runtime: '27 min',
+  },
 ]
 
 const secondFamilyEpisodes: AyanaEpisode[] = [
@@ -513,6 +539,22 @@ const secondFamilyEpisodes: AyanaEpisode[] = [
     thumbnail: '/secondfamily.jpeg',
     youtubeUrl: 'https://fembed.co/embed/1kjzTH_k-D8FG',
     date: '2026-09-01',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-49',
+    title: 'Episode 49',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/COtKm9-C_PIHS',
+    date: '2026-09-07',
+    runtime: '45 min',
+  },
+  {
+    id: 'episode-50',
+    title: 'Episode 50',
+    thumbnail: '/secondfamily.jpeg',
+    youtubeUrl: 'https://fembed.co/embed/COtKm9-C_PIHS',
+    date: '2026-09-07',
     runtime: '45 min',
   },
 ]
