@@ -62,7 +62,7 @@ Server-only Kenyan Series administration variables:
 
 - Copy `.env.example` to `.env.local` for local development.
 - Never commit `.env`, `.env.local`, or real secrets to GitHub.
-- For Cloudflare Pages, add the same variables in the Pages project settings under Build & Deploy > Environment variables.
+- For Cloudflare Pages, add the variables in the Pages project settings under Settings > Environment variables. Enable the `Production` deployment environment for production builds (and `Preview` separately if needed). Pages makes these variables available to the configured build command automatically; no `wrangler.toml` file is required.
 - If you deploy from GitHub Actions, store the values in GitHub Secrets and inject them into the build step.
 - For Firebase email verification, add your production domain to Firebase Authentication > Settings > Authorized domains.
 
@@ -126,7 +126,7 @@ Use `npm run test:e2e:chromium` for a quick local browser smoke test with the in
 1. Build the project: `npm run build`
 2. Set the build output directory to `dist`
 3. Ensure the `functions` directory is deployed with the project. Cloudflare Pages will expose the function routes under `/api/support`.
-4. In Cloudflare Pages, add the required environment variables under Build & Deploy > Environment variables, including:
+4. In Cloudflare Pages, add the required environment variables under Settings > Environment variables and select the deployment environment used by the build (`Production` or `Preview`). These values are injected into `npm run build` automatically. Do not put secrets in `wrangler.toml` or commit them to the repository. Include:
    - `VITE_TMDB_API_KEY`
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
