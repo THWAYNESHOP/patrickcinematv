@@ -311,6 +311,10 @@ export default defineConfig({
         target: supportServerTarget,
         changeOrigin: true,
       },
+      '/api/kenyan-series': {
+        target: supportServerTarget,
+        changeOrigin: true,
+      },
     },
   },
 })

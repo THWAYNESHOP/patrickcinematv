@@ -34,6 +34,30 @@ const seriesOptions = [
   { id: 'second-family', label: 'Second Family', poster: '/secondfamily.jpeg' },
 ]
 
+async function readApiResponse(response: Response) {
+  const contentType = response.headers.get('content-type') || ''
+  const text = await response.text()
+
+  if (!text) {
+    if (!response.ok) throw new Error(`Request failed (${response.status}).`)
+    return null
+  }
+
+  if (!contentType.includes('application/json')) {
+    throw new Error(
+      response.status === 404
+        ? 'The Kenyan Series admin API is not available on this local server.'
+        : `The server returned an unexpected response (${response.status}).`,
+    )
+  }
+
+  try {
+    return JSON.parse(text) as unknown
+  } catch {
+    throw new Error('The server returned invalid JSON.')
+  }
+}
+
 export default function KenyanSeriesAdmin() {
   const { user, loading: authLoading, signIn } = useAuth()
   const [episodes, setEpisodes] = useState<AdminEpisode[]>([])
@@ -58,9 +82,9 @@ export default function KenyanSeriesAdmin() {
       const response = await fetch('/api/kenyan-series?admin=1', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      const body = await response.json()
-      if (!response.ok) throw new Error(body.error || 'Could not load episodes.')
-      setEpisodes(body)
+      const body = await readApiResponse(response) as AdminEpisode[] | { error?: string } | null
+      if (!response.ok) throw new Error(!Array.isArray(body) ? body?.error || 'Could not load episodes.' : 'Could not load episodes.')
+      setEpisodes(Array.isArray(body) ? body : [])
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Could not load episodes.')
     } finally {
@@ -94,8 +118,8 @@ export default function KenyanSeriesAdmin() {
         },
         body: JSON.stringify(form),
       })
-      const body = await response.json()
-      if (!response.ok) throw new Error(body.error || 'Could not save episode.')
+      const body = await readApiResponse(response) as { error?: string } | null
+      if (!response.ok) throw new Error(body?.error || 'Could not save episode.')
       setMessage('Episode saved.')
       setForm({ ...emptyEpisode, series_id: form.series_id, thumbnail: seriesOptions.find((series) => series.id === form.series_id)?.poster || emptyEpisode.thumbnail })
       await loadEpisodes()
@@ -117,8 +141,8 @@ export default function KenyanSeriesAdmin() {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) {
-        const body = await response.json()
-        throw new Error(body.error || 'Could not delete episode.')
+        const body = await readApiResponse(response) as { error?: string } | null
+        throw new Error(body?.error || 'Could not delete episode.')
       }
       setMessage('Episode deleted.')
       await loadEpisodes()

@@ -4,7 +4,16 @@ import { spawn } from 'child_process'
 
 const viteBin = resolve(process.cwd(), 'node_modules', 'vite', 'bin', 'vite.js')
 const supportServerEntry = resolve(process.cwd(), 'server', 'support-server.js')
-const viteArgs = [viteBin, '--host', '127.0.0.1', '--port', '5173']
+const cliArgs = process.argv.slice(2)
+const hostIndex = cliArgs.indexOf('--host')
+const portIndex = cliArgs.indexOf('--port')
+const viteArgs = [
+  viteBin,
+  '--host',
+  hostIndex >= 0 ? cliArgs[hostIndex + 1] || '0.0.0.0' : '127.0.0.1',
+  '--port',
+  portIndex >= 0 ? cliArgs[portIndex + 1] || '5173' : '5173',
+]
 
 if (!existsSync(viteBin)) {
   console.error('Unable to find Vite. Run npm install before starting the dev server.')
