@@ -102,7 +102,7 @@ export function useAuth() {
   const signIn = useCallback(async (email: string, password: string) => {
     const auth = getAuthInstance();
     if (!auth) {
-      throw new Error('Firebase auth is unavailable');
+      throw new Error('Firebase authentication is not configured. Add the Firebase env vars and reload the app.');
     }
     return await signInWithEmailAndPassword(auth, email, password);
   }, []);

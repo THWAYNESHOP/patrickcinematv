@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import { writeFileSync } from 'fs'
 import path from 'path'
 import { normalizePhoneNumber } from './phone.js'
+import kenyanSeriesRouter from './kenyan-series.js'
 
 dotenv.config({ path: '.env.local' })
 dotenv.config()
@@ -78,6 +79,7 @@ if (placeholderDarajaConfig) {
 }
 
 app.use(express.json())
+app.use('/api/kenyan-series', kenyanSeriesRouter)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', port: currentPort })

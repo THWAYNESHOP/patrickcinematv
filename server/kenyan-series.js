@@ -1,36 +1,32 @@
-type Env = Record<string, string | undefined>
+import express from 'express'
 
-interface SupabaseConfig {
-  supabaseUrl: string
-  serviceKey: string
-  firebaseApiKey: string
-  adminEmails: string[]
+const router = express.Router()
+
+function getConfig() {
+  return {
+    supabaseUrl: String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, ''),
+    serviceKey: String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || ''),
+    firebaseApiKey: String(process.env.FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY || ''),
+    adminEmails: String(process.env.KENYAN_ADMIN_EMAILS || '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  }
 }
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status,
-  headers: { 'Content-Type': 'application/json' },
-})
+function sendJson(response, body, status = 200) {
+  return response.status(status).type('application/json').send(body)
+}
 
-const getConfig = (env: Env): SupabaseConfig => ({
-  supabaseUrl: String(env.SUPABASE_URL || env.VITE_SUPABASE_URL || '').replace(/\/$/, ''),
-  serviceKey: String(env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SECRET_KEY || ''),
-  firebaseApiKey: String(env.FIREBASE_API_KEY || env.VITE_FIREBASE_API_KEY || ''),
-  adminEmails: String(env.KENYAN_ADMIN_EMAILS || '')
-    .split(',')
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean),
-})
-
-async function verifyAdmin(request: Request, env: Env) {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
-  const config = getConfig(env)
+async function verifyAdmin(request) {
+  const token = request.get('Authorization')?.replace(/^Bearer\s+/i, '')
+  const config = getConfig()
 
   if (!token || !config.firebaseApiKey || !config.adminEmails.length) {
     return { ok: false, status: 401, message: 'Admin authentication is not configured.' }
   }
 
-  const response = await fetch(
+  const firebaseResponse = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(config.firebaseApiKey)}`,
     {
       method: 'POST',
@@ -39,20 +35,20 @@ async function verifyAdmin(request: Request, env: Env) {
     },
   )
 
-  if (!response.ok) {
+  if (!firebaseResponse.ok) {
     return { ok: false, status: 401, message: 'Invalid Firebase session.' }
   }
 
-  const data = await response.json() as { users?: Array<{ email?: string }> }
+  const data = await firebaseResponse.json()
   const email = String(data.users?.[0]?.email || '').toLowerCase()
   if (!email || !config.adminEmails.includes(email)) {
     return { ok: false, status: 403, message: 'Admin access is required.' }
   }
 
-  return { ok: true, config, email }
+  return { ok: true, config }
 }
 
-async function supabaseRequest(config: SupabaseConfig, path: string, options: RequestInit = {}) {
+async function supabaseRequest(config, path, options = {}) {
   if (!config.supabaseUrl || !config.serviceKey) {
     throw new Error('Supabase server configuration is missing.')
   }
@@ -68,16 +64,14 @@ async function supabaseRequest(config: SupabaseConfig, path: string, options: Re
   })
 
   const text = await response.text()
-  const body = text ? JSON.parse(text) as unknown : null
+  const body = text ? JSON.parse(text) : null
   if (!response.ok) {
-    const errorBody = body as { message?: string; hint?: string } | null
-    throw new Error(errorBody?.message || errorBody?.hint || 'Supabase request failed.')
+    throw new Error(body?.message || body?.hint || 'Supabase request failed.')
   }
-
   return body
 }
 
-function normalizeEpisode(input: Record<string, unknown>) {
+function normalizeEpisode(input) {
   const episode = {
     id: String(input.id || '').trim(),
     series_id: String(input.series_id || '').trim(),
@@ -94,74 +88,73 @@ function normalizeEpisode(input: Record<string, unknown>) {
   if (!episode.id || !episode.series_id || !episode.title || !episode.video_url || !episode.air_date) {
     throw new Error('id, series_id, title, video_url, and air_date are required.')
   }
-
   if (!/^https?:\/\//i.test(episode.video_url)) {
     throw new Error('video_url must be an http or https URL.')
   }
-
   return episode
 }
 
-export async function onRequest(context: { request: Request; env: Env }) {
-  const { request, env } = context
-  const url = new URL(request.url)
-  const seriesId = url.searchParams.get('series_id')
-  const wantsAdmin = url.searchParams.get('admin') === '1'
-  const config = getConfig(env)
-
+router.all('/', async (request, response) => {
   try {
+    const url = new URL(request.originalUrl, 'http://localhost')
+    const config = getConfig()
+
     if (request.method === 'GET') {
       let isAdmin = false
-      if (wantsAdmin) {
-        const auth = await verifyAdmin(request, env)
-        if (!auth.ok) return json({ error: auth.message }, auth.status)
+      if (url.searchParams.get('admin') === '1') {
+        const auth = await verifyAdmin(request)
+        if (!auth.ok) return sendJson(response, { error: auth.message }, auth.status)
         isAdmin = true
       }
 
       const filters = []
+      const seriesId = url.searchParams.get('series_id')
       if (seriesId) filters.push(`series_id=eq.${encodeURIComponent(seriesId)}`)
       if (!isAdmin) filters.push('is_published=eq.true')
-      const query = filters.length ? `?${filters.join('&')}&order=air_date.desc,display_order.desc` : '?order=air_date.desc,display_order.desc'
-      const rows = await supabaseRequest(config, `kenyan_series_episodes${query}`, { headers: { Prefer: 'return=representation' } }) as unknown[]
-      return json(rows)
+      const query = filters.length
+        ? `?${filters.join('&')}&order=air_date.desc,display_order.desc`
+        : '?order=air_date.desc,display_order.desc'
+      const rows = await supabaseRequest(config, `kenyan_series_episodes${query}`)
+      return sendJson(response, rows)
     }
 
-    const auth = await verifyAdmin(request, env)
-    if (!auth.ok) return json({ error: auth.message }, auth.status)
+    const auth = await verifyAdmin(request)
+    if (!auth.ok) return sendJson(response, { error: auth.message }, auth.status)
 
+    const id = url.searchParams.get('id')
     if (request.method === 'POST') {
-      const episode = normalizeEpisode(await request.json())
+      const episode = normalizeEpisode(request.body)
       const rows = await supabaseRequest(config, 'kenyan_series_episodes?on_conflict=id', {
         method: 'POST',
         headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
         body: JSON.stringify(episode),
-      }) as Array<Record<string, unknown>>
-      return json(rows?.[0] || episode, 201)
+      })
+      return sendJson(response, rows?.[0] || episode, 201)
     }
 
-    const id = url.searchParams.get('id')
-    if (!id) return json({ error: 'Episode id is required.' }, 400)
-
+    if (!id) return sendJson(response, { error: 'Episode id is required.' }, 400)
     if (request.method === 'DELETE') {
       await supabaseRequest(config, `kenyan_series_episodes?id=eq.${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: { Prefer: 'return=minimal' },
       })
-      return new Response(null, { status: 204 })
+      return response.status(204).send()
     }
 
     if (request.method === 'PATCH') {
-      const episode = normalizeEpisode({ ...(await request.json()), id })
+      const episode = normalizeEpisode({ ...request.body, id })
       const rows = await supabaseRequest(config, `kenyan_series_episodes?id=eq.${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify(episode),
-      }) as Array<Record<string, unknown>>
-      return json(rows?.[0] || episode)
+      })
+      return sendJson(response, rows?.[0] || episode)
     }
 
-    return json({ error: 'Method not allowed.' }, 405)
+    return sendJson(response, { error: 'Method not allowed.' }, 405)
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : 'Request failed.' }, 500)
+    return sendJson(response, { error: error instanceof Error ? error.message : 'Request failed.' }, 500)
   }
-}
+})
+
+export default router
