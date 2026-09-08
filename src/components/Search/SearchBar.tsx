@@ -530,7 +530,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   )
 
   return (
-    <div ref={searchContainerRef} className="fixed inset-0 z-50 flex flex-col bg-deepBlack/98">
+    <div ref={searchContainerRef} className="fixed inset-0 z-50 z-[100] flex flex-col bg-deepBlack/98">
       <div className="border-b border-white/10 bg-deepBlack/95 backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-4 py-4 md:px-6 md:py-6">
           <div className="flex items-center gap-2 md:gap-3">

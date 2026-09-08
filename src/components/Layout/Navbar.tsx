@@ -195,7 +195,8 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
       }`
 
   return (
-    <nav className={navClass}>
+    <>
+      <nav className={navClass}>
       <a
         href="#main-content"
         className="absolute left-4 -top-10 focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:text-black px-3 py-2 rounded transition-all"
@@ -404,12 +405,13 @@ export default function Navbar({ isScrolled, isPlayerPage = false }: NavbarProps
         </div>
       )}
 
+      </nav>
       {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
       {isAuthOpen && (
         <Suspense fallback={null}>
           <AuthModal onClose={() => setIsAuthOpen(false)} />
         </Suspense>
       )}
-    </nav>
+    </>
   )
 }
